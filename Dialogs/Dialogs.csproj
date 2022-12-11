@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Scover.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>Scover.Dialogs</RootNamespace>
+    <Company>$(Authors)</Company>
+    <Authors>Scover</Authors>
+    <Product>Dialogs</Product>
+    <Description>A robust implementation of common Windows dialog constructions, such as timeout, multi-page, progress and task dialogs.</Description>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="XPThemes.manifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="XPThemes.manifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClrHeapAllocationAnalyzer" Version="3.0.0" />
+    <PackageReference Include="Vanara.Core" Version="3.4.11" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.11" />
+    <PackageReference Include="Vanara.PInvoke.Shared" Version="3.4.11" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.11" />
+  </ItemGroup>
+
+</Project>
