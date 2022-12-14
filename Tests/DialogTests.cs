@@ -22,7 +22,7 @@ public sealed class DialogTests
                 "Button #1",
                 new Button("Button #2 (Admin)") { RequiresElevation = true },
                 new Button("Button #3 (Disabled)") { IsEnabled = false },
-                new Button("Button #4 (Admin & Disabled)") { RequiresElevation = true, IsEnabled = false }
+                new Button("Button #4 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
             },
             Expander = new Expander()
             {
@@ -56,19 +56,15 @@ public sealed class DialogTests
     [Test]
     public void TestClose()
     {
-        var button = Button.Cancel;
         Verification verification = new("Check to close");
         using Page page = new()
         {
             Content = "This dialog cannot be closed by normal means",
+            IsCancelable = true,
             Verification = verification,
-            Buttons = new ButtonCollection()
-            {
-                button
-            },
             WindowTitle = nameof(TestClose),
         };
-        button.Clicked += (s, e) => e.Cancel = true;
+        page.ButtonClicked += (s, e) => e.Cancel = true;
         verification.Checked += (s, e) => page.Close();
         Dialog dlg = new(page);
         _ = dlg.Show();
@@ -130,8 +126,8 @@ END",
             },
             WindowTitle = nameof(TestRadioButtons),
         });
-        dlg.Show();
-        AssertYes("Were the radio buttons shown properly");
+        _ = dlg.Show();
+        AssertYes("Were the radio buttons shown properly?");
     }
 
     private static void AssertYes(string message)

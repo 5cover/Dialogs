@@ -72,10 +72,9 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
         StringHelper.FreeString(_wrap.pszMainInstruction, CharSet.Unicode);
         StringHelper.FreeString(_wrap.pszFooter, CharSet.Unicode);
         StringHelper.FreeString(_wrap.pszWindowTitle, CharSet.Unicode);
-        _parts.Dispose(); // todo : NOOOOO - IF A PART IS REFERENCED IN ANOTHER DIALOG EVERYTING WILL BURN
-        // EVERY PART CAN BE SHARED - Buttons, CommitControlCollections, Areas Represent this behavior using interfaces. Page
-        // doesn't OWN its parts. It only USES them. Page is a CLIENT. A client doesn't dispose of the data he's given, that's
-        // rude and evil.
+        // _parts.Dispose(); // todo : NOOOOO - IF A PART IS REFERENCED IN ANOTHER DIALOG EVERYTING WILL BURN EVERY PART CAN BE
+        // SHARED - Buttons, CommitControlCollections, Areas Represent this behavior using interfaces. Page doesn't OWN its
+        // parts. It only USES them. Page is a CLIENT. A client doesn't dispose of the data he's given, that's rude and evil.
     }
 
     TASKDIALOGCONFIG INativeProvider<TASKDIALOGCONFIG>.GetNative() => _wrap;
@@ -113,7 +112,6 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 {
                     return HRESULT.S_FALSE;
                 }
-
                 // Check for the Help button because it is non-committing and natively doesnt close the dialog, so it wouldn't
                 // make sense to raise Closing for it. Worse, if S_FALSE is returned for the Help button, TDN_HELP will not be sent.
                 if (!Button.Help.Equals(control))
@@ -125,7 +123,6 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                         return HRESULT.S_FALSE;
                     }
                 }
-
                 break;
 
             case TaskDialogNotification.TDN_HYPERLINK_CLICKED:

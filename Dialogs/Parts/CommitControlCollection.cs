@@ -17,7 +17,11 @@ public abstract class CommitControlCollection : IdControlCollection<CommitContro
         return default;
     }
 
-    internal override CommitControl? GetControlFromId(int id) => Items.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
+    internal override CommitControl? GetControlFromId(int id) => CommonButton.FromId(id) ?? base.GetControlFromId(id);
+
+    private protected override int GetId(int index) => index + 1 + CommonButton.MaxId;
+
+    private protected override int GetIndex(int id) => id - 1 - CommonButton.MaxId;
 
     private protected override void SetContainerProperties(in TASKDIALOGCONFIG container, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)
     {

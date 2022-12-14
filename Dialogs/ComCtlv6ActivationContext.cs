@@ -42,7 +42,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
     {
         if (_cookie != 0)
         {
-            if (Kernel32.DeactivateActCtx(0, _cookie))
+            if (Win32Error.ThrowLastErrorIfFalse(Kernel32.DeactivateActCtx(0, _cookie)))
             {
                 // deactivation succeeded
                 _cookie = 0;

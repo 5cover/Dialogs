@@ -32,7 +32,7 @@ public class Dialog
             CurrentPage.Closing += NavigateNextPage;
         }
 
-        void NavigateNextPage(object? sender, ClosingEventArgs args)
+        void NavigateNextPage(object? sender, ButtonClickedEventArgs args)
         {
             if (chooseNextPage(args.ClickedButton) is { } nextPage)
             {
@@ -81,7 +81,6 @@ public class Dialog
         var config = CurrentPage.GetNative();
         using ComCtlV6ActivationContext activationContext = new(true);
 
-        // todo : test parent as state prop
         config.hwndParent = owner ?? User32.GetActiveWindow();
         config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, StartupLocation is WindowLocation.CenterParent);
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Vanara.Extensions;
 using Vanara.InteropServices;
 using static Vanara.PInvoke.ComCtl32;
@@ -86,6 +85,10 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
         base.ClearItems();
     }
 
+    private protected virtual int GetId(int index) => index;
+
+    private protected virtual int GetIndex(int id) => id;
+
     /// <inheritdoc/>
     protected override void InsertItem(int index, T item)
     {
@@ -121,16 +124,6 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
             ur.UpdateRequested += ItemUpdateRequested;
         }
     }
-
-    private int AssertValidIndex(int index)
-    {
-        Debug.Assert(index >= 0 && index < Count);
-        return index;
-    }
-
-    private int GetId(int index) => AssertValidIndex(index) + 1 + CommonButton.MaxId;
-
-    private int GetIndex(int id) => AssertValidIndex(id - 1 - CommonButton.MaxId);
 
     private void ItemUpdateRequested(object? sender, Action<IdControlUpdate> e)
         => UpdateRequested?.Invoke(this, update => e(new(update.Dialog, GetId(IndexOf((T)sender!)))));

@@ -11,6 +11,21 @@ public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONF
     /// <remarks>The range is [0 ; <see cref="MaxId"/>].</remarks>
     internal const int MaxId = 11;
 
+    private static readonly CommonButton[] _values =
+    {
+        Button.Abort,
+        Button.Cancel,
+        Button.Close,
+        Button.Continue,
+        Button.Help,
+        Button.Ignore,
+        Button.No,
+        Button.OK,
+        Button.Retry,
+        Button.TryAgain,
+        Button.Yes,
+    };
+
     private readonly TASKDIALOG_COMMON_BUTTON_FLAGS _commonButton;
 
     internal CommonButton(TASKDIALOG_COMMON_BUTTON_FLAGS commonButton, MB_RESULT id) : this(commonButton, (int)id)
@@ -44,4 +59,6 @@ public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONF
     public override int GetHashCode() => Id.GetHashCode();
 
     void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container) => container.dwCommonButtons.SetFlag(_commonButton, true);
+
+    internal static CommonButton? FromId(int id) => _values.SingleOrDefault(cb => cb.Id == id);
 }
