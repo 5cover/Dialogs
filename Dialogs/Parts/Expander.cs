@@ -56,12 +56,13 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     /// <value>The position of the <see cref="ExpandedInformation"/> when the expander is expanded. Default value is <see cref="ExpanderPosition.BelowContent"/>.</value>
     public ExpanderPosition ExpanderPosition { get; init; } = ExpanderPosition.BelowContent;
 
-    /// <summary>Gets whether to starts expanded.</summary>
+    /// <summary>Gets whether to the expander is expanded.</summary>
+    /// <remarks>Setting this property while the dialog is shown will have no effect.</remarks>
     /// <value>
     /// <see langword="true"/> when the expander when the page is initially displayed, <see langword="false"/> otherwise.
     /// Default value is <see langword="false"/>.
     /// </value>
-    public bool StartsExpanded { get; set; }
+    public bool IsExpanded { get; set; }
 
     /// <inheritdoc/>
     public void Dispose()
@@ -75,7 +76,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     {
         if (id is TaskDialogNotification.TDN_EXPANDO_BUTTON_CLICKED)
         {
-            StartsExpanded = Convert.ToBoolean(wParam);
+            IsExpanded = Convert.ToBoolean(wParam);
             ExpandedChanged.Raise(this);
         }
         return default;
@@ -86,7 +87,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
         container.pszCollapsedControlText = _colllapsedControlText;
         container.pszExpandedControlText = _expandedControlText;
         container.pszExpandedInformation = _expandedInformation;
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, StartsExpanded);
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }
 

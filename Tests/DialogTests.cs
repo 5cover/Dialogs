@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using Scover.Dialogs;
 using Scover.Dialogs.Parts;
-using Vanara.PInvoke;
 
 namespace Tests;
 
@@ -30,7 +29,7 @@ public sealed class DialogTests
                 CollapseButtonText = "Custom Collapse",
                 ExpandButtonText = "Custom Expand",
                 ExpanderPosition = ExpanderPosition.BelowFooter,
-                StartsExpanded = true
+                IsExpanded = true
             },
             FooterIcon = DialogIcon.Information,
             Icon = DialogIcon.ShieldWarningYellowBar,
@@ -50,7 +49,6 @@ public sealed class DialogTests
         };
         Dialog dlg = new(page);
         _ = dlg.Show();
-        AssertYes("Was the dialog shown properly?");
     }
 
     [Test]
@@ -68,17 +66,14 @@ public sealed class DialogTests
         verification.Checked += (s, e) => page.Close();
         Dialog dlg = new(page);
         _ = dlg.Show();
-        AssertYes("Was the dialog closed?");
     }
 
     [Test]
-    public void TestCommandLinksAndLongContent()
+    public void TestCommandLinks()
     {
         Dialog dlg = new(new()
         {
-            Content = @"This is a very long content. Ensure that it is displayed properly and that you can see the 'END' token.
-Content text, Content text, Content text, Content text, Content text, Content text, Content text, Content text, Content text, Content text, Content text, Content text.
-END",
+            Content = "Assert that the command links are displayed properly.",
             Buttons = new CommandLinkCollection()
             {
                 "Command link #1",
@@ -87,10 +82,9 @@ END",
                 new Button("Command link #4 (admin)") { RequiresElevation = true },
                 new Button("Command link #5 (admin && disabled)") { IsEnabled = false, RequiresElevation = true },
             },
-            WindowTitle = nameof(TestCommandLinksAndLongContent),
+            WindowTitle = nameof(TestCommandLinks),
         });
         _ = dlg.Show();
-        AssertYes("Were strings and command links shown properly?");
     }
 
     [Test]
@@ -98,7 +92,6 @@ END",
     {
         Dialog dlg = new(new());
         _ = dlg.Show();
-        AssertYes("Was the page shown properly?");
     }
 
     [Test]
@@ -117,8 +110,8 @@ END",
         radioButtons.DefaultItem = defaultRadioButton;
         Dialog dlg = new(new()
         {
+            Content = "Assert that the radio buttons are displayed properly.",
             RadioButtons = radioButtons,
-            MainInstruction = "Radio instruction",
             Buttons = new ButtonCollection()
             {
                 Button.OK,
@@ -127,9 +120,5 @@ END",
             WindowTitle = nameof(TestRadioButtons),
         });
         _ = dlg.Show();
-        AssertYes("Were the radio buttons shown properly?");
     }
-
-    private static void AssertYes(string message)
-        => Assert.That(User32.MessageBox(HWND.HWND_TOP, message, null, User32.MB_FLAGS.MB_YESNO), Is.EqualTo(User32.MB_RESULT.IDYES));
 }
