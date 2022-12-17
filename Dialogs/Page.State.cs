@@ -15,11 +15,8 @@ public partial class Page
         get => _wrap.Content;
         set
         {
-            if (Content != value)
-            {
-                _wrap.Content = value;
-                RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_CONTENT, _wrap.pszContent);
-            }
+            _wrap.Content = value;
+            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_CONTENT, _wrap.pszContent);
         }
     }
 
@@ -30,14 +27,11 @@ public partial class Page
         get => _footerIcon;
         set
         {
-            if (FooterIcon != value)
-            {
-                _footerIcon = value;
-                var icon = value.GetNative();
-                _wrap.footerIcon = icon.Handle;
-                _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, icon.IsHICON);
-                _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, _wrap.footerIcon);
-            }
+            _footerIcon = value;
+            var icon = value.GetNative();
+            _wrap.footerIcon = icon.Handle;
+            _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, icon.IsHICON);
+            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, _wrap.footerIcon);
         }
     }
 
@@ -49,11 +43,8 @@ public partial class Page
         get => _wrap.Footer;
         set
         {
-            if (FooterText != value)
-            {
-                _wrap.Footer = value;
-                RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_FOOTER, _wrap.pszFooter);
-            }
+            _wrap.Footer = value;
+            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_FOOTER, _wrap.pszFooter);
         }
     }
 
@@ -64,14 +55,11 @@ public partial class Page
         get => _icon;
         set
         {
-            if (Icon != value)
-            {
-                _icon = value;
-                var icon = value.GetNative();
-                _wrap.mainIcon = icon.Handle;
-                _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, icon.IsHICON);
-                _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, _wrap.footerIcon);
-            }
+            _icon = value;
+            var icon = value.GetNative();
+            _wrap.mainIcon = icon.Handle;
+            _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, icon.IsHICON);
+            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, _wrap.footerIcon);
         }
     }
 
@@ -83,11 +71,8 @@ public partial class Page
         get => _wrap.MainInstruction;
         set
         {
-            if (MainInstruction != value)
-            {
-                _wrap.MainInstruction = value;
-                RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _wrap.pszMainInstruction);
-            }
+            _wrap.MainInstruction = value;
+            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _wrap.pszMainInstruction);
         }
     }
 }

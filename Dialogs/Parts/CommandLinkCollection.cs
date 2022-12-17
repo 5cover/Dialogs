@@ -2,7 +2,9 @@
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A collection of dialog command link button controls. This class cannot be inherited.</summary>
+/// <summary>
+/// A collection of dialog command link button controls. This class cannot be inherited. This class implements <see cref="IDisposable"/>.
+/// </summary>
 public sealed class CommandLinkCollection : CommitControlCollection
 {
     /// <summary>Gets or set whether a small arrow icon should be shown near the command links.</summary>

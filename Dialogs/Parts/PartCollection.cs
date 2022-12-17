@@ -1,25 +1,12 @@
 ﻿namespace Scover.Dialogs.Parts;
 
-internal sealed class PartCollection : IDisposable
+internal sealed class PartCollection
 {
     private readonly Dictionary<Type, object?> _parts = new();
 
     public event EventHandler<object?>? PartAdded;
 
     public event EventHandler<object?>? PartRemoved;
-
-    public void Dispose()
-    {
-        foreach (var disposable in _parts.Values.OfType<IDisposable>())
-        {
-            disposable?.Dispose();
-        }
-        foreach (var part in _parts.Values)
-        {
-            OnPartRemoved(part);
-        }
-        _parts.Clear();
-    }
 
     public T? GetPart<T>() => (T?)_parts.GetValueOrDefault(typeof(T));
 
@@ -30,7 +17,6 @@ internal sealed class PartCollection : IDisposable
         if (_parts.GetValueOrDefault(typeof(T)) is { } oldPart)
         {
             OnPartRemoved(oldPart);
-            (oldPart as IDisposable)?.Dispose();
         }
 
         _parts[typeof(T)] = value;

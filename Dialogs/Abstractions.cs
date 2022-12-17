@@ -16,6 +16,7 @@ internal interface ILayoutProvider<TContainer>
 internal interface INativeProvider<TNative>
 {
     /// <summary>Gets a native representation of this object.</summary>
+    /// <remarks>It is owned by the parent object; do not dispose of it.</remarks>
     TNative GetNative();
 }
 

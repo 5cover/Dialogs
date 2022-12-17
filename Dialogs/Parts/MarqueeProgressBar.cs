@@ -20,25 +20,22 @@ public sealed class MarqueeProgressBar : ProgressBarBase
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value is less than or equal to zero");
             }
-            if (value != Speed)
-            {
-                _speed = value;
-                RequestSpeedUpdate();
-            }
+            _speed = value;
+            RequestSpeedUpdate();
         }
     }
 
     private protected override void InitializeState()
     {
-        OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, true));
-        if (Speed != DefaultSpeed)
-        {
-            RequestSpeedUpdate();
-        }
+        RequestSpeedUpdate();
+        base.InitializeState();
     }
 
     private protected override void SetIn(in TASKDIALOGCONFIG container)
-        => container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, true);
+    {
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, true);
+        OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, true));
+    }
 
     private void RequestSpeedUpdate()
         => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, Speed));

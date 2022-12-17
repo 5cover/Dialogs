@@ -4,7 +4,9 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs;
 
 // Layout properties can only be set before the dialog is shown and cannot be updated at showtime. However, they still represent
-// the state of the dialog at showtime. Therefore another page must be navigated to in the dialog to change these properties at showtime.
+// the state of the dialog at showtime. Therefore another page must be navigated to in the dialog to change these properties at
+// showtime. Disposable layout is disposed in Dispose, because it is owned by the page. State is not owned (like Icons) so it is
+// not disposed.
 
 public partial class Page
 {
@@ -33,7 +35,10 @@ public partial class Page
     }
 
     /// <summary>Gets the commit control collection.</summary>
-    /// <remarks>If the value is <see langword="null"/>, the <see cref="Button.OK"/> button will be shown by default.</remarks>
+    /// <remarks>
+    /// If the value is <see langword="null"/>, the <see cref="Button.OK"/> button will be shown by default. The referenced
+    /// object is disposed with the page.
+    /// </remarks>
     /// <value>The collection of all the commit controls, buttons or command links. Default value is <see langword="null"/>.</value>
     public CommitControlCollection? Buttons
     {
@@ -42,7 +47,10 @@ public partial class Page
     }
 
     /// <summary>Gets the expander.</summary>
-    /// <value>The expander area or <see langword="null"/> if it is not defined. Default value is <see langword="null"/>.</value>
+    /// <value>
+    /// The expander area or <see langword="null"/> if it is not defined. Default value is <see langword="null"/>. The
+    /// referenced object is disposed with the page.
+    /// </value>
     public Expander? Expander
     {
         get => _parts.GetPart<Expander>();
@@ -91,7 +99,9 @@ public partial class Page
     }
 
     /// <summary>Gets the radio button list</summary>
-    /// <remarks>If the value is <see langword="null"/>, no radio button will be shown.</remarks>
+    /// <remarks>
+    /// If the value is <see langword="null"/>, no radio button will be shown. The referenced object is disposed with the page.
+    /// </remarks>
     /// <value>The list of all the radio buttons. Default value is <see langword="null"/>.</value>
     public RadioButtonCollection? RadioButtons
     {
@@ -108,7 +118,7 @@ public partial class Page
     }
 
     /// <summary>Gets the verification.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no verification will be shown</remarks>
+    /// <remarks>If the value is <see langword="null"/>, no verification will be shown.</remarks>
     /// <value>The verification of the page. Default value is <see langword="null"/>.</value>
     public Verification? Verification
     {

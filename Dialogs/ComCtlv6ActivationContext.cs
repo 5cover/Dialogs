@@ -93,7 +93,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
             }
             catch (Exception e) when (e is UnauthorizedAccessException or IOException)
             {
-                // We tried to be tidy but something blocked us :(
+                // This is fine.
             }
 
             // If we return false, we'll try again on the next call into EnsureActivateContextCreated(), which is fine.

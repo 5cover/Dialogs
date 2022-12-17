@@ -10,6 +10,7 @@ namespace Scover.Dialogs;
 public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposable
 {
     private readonly PartCollection _parts = new();
+    private readonly Queue<Action<PageUpdate>> _pendingUpdates = new();
     private readonly TASKDIALOGCONFIG _wrap = new();
     private DialogIcon _footerIcon = DialogIcon.None;
     private DialogIcon _icon = DialogIcon.None;
@@ -18,7 +19,7 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     /// <summary>Initializes a new instance of the <see cref="Page"/> class.</summary>
     public Page()
     {
-        _wrap.pfCallbackProc += Callback;
+        _wrap.pfCallbackProc = Callback;
         _parts.PartAdded += (s, part) =>
         {
             if (part is IUpdateRequester<PageUpdate> ur)
@@ -34,7 +35,17 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
             }
         };
 
-        void Update(object? sender, Action<PageUpdate> update) => update(new(OwnerDialog));
+        void Update(object? sender, Action<PageUpdate> update)
+        {
+            if (OwnerDialog.IsNull)
+            {
+                _pendingUpdates.Enqueue(update);
+            }
+            else
+            {
+                update(new(OwnerDialog));
+            }
+        }
     }
 
     /// <summary>Event raised when a button is clicked.</summary>
@@ -55,7 +66,7 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
 
-    internal HWND OwnerDialog { get; private set; } = HWND.NULL;
+    internal HWND OwnerDialog { get; private set; }
 
     /// <summary>Closes the page.</summary>
     public void Close()
@@ -68,13 +79,22 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     /// <inheritdoc/>
     public void Dispose()
     {
-        StringHelper.FreeString(_wrap.pszContent, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszMainInstruction, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszFooter, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszWindowTitle, CharSet.Unicode);
-        // _parts.Dispose(); // todo : NOOOOO - IF A PART IS REFERENCED IN ANOTHER DIALOG EVERYTING WILL BURN EVERY PART CAN BE
-        // SHARED - Buttons, CommitControlCollections, Areas Represent this behavior using interfaces. Page doesn't OWN its
-        // parts. It only USES them. Page is a CLIENT. A client doesn't dispose of the data he's given, that's rude and evil.
+        FreeString(ref _wrap.pszWindowTitle);
+        FreeString(ref _wrap.pszMainInstruction);
+        FreeString(ref _wrap.pszContent);
+        FreeString(ref _wrap.pszVerificationText);
+        FreeString(ref _wrap.pszExpandedControlText);
+        FreeString(ref _wrap.pszCollapsedControlText);
+        FreeString(ref _wrap.pszFooter);
+        Buttons?.Dispose();
+        Expander?.Dispose();
+        RadioButtons?.Dispose();
+
+        static void FreeString(ref nint ptr)
+        {
+            StringHelper.FreeString(ptr, CharSet.Unicode);
+            ptr = IntPtr.Zero;
+        }
     }
 
     TASKDIALOGCONFIG INativeProvider<TASKDIALOGCONFIG>.GetNative() => _wrap;
@@ -85,6 +105,14 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)
     {
         OwnerDialog = hwnd;
+
+        if (!hwnd.IsNull)
+        {
+            while (_pendingUpdates.Any())
+            {
+                _pendingUpdates.Dequeue()(new(OwnerDialog));
+            }
+        }
 
         switch (id)
         {
@@ -134,9 +162,9 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 break;
 
             case TaskDialogNotification.TDN_DIALOG_CONSTRUCTED:
-                foreach (var si in _parts.GetParts<IStateInitializer>())
+                foreach (var stateInitializer in _parts.GetParts<IStateInitializer>())
                 {
-                    si.InitializeState();
+                    stateInitializer.InitializeState();
                 }
                 break;
 

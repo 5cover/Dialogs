@@ -4,12 +4,11 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A dialog expander control. This class cannot be inherited.</summary>
-public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler, IDisposable
+/// <summary>A dialog expander control. This class cannot be inherited. This class implements <see cref="IDisposable"/>.</summary>
+public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler, IStateInitializer, IDisposable
 {
-    private SafeLPWSTR _colllapsedControlText = SafeLPWSTR.Null;
-    private SafeLPWSTR _expandedControlText = SafeLPWSTR.Null;
-    private SafeLPWSTR _expandedInformation = SafeLPWSTR.Null;
+    // A default value is needed for the expander to be initialized in the config.
+    private SafeLPWSTR _expandedInformation = new(" ");
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
     public event EventHandler? ExpandedChanged;
@@ -21,20 +20,12 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     /// <summary>Gets the expander collapse button text.</summary>
     /// <remarks>If the value is <see langword="null"/>, the text "Collapse" will be shown near the collapse button.</remarks>
     /// <value>The text to show near the collapse button of the expander. Default value is <see langword="null"/>.</value>
-    public string? CollapseButtonText
-    {
-        get => _expandedControlText;
-        init => _expandedControlText = _expandedControlText.SetAlloc(value);
-    }
+    public string? CollapseButtonText { get; init; }
 
     /// <summary>Gets the expander expand button text.</summary>
     /// <remarks>If the value is <see langword="null"/>, the text "Expand" will be shown near the expand button.</remarks>
     /// <value>The text to show near the expand button of the expander. Default value is <see langword="null"/>.</value>
-    public string? ExpandButtonText
-    {
-        get => _colllapsedControlText;
-        init => _colllapsedControlText = _colllapsedControlText.SetAlloc(value);
-    }
+    public string? ExpandButtonText { get; init; }
 
     /// <summary>Gets or sets the expanded information.</summary>
     /// <remarks>If the value is <see langword="null"/>, no text will be shown in the expanded area.</remarks>
@@ -44,11 +35,9 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
         get => _expandedInformation;
         set
         {
-            if (ExpandedInformation != value)
-            {
-                _expandedInformation = _expandedInformation.SetAlloc(value);
-                OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _expandedInformation));
-            }
+            _expandedInformation.Dispose();
+            _expandedInformation = new(value!);
+            RequestExpandedInformationUpdate();
         }
     }
 
@@ -65,12 +54,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     public bool IsExpanded { get; set; }
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
-        _colllapsedControlText.Dispose();
-        _expandedControlText.Dispose();
-        _expandedInformation.Dispose();
-    }
+    public void Dispose() => _expandedInformation.Dispose();
 
     HRESULT INotificationHandler.HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
     {
@@ -82,14 +66,18 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
         return default;
     }
 
+    void IStateInitializer.InitializeState() => RequestExpandedInformationUpdate();
+
     void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
     {
-        container.pszCollapsedControlText = _colllapsedControlText;
-        container.pszExpandedControlText = _expandedControlText;
+        (container.CollapsedControlText, container.ExpandedControlText) = (ExpandButtonText, CollapseButtonText);
         container.pszExpandedInformation = _expandedInformation;
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }
 
     private void OnUpdateRequested(Action<PageUpdate> update) => UpdateRequested?.Invoke(this, update);
+
+    private void RequestExpandedInformationUpdate()
+        => OnUpdateRequested(update => _ = update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _expandedInformation.DangerousGetHandle()));
 }

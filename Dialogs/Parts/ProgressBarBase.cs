@@ -23,31 +23,20 @@ public abstract class ProgressBarBase : ILayoutProvider<TASKDIALOGCONFIG>, IUpda
         get => _state;
         set
         {
-            if (value != State)
-            {
-                _state = value;
-                RequestStateUpdate();
-            }
+            _state = value;
+            RequestStateUpdate();
         }
     }
 
-    void IStateInitializer.InitializeState()
-    {
-        if (State != DefaultState)
-        {
-            RequestStateUpdate();
-        }
-        InitializeState();
-    }
+    void IStateInitializer.InitializeState() => InitializeState();
 
     void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container) => SetIn(container);
 
-    private protected abstract void InitializeState();
+    private protected virtual void InitializeState() => RequestStateUpdate();
 
     private protected void OnUpdateRequested(Action<PageUpdate> update) => UpdateRequested?.Invoke(this, update);
 
     private protected abstract void SetIn(in TASKDIALOGCONFIG container);
 
-    private void RequestStateUpdate()
-        => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, _state));
+    private void RequestStateUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, _state));
 }

@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using Vanara.Extensions;
-using Vanara.InteropServices;
 using Vanara.PInvoke;
 
 namespace Scover.Dialogs;
@@ -31,20 +30,7 @@ internal static class Extensions
         => User32.SendMessage(hwnd, msg.ToUInt32(CultureInfo.InvariantCulture), wParam, lParam);
 
     public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
-        => EnumExtensions.SetFlags(ref value, flag, isSet);
-
-    public static SafeLPWSTR SetAlloc(this SafeLPWSTR str, string? value)
-    {
-        if (str.IsNull && value is not null)
-        {
-            return new SafeLPWSTR(value);
-        }
-        else
-        {
-            str.Set(value);
-            return str;
-        }
-    }
+            => EnumExtensions.SetFlags(ref value, flag, isSet);
 
     private static nint ToNint<T>(this T val) where T : IConvertible => (nint)val.ToInt64(CultureInfo.InvariantCulture);
 }

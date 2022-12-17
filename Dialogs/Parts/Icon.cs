@@ -12,7 +12,7 @@ public sealed class DialogIcon : INativeProvider<NativeIcon>
     private readonly NativeIcon _icon;
 
     /// <summary>Initializes a new instance of the <see cref="DialogIcon"/> class.</summary>
-    /// <remarks>The caller is responsible for freeing the icon resource</remarks>
+    /// <remarks>The caller is responsible for freeing the icon resource.</remarks>
     /// <param name="handle">The icon handle to use.</param>
     public DialogIcon(nint handle) => _icon = new(true, handle);
 

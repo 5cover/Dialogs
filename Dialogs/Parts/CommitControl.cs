@@ -7,7 +7,7 @@ public abstract class CommitControl : IUpdateRequester<IdControlUpdate>, IStateI
 {
     private bool _isEnabled = true;
 
-    private bool _showShieldIcon;
+    private bool _requiresElevation;
 
     event EventHandler<Action<IdControlUpdate>>? IUpdateRequester<IdControlUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
     private event EventHandler<Action<IdControlUpdate>>? UpdateRequested;
@@ -18,25 +18,19 @@ public abstract class CommitControl : IUpdateRequester<IdControlUpdate>, IStateI
         get => _isEnabled;
         set
         {
-            if (_isEnabled != value)
-            {
-                _isEnabled = value;
-                RequestShowShieldIconUpdate();
-            }
+            _isEnabled = value;
+            RequestIsEnabledUpdate();
         }
     }
 
     /// <summary>Gets or sets whether an User Account Control (UAC) shield icon is displayed near the commit control.</summary>
     public bool RequiresElevation
     {
-        get => _showShieldIcon;
+        get => _requiresElevation;
         set
         {
-            if (_showShieldIcon != value)
-            {
-                _showShieldIcon = value;
-                RequestIsEnabledUpdate();
-            }
+            _requiresElevation = value;
+            RequestElevationUpdate();
         }
     }
 
@@ -45,13 +39,13 @@ public abstract class CommitControl : IUpdateRequester<IdControlUpdate>, IStateI
 
     void IStateInitializer.InitializeState()
     {
+        RequestElevationUpdate();
         RequestIsEnabledUpdate();
-        RequestShowShieldIconUpdate();
     }
 
     private protected void OnUpdateRequested(Action<IdControlUpdate> update) => UpdateRequested?.Invoke(this, update);
 
-    private void RequestIsEnabledUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_BUTTON, update.ControlId, _isEnabled));
+    private void RequestElevationUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, update.ControlId, _requiresElevation));
 
-    private void RequestShowShieldIconUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, update.ControlId, _showShieldIcon));
+    private void RequestIsEnabledUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_BUTTON, update.ControlId, _isEnabled));
 }

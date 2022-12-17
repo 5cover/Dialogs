@@ -4,7 +4,7 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog radio button control. This class cannot be inherited.</summary>
-public sealed class RadioButton : IUpdateRequester<IdControlUpdate>, INativeProvider<string>, IStateInitializer, INotificationHandler
+public sealed class RadioButton : IUpdateRequester<IdControlUpdate>, INativeProvider<string>, INotificationHandler
 {
     private bool _isEnabled = true;
 
@@ -23,11 +23,8 @@ public sealed class RadioButton : IUpdateRequester<IdControlUpdate>, INativeProv
         get => _isEnabled;
         set
         {
-            if (_isEnabled != value)
-            {
-                _isEnabled = value;
-                RequestIsEnabledUpdate();
-            }
+            _isEnabled = value;
+            OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, update.ControlId, _isEnabled));
         }
     }
 
@@ -48,9 +45,5 @@ public sealed class RadioButton : IUpdateRequester<IdControlUpdate>, INativeProv
         return default;
     }
 
-    void IStateInitializer.InitializeState() => RequestIsEnabledUpdate();
-
     private void OnUpdateRequested(Action<IdControlUpdate> update) => UpdateRequested?.Invoke(this, update);
-
-    private void RequestIsEnabledUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, update.ControlId, _isEnabled));
 }

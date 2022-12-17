@@ -5,12 +5,11 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A collection of objects with IDs.</summary>
+/// <summary>A collection of objects with IDs. This class implements <see cref="IDisposable"/>.</summary>
 public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, IStateInitializer, IDisposable where T : notnull
 {
-    private readonly List<SafeLPWSTR> _nativeButtonTexts = new();
-    private SafeNativeArray<TASKDIALOG_BUTTON>? _customButtonArray;
     private T? _defaultItem;
+    private GenericSafeHandle? _native;
     event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
     private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
@@ -22,7 +21,7 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
         {
             if (value is not null && !Contains(value))
             {
-                throw new ArgumentException($"Collection doesn not contain value");
+                throw new ArgumentException($"Collection does not contain value.");
             }
             _defaultItem = value;
         }
@@ -31,46 +30,51 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
     /// <inheritdoc/>
     public virtual void Dispose()
     {
-        foreach (var text in _nativeButtonTexts)
-        {
-            text.Dispose();
-        }
-        _nativeButtonTexts.Clear();
-        _customButtonArray?.Dispose();
+        _native?.Dispose();
         GC.SuppressFinalize(this);
     }
 
     void IStateInitializer.InitializeState()
     {
-        foreach (var item in Items.OfType<IStateInitializer>())
+        foreach (var stateInitializer in Items.OfType<IStateInitializer>())
         {
-            item.InitializeState();
+            stateInitializer.InitializeState();
         }
     }
 
     void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
     {
-        _customButtonArray?.Dispose();
+        foreach (var layoutProvider in Items.OfType<ILayoutProvider<TASKDIALOGCONFIG>>())
+        {
+            layoutProvider.SetIn(container);
+        }
 
-        var customButtons = Items.OfType<INativeProvider<string>>().Select((item, index) =>
+        List<SafeLPWSTR> nativeButtonTexts = new();
+        SafeNativeArray<TASKDIALOG_BUTTON>? customButtonArray;
+
+        customButtonArray = new(Items.OfType<INativeProvider<string>>().Select((item, index) =>
         {
             SafeLPWSTR text = new(item.GetNative());
-            _nativeButtonTexts.Add(text);
+            nativeButtonTexts.Add(text);
             return new TASKDIALOG_BUTTON
             {
                 pszButtonText = text,
                 nButtonID = GetId(index)
             };
-        }).ToArray();
+        }).ToArray());
 
-        _customButtonArray = new(customButtons);
-
-        foreach (var lp in Items.OfType<ILayoutProvider<TASKDIALOGCONFIG>>())
+        _native?.Dispose();
+        _native = new(customButtonArray, _ =>
         {
-            lp.SetIn(container);
-        }
+            customButtonArray.Dispose();
+            foreach (var text in nativeButtonTexts)
+            {
+                text.Dispose();
+            }
+            return true;
+        });
 
-        SetContainerProperties(container, _customButtonArray, (uint)customButtons.Length, DefaultItem is null ? -1 : GetId(IndexOf(DefaultItem)));
+        SetContainerProperties(container, customButtonArray, (uint)customButtonArray.Count, DefaultItem is null ? 0 : GetId(IndexOf(DefaultItem)));
     }
 
     internal virtual T? GetControlFromId(int id) => id == 0 ? default : Items[GetIndex(id)];
@@ -85,9 +89,9 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
         base.ClearItems();
     }
 
-    private protected virtual int GetId(int index) => index;
+    private protected virtual int GetId(int index) => index + 1;
 
-    private protected virtual int GetIndex(int id) => id;
+    private protected virtual int GetIndex(int id) => id - 1;
 
     /// <inheritdoc/>
     protected override void InsertItem(int index, T item)
