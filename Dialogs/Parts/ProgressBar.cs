@@ -45,7 +45,7 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
         get => _maximum;
         set
         {
-            _maximum = checked((ushort)value);
+            _maximum = checked((ushort)Math.Max(Value, value));
             RequestRangeUpdate();
         }
     }
@@ -58,8 +58,9 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
         get => _minimum;
         set
         {
-            _minimum = checked((ushort)value);
+            _minimum = checked((ushort)Math.Min(Value, value));
             RequestRangeUpdate();
+            RequestValueUpdate(); // Needed for some reason.
         }
     }
 
