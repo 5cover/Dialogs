@@ -1,3 +1,4 @@
+using System.Text;
 using NUnit.Framework;
 using Scover.Dialogs;
 using Scover.Dialogs.Parts;
@@ -82,26 +83,36 @@ public sealed class DialogTests
     public void TestProgressBar()
     {
         Button
-            minAdd10 = new("Min + 10"),
-            minSubstract10 = new("Min - 10"),
-            maxAdd10 = new("Max + 10"),
-            maxSubstract10 = new("Max - 10"),
-            valueAdd10 = new("Value + 10"),
-            valueSubstract10 = new("Value - 10");
+            minPlus10 = new("Min + 10"),
+            minMinus10 = new("Min - 10"),
+            maxPlus10 = new("Max + 10"),
+            maxMinus10 = new("Max - 10"),
+            valuePlus10 = new("Value + 10"),
+            valueMinus10 = new("Value - 10"),
+            toggleMode = new("Toggle mode"),
+            cycleState = new("Cycle state"),
+            speedPlus1 = new("Speed + 1"),
+            speedMinus1 = new("Speed - 1");
         using Page page = new()
         {
-            Content = "Assert that the progress bar is displayed properly.",
+            Content = "Assert that the progress bar behaves properly.",
             Buttons = new ButtonCollection()
             {
-                minAdd10,
-                minSubstract10,
-                maxAdd10,
-                maxSubstract10,
-                valueAdd10,
-                valueSubstract10,
+                minPlus10,
+                minMinus10,
+                maxPlus10,
+                maxMinus10,
+                valuePlus10,
+                valueMinus10,
+                toggleMode,
+                cycleState,
+                speedPlus1,
+                speedMinus1
             },
-            Expander = new() { IsExpanded = true, ExpandedInformation = "in ur face" },
+            Sizing = Sizing.FromWidth(200),
+            Expander = new() { IsExpanded = true },
             IsCancelable = true,
+            IsMinimizable = true,
             ProgressBar = new(),
             WindowTitle = nameof(TestProgressBar),
         };
@@ -114,29 +125,51 @@ public sealed class DialogTests
         page.ButtonClicked += (s, e) =>
         {
             e.Cancel = true;
-            if (minAdd10.Equals(e.ClickedControl))
+            if (minPlus10.Equals(e.ClickedControl))
             {
                 pb.Minimum += 10;
             }
-            else if (minSubstract10.Equals(e.ClickedControl))
+            else if (minMinus10.Equals(e.ClickedControl))
             {
                 pb.Minimum -= 10;
             }
-            else if (maxAdd10.Equals(e.ClickedControl))
+            else if (maxPlus10.Equals(e.ClickedControl))
             {
                 pb.Maximum += 10;
             }
-            else if (maxSubstract10.Equals(e.ClickedControl))
+            else if (maxMinus10.Equals(e.ClickedControl))
             {
                 pb.Maximum -= 10;
             }
-            else if (valueAdd10.Equals(e.ClickedControl))
+            else if (valuePlus10.Equals(e.ClickedControl))
             {
                 pb.Value += 10;
             }
-            else if (valueSubstract10.Equals(e.ClickedControl))
+            else if (valueMinus10.Equals(e.ClickedControl))
             {
                 pb.Value -= 10;
+            }
+            else if (toggleMode.Equals(e.ClickedControl))
+            {
+                pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
+            }
+            else if (cycleState.Equals(e.ClickedControl))
+            {
+                pb.State = pb.State switch
+                {
+                    ProgressBarState.Error => ProgressBarState.Normal,
+                    ProgressBarState.Normal => ProgressBarState.Paused,
+                    ProgressBarState.Paused => ProgressBarState.Error,
+                    _ => throw new ArgumentException()
+                };
+            }
+            else if (speedPlus1.Equals(e.ClickedControl))
+            {
+                pb.MarqueeSpeed++;
+            }
+            else if (speedMinus1.Equals(e.ClickedControl))
+            {
+                pb.MarqueeSpeed--;
             }
             else
             {
@@ -148,18 +181,22 @@ public sealed class DialogTests
         };
         _ = new Dialog(page).Show();
 
-        void UpdateExpandedInfo() => page.Expander.ExpandedInformation = @$"{nameof(ProgressBar.Minimum)} = {page.ProgressBar.Minimum}
-{nameof(ProgressBar.Maximum)} = {page.ProgressBar.Maximum}
-{nameof(ProgressBar.Value)} = {page.ProgressBar.Value}";
+        void UpdateExpandedInfo() => page.Expander.ExpandedInformation = new StringBuilder()
+            .AppendLine($"{nameof(pb.Mode)} = {pb.Mode}")
+            .AppendLine($"{nameof(pb.State)} = {pb.State}")
+            .AppendLine($"{nameof(pb.Minimum)} = {pb.Minimum}")
+            .AppendLine($"{nameof(pb.Maximum)} = {pb.Maximum}")
+            .AppendLine($"{nameof(pb.Value)} = {pb.Value}")
+            .AppendLine($"{nameof(pb.MarqueeSpeed)} = {pb.MarqueeSpeed}")
+            .ToString();
 
         void EnableDisable()
         {
-            minAdd10.IsEnabled = pb.Minimum < ushort.MaxValue;
-            minSubstract10.IsEnabled = pb.Minimum > 0;
-            maxAdd10.IsEnabled = pb.Maximum < ushort.MaxValue;
-            maxSubstract10.IsEnabled = pb.Maximum > 0;
-            valueAdd10.IsEnabled = pb.Value < ushort.MaxValue;
-            valueSubstract10.IsEnabled = pb.Value > 0;
+            minPlus10.IsEnabled = pb.Minimum < ushort.MaxValue;
+            minMinus10.IsEnabled = pb.Minimum > 0;
+            maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
+            maxMinus10.IsEnabled = pb.Maximum > 0;
+            speedMinus1.IsEnabled = pb.MarqueeSpeed > 1;
         }
     }
 

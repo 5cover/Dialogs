@@ -3,10 +3,16 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-// State properties can be modified at anytime. When set to a different value, they raise the UpdateRequest event.
+// State properties can be set at anytime. Disposable state properties are not disposed because they are not considered to be
+// owned by the page.
+
+// State is { get; set; }
 
 public partial class Page
 {
+    private DialogIcon _footerIcon = DialogIcon.None;
+    private DialogIcon _icon = DialogIcon.None;
+
     /// <summary>Gets or sets the content.</summary>
     /// <remarks>If the value is <see langword="null"/>, no text will be show in the content area.</remarks>
     /// <value>The text shown in the content area. Default value is <see langword="null"/>.</value>
@@ -16,21 +22,19 @@ public partial class Page
         set
         {
             _wrap.Content = value;
-            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_CONTENT, _wrap.pszContent);
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, _wrap.pszContent);
         }
     }
 
     /// <summary>Gets or sets the footer icon.</summary>
-    /// <value>The handle of the icon to show in the footer area of the page. Default value is <see langword="null"/>.</value>
+    /// <value>The handle of the icon to show in the footer area of the page. Default value is <see cref="DialogIcon.None"/>.</value>
     public DialogIcon FooterIcon
     {
         get => _footerIcon;
         set
         {
             _footerIcon = value;
-            var icon = value.GetNative();
-            _wrap.footerIcon = icon.Handle;
-            _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, icon.IsHICON);
+            value.SetFooterIcon(_wrap);
             _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, _wrap.footerIcon);
         }
     }
@@ -44,21 +48,19 @@ public partial class Page
         set
         {
             _wrap.Footer = value;
-            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_FOOTER, _wrap.pszFooter);
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, _wrap.pszFooter);
         }
     }
 
     /// <summary>Gets or sets the icon.</summary>
-    /// <value>The handle of the icon to show in the content area of the page. Default value is <see langword="null"/>.</value>
+    /// <value>The handle of the icon to show in the content area of the page. Default value is <see cref="DialogIcon.None"/>.</value>
     public DialogIcon Icon
     {
         get => _icon;
         set
         {
             _icon = value;
-            var icon = value.GetNative();
-            _wrap.mainIcon = icon.Handle;
-            _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, icon.IsHICON);
+            value.SetMainIcon(_wrap);
             _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, _wrap.footerIcon);
         }
     }
@@ -72,7 +74,16 @@ public partial class Page
         set
         {
             _wrap.MainInstruction = value;
-            RequestTextUpdate(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _wrap.pszMainInstruction);
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _wrap.pszMainInstruction);
         }
+    }
+
+    /// <summary>Gets the progress bar.</summary>
+    /// <remarks>If the value is <see langword="null"/>, no progress bar will be shown.</remarks>
+    /// <value>The progress bar of the page. Default value is <see langword="null"/>.</value>
+    public ProgressBar? ProgressBar
+    {
+        get => _parts.GetPart<ProgressBar>();
+        set => _parts.SetPart(_wrap, value);
     }
 }

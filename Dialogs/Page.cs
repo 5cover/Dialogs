@@ -16,8 +16,6 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     private readonly PartCollection _parts = new();
     private readonly Queue<Action<PageUpdate>> _pendingUpdates = new();
     private readonly TASKDIALOGCONFIG _wrap = new();
-    private DialogIcon _footerIcon = DialogIcon.None;
-    private DialogIcon _icon = DialogIcon.None;
     private bool _ignoreButtonClicked;
 
     /// <summary>Initializes a new instance of the <see cref="Page"/> class.</summary>
@@ -175,6 +173,6 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
         return _parts.GetParts<INotificationHandler>().Select(sr => sr.HandleNotification(id, wParam, lParam)).SingleOrDefault(h => h != default);
     }
 
-    private void RequestTextUpdate(TASKDIALOG_ELEMENTS element, nint pszText)
+    private void SetElementText(TASKDIALOG_ELEMENTS element, nint pszText)
             => _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, element, pszText);
 }

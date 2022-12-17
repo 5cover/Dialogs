@@ -8,7 +8,7 @@ namespace Scover.Dialogs.Parts;
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
 public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler, IStateInitializer, IDisposable
 {
-    // A default value is needed for the expander to be initialized in the config.
+    // An initial value is needed for the expander to be visible.
     private SafeLPWSTR _expandedInformation = new(" ");
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
@@ -37,7 +37,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
         set
         {
             _expandedInformation.Dispose();
-            _expandedInformation = new(value!);
+            _expandedInformation = new(value!); // !: null is supported in base constructor
             RequestExpandedInformationUpdate();
         }
     }
@@ -71,8 +71,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
 
     void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
     {
-        (container.CollapsedControlText, container.ExpandedControlText) = (ExpandButtonText, CollapseButtonText);
-        container.pszExpandedInformation = _expandedInformation;
+        (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _expandedInformation);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }

@@ -3,10 +3,12 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-// Layout properties can only be set before the dialog is shown and cannot be updated at showtime. However, they still represent
-// the state of the dialog at showtime. Therefore another page must be navigated to in the dialog to change these properties at
-// showtime. Disposable layout is disposed in Dispose, because it is owned by the page. State is not owned (like Icons) so it is
-// not disposed.
+// Layout properties can only be set during initialization using the object initializer syntax. However, they still follow the
+// state of the dialog at showtime. Another page must be navigated to in the containing dialog in order to change these
+// properties after initialization. Disposable layout properties are disposed, because they are considered to be owned by the page.
+
+// Layout is { get; init; }
+
 public partial class Page
 {
     /// <summary>Gets whether to enable hyperlinks</summary>
@@ -86,15 +88,6 @@ public partial class Page
     {
         get => _wrap.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT);
         init => _wrap.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT, value);
-    }
-
-    /// <summary>Gets the progress bar.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no progress bar will be shown.</remarks>
-    /// <value>The progress bar of the page. Default value is <see langword="null"/>.</value>
-    public ProgressBar? ProgressBar
-    {
-        get => _parts.GetPart<ProgressBar>();
-        set => _parts.SetPart(_wrap, value);
     }
 
     /// <summary>Gets the radio button list</summary>

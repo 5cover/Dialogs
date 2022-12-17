@@ -35,7 +35,7 @@ public class Dialog
             if (chooseNextPage(args.ClickedControl) is { } nextPage)
             {
                 args.Cancel = true;
-                _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, lParam: CurrentPage.GetNative().MarshalToPtr(Marshal.AllocHGlobal, out _));
+                _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, CurrentPage.GetNative().MarshalToPtr(Marshal.AllocHGlobal, out _));
                 CurrentPage = nextPage;
             }
         }

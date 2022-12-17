@@ -2,24 +2,23 @@
 
 namespace Scover.Dialogs.Parts;
 
-internal sealed record NativeIcon(bool IsHICON, nint Handle);
-
 /// <summary>An dialog icon control. Can be standard or custom.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
-public sealed class DialogIcon : INativeProvider<NativeIcon>
+public sealed class DialogIcon
 {
     // todo : bar composition (requires preemptive testing) (see in KPreisser)
 
-    private readonly NativeIcon _icon;
+    private readonly nint _handle;
+    private readonly bool isHIcon;
 
     /// <summary>Initializes a new instance of the <see cref="DialogIcon"/> class.</summary>
     /// <remarks>The caller is responsible for freeing the icon resource.</remarks>
     /// <param name="handle">The icon handle to use.</param>
-    public DialogIcon(nint handle) => _icon = new(true, handle);
+    public DialogIcon(nint handle) => (_handle, isHIcon) = (handle, true);
 
-    private DialogIcon(TaskDialogIcon icon) => _icon = new(false, (nint)icon);
+    private DialogIcon(TaskDialogIcon icon) => (_handle, isHIcon) = ((nint)icon, false);
 
-    private DialogIcon() => _icon = new(false, default);
+    private DialogIcon() => (_handle, isHIcon) = (default, false);
 
     /// <summary>Gets an icon consisting of a white X in a circle with a red background.</summary>
     public static DialogIcon Error { get; } = new(TaskDialogIcon.TD_ERROR_ICON);
@@ -59,5 +58,15 @@ public sealed class DialogIcon : INativeProvider<NativeIcon>
     /// <summary>Gets an icon consisting of a consisting of an exclamation point in a triangle with a yellow background.</summary>
     public static DialogIcon Warning { get; } = new(TaskDialogIcon.TD_WARNING_ICON);
 
-    NativeIcon INativeProvider<NativeIcon>.GetNative() => _icon;
+    internal void SetFooterIcon(in TASKDIALOGCONFIG container)
+    {
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, isHIcon);
+        container.footerIcon = _handle;
+    }
+
+    internal void SetMainIcon(in TASKDIALOGCONFIG container)
+    {
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, isHIcon);
+        container.mainIcon = _handle;
+    }
 }

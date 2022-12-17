@@ -23,10 +23,7 @@ internal static class Extensions
     public static nint SendMessage<TMsg, TWP>(this HWND hwnd, TMsg msg, TWP wParam, nint lParam = default) where TMsg : IConvertible where TWP : IConvertible
         => hwnd.SendMessage(msg, wParam.ToNint(), lParam);
 
-    public static nint SendMessage<TMsg, TLP>(this HWND hwnd, TMsg msg, nint wParam = default, TLP lParam = default) where TMsg : IConvertible where TLP : struct, IConvertible
-        => hwnd.SendMessage(msg, wParam, lParam.ToNint());
-
-    public static nint SendMessage<TMsg>(this HWND hwnd, TMsg msg, nint wParam = default, nint lParam = default) where TMsg : IConvertible
+    public static nint SendMessage<TMsg>(this HWND hwnd, TMsg msg, nint wParam, nint lParam) where TMsg : IConvertible
         => User32.SendMessage(hwnd, msg.ToUInt32(CultureInfo.InvariantCulture), wParam, lParam);
 
     public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
