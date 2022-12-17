@@ -6,8 +6,6 @@ namespace Scover.Dialogs.Parts;
 /// <summary>A collection of <see cref="CommitControl"/> objects. This class implements <see cref="IDisposable"/>.</summary>
 public abstract class CommitControlCollection : IdControlCollection<CommitControl>, INotificationHandler
 {
-    private protected virtual TASKDIALOG_FLAGS Flags { get; }
-
     HRESULT INotificationHandler.HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
     {
         if (id is TaskDialogNotification.TDN_BUTTON_CLICKED && GetControlFromId((int)wParam) is INotificationHandler notificationHandler)
@@ -24,8 +22,5 @@ public abstract class CommitControlCollection : IdControlCollection<CommitContro
     private protected override int GetIndex(int id) => base.GetIndex(id) - CommonButton.MaxId;
 
     private protected override void SetContainerProperties(in TASKDIALOGCONFIG container, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)
-    {
-        (container.pButtons, container.cButtons, container.nDefaultButton) = (nativeButtonArrayHandle, nativeButtonArrayCount, defaultItemId);
-        container.dwFlags |= Flags;
-    }
+        => (container.pButtons, container.cButtons, container.nDefaultButton) = (nativeButtonArrayHandle, nativeButtonArrayCount, defaultItemId);
 }

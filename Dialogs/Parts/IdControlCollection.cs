@@ -8,24 +8,24 @@ namespace Scover.Dialogs.Parts;
 /// <summary>A collection of objects with IDs. This class implements <see cref="IDisposable"/>.</summary>
 public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, IStateInitializer, IDisposable where T : notnull
 {
-    private T? _defaultItem;
     private GenericSafeHandle? _native;
+
+    private protected IdControlCollection(T? defaultItem = default)
+    {
+        if (defaultItem is not null && !Contains(defaultItem))
+        {
+            throw new ArgumentException($"Collection does not contain value.");
+        }
+        DefaultItem = defaultItem;
+    }
+
     event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
     private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
     /// <summary>Gets or sets the default item of this collection.</summary>
-    public T? DefaultItem
-    {
-        get => _defaultItem;
-        set
-        {
-            if (value is not null && !Contains(value))
-            {
-                throw new ArgumentException($"Collection does not contain value.");
-            }
-            _defaultItem = value;
-        }
-    }
+    public T? DefaultItem { get; }
+
+    private protected virtual TASKDIALOG_FLAGS Flags { get; }
 
     /// <inheritdoc/>
     public virtual void Dispose()
@@ -74,6 +74,7 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
             return true;
         });
 
+        container.dwFlags |= Flags;
         SetContainerProperties(container, customButtonArray, (uint)customButtonArray.Count, DefaultItem is null ? 0 : GetId(IndexOf(DefaultItem)));
     }
 

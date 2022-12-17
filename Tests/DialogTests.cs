@@ -158,10 +158,7 @@ public sealed class DialogTests
     [Test]
     public void TestRadioButtons()
     {
-        RadioButton defaultRadioButton = new("Radio #2 (default)")
-        {
-            IsEnabled = false
-        };
+        RadioButton defaultRadioButton = new("Radio #2 (default)");
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
@@ -170,7 +167,7 @@ public sealed class DialogTests
                 Button.OK,
                 Button.Cancel
             },
-            RadioButtons = new()
+            RadioButtons = new(defaultRadioButton)
             {
                 "Radio #1",
                 defaultRadioButton,
@@ -178,7 +175,6 @@ public sealed class DialogTests
             },
             WindowTitle = nameof(TestRadioButtons),
         };
-        page.RadioButtons.DefaultItem = defaultRadioButton;
         _ = new Dialog(page).Show();
     }
 }
