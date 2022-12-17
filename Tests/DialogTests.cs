@@ -1,4 +1,3 @@
-using System.Text;
 using NUnit.Framework;
 using Scover.Dialogs;
 using Scover.Dialogs.Parts;
@@ -181,14 +180,13 @@ public sealed class DialogTests
         };
         _ = new Dialog(page).Show();
 
-        void UpdateExpandedInfo() => page.Expander.ExpandedInformation = new StringBuilder()
-            .AppendLine($"{nameof(pb.Mode)} = {pb.Mode}")
-            .AppendLine($"{nameof(pb.State)} = {pb.State}")
-            .AppendLine($"{nameof(pb.Minimum)} = {pb.Minimum}")
-            .AppendLine($"{nameof(pb.Maximum)} = {pb.Maximum}")
-            .AppendLine($"{nameof(pb.Value)} = {pb.Value}")
-            .AppendLine($"{nameof(pb.MarqueeSpeed)} = {pb.MarqueeSpeed}")
-            .ToString();
+        void UpdateExpandedInfo() => page.Expander.ExpandedInformation = $@"
+{nameof(pb.Mode)} = {pb.Mode}
+{nameof(pb.State)} = {pb.State}
+{nameof(pb.Minimum)} = {pb.Minimum}
+{nameof(pb.Maximum)} = {pb.Maximum}
+{nameof(pb.Value)} = {pb.Value}
+{nameof(pb.MarqueeSpeed)} = {pb.MarqueeSpeed}";
 
         void EnableDisable()
         {
