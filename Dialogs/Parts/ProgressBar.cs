@@ -60,6 +60,7 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
         {
             _minimum = checked((ushort)Math.Min(Value, value));
             RequestRangeUpdate();
+            RequestValueUpdate(); // Needed for some reason.
         }
     }
 
