@@ -3,10 +3,10 @@
 namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog marquee progres bar control.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class MarqueeProgressBar : ProgressBarBase
 {
-    private const int DefaultSpeed = 30;
-    private int _speed = DefaultSpeed;
+    private int _speed = 30;
 
     /// <summary>Gets or sets the speed.</summary>
     /// <value>The time, in milliseconds, between marque progress bar animation updates. Default value is 30.</value>

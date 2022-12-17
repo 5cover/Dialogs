@@ -30,7 +30,7 @@ public class Dialog
             CurrentPage.Closing += NavigateNextPage;
         }
 
-        void NavigateNextPage(object? sender, ButtonClickedEventArgs args)
+        void NavigateNextPage(object? sender, ControlClickedEventArgs args)
         {
             if (chooseNextPage(args.ClickedControl) is { } nextPage)
             {

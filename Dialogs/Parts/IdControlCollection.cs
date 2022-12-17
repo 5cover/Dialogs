@@ -5,24 +5,20 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A collection of objects with IDs. This class implements <see cref="IDisposable"/>.</summary>
+/// <summary>A collection of dialog controls with IDs.</summary>
+/// <remarks>
+/// This collection class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.
+/// </remarks>
 public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, IStateInitializer, IDisposable where T : notnull
 {
-    private GenericSafeHandle? _native;
+    private SafeNativeArray<TASKDIALOG_BUTTON>? _nativeArray;
 
-    private protected IdControlCollection(T? defaultItem = default)
-    {
-        if (defaultItem is not null && !Contains(defaultItem))
-        {
-            throw new ArgumentException($"Collection does not contain value.");
-        }
-        DefaultItem = defaultItem;
-    }
+    private protected IdControlCollection(T? defaultItem) => DefaultItem = defaultItem;
 
     event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
     private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
-    /// <summary>Gets or sets the default item of this collection.</summary>
+    /// <summary>Gets the default item of this collection.</summary>
     public T? DefaultItem { get; }
 
     private protected virtual TASKDIALOG_FLAGS Flags { get; }
@@ -30,7 +26,11 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
     /// <inheritdoc/>
     public virtual void Dispose()
     {
-        _native?.Dispose();
+        _nativeArray?.Dispose();
+        foreach (var disposable in Items.OfType<IDisposable>())
+        {
+            disposable.Dispose();
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -49,33 +49,17 @@ public abstract class IdControlCollection<T> : Collection<T>, ILayoutProvider<TA
             layoutProvider.SetIn(container);
         }
 
-        List<SafeLPWSTR> nativeButtonTexts = new();
-        SafeNativeArray<TASKDIALOG_BUTTON>? customButtonArray;
-
-        customButtonArray = new(Items.OfType<INativeProvider<string>>().Select((item, index) =>
+        _nativeArray?.Dispose();
+        _nativeArray = new(Items.OfType<INativeProvider<StrPtrUni>>().Select((item, index) => new TASKDIALOG_BUTTON
         {
-            SafeLPWSTR text = new(item.GetNative());
-            nativeButtonTexts.Add(text);
-            return new TASKDIALOG_BUTTON
-            {
-                pszButtonText = text,
-                nButtonID = GetId(index)
-            };
+            pszButtonText = (nint)item.GetNative(),
+            nButtonID = GetId(index)
         }).ToArray());
 
-        _native?.Dispose();
-        _native = new(customButtonArray, _ =>
-        {
-            customButtonArray.Dispose();
-            foreach (var text in nativeButtonTexts)
-            {
-                text.Dispose();
-            }
-            return true;
-        });
-
         container.dwFlags |= Flags;
-        SetContainerProperties(container, customButtonArray, (uint)customButtonArray.Count, DefaultItem is null ? 0 : GetId(IndexOf(DefaultItem)));
+
+        int defaultItemIndex = DefaultItem is null ? -1 : IndexOf(DefaultItem);
+        SetContainerProperties(container, _nativeArray, (uint)_nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
     }
 
     internal virtual T? GetControlFromId(int id) => id == 0 ? default : Items[GetIndex(id)];

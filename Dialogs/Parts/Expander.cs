@@ -4,7 +4,8 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A dialog expander control. This class cannot be inherited. This class implements <see cref="IDisposable"/>.</summary>
+/// <summary>A dialog expander control.</summary>
+/// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
 public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler, IStateInitializer, IDisposable
 {
     // A default value is needed for the expander to be initialized in the config.

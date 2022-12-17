@@ -7,7 +7,6 @@ namespace Scover.Dialogs;
 // the state of the dialog at showtime. Therefore another page must be navigated to in the dialog to change these properties at
 // showtime. Disposable layout is disposed in Dispose, because it is owned by the page. State is not owned (like Icons) so it is
 // not disposed.
-
 public partial class Page
 {
     /// <summary>Gets whether to enable hyperlinks</summary>
@@ -95,7 +94,7 @@ public partial class Page
     public ProgressBar? ProgressBar
     {
         get => _parts.GetPart<ProgressBar>();
-        init => _parts.SetPart(_wrap, value);
+        set => _parts.SetPart(_wrap, value);
     }
 
     /// <summary>Gets the radio button list</summary>

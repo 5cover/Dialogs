@@ -3,9 +3,14 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A collection of <see cref="CommitControl"/> objects. This class implements <see cref="IDisposable"/>.</summary>
+/// <summary>A collection of <see cref="CommitControl"/> objects.</summary>
+/// <inheritdoc path="/remarks"/>
 public abstract class CommitControlCollection : IdControlCollection<CommitControl>, INotificationHandler
 {
+    private protected CommitControlCollection(CommitControl? defaultItem) : base(defaultItem)
+    {
+    }
+
     HRESULT INotificationHandler.HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
     {
         if (id is TaskDialogNotification.TDN_BUTTON_CLICKED && GetControlFromId((int)wParam) is INotificationHandler notificationHandler)

@@ -10,18 +10,20 @@ public sealed class DialogTests
     [Test]
     public void MegaTest()
     {
+        Button button2 = new("Button #2");
         using Page page = new()
         {
             AreHyperlinksEnabled = true,
             IsCancelable = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
-            Buttons = new ButtonCollection()
+            Buttons = new ButtonCollection(button2)
             {
                 "Button #1",
-                new Button("Button #2 (Admin)") { RequiresElevation = true },
-                new Button("Button #3 (Disabled)") { IsEnabled = false },
-                new Button("Button #4 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
+                button2,
+                new Button("Button #3 (Admin)") { RequiresElevation = true },
+                new Button("Button #4 (Disabled)") { IsEnabled = false },
+                new Button("Button #5 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
             },
             Expander = new Expander()
             {
@@ -54,16 +56,22 @@ public sealed class DialogTests
     [Test]
     public void TestCommandLinks()
     {
+        CommandLink commandLink2 = new("Command link #2 (default)", "This is the default command link.");
         using Page page = new()
         {
             Content = "Assert that the command links are displayed properly.",
-            Buttons = new CommandLinkCollection()
+            Buttons = new CommandLinkCollection(commandLink2)
             {
                 "Command link #1",
-                { "Command link #2", "Supplemental explanation" },
-                new Button("Command link #3 (disabled)") { IsEnabled = false },
-                new Button("Command link #4 (admin)") { RequiresElevation = true },
-                new Button("Command link #5 (admin && disabled)") { IsEnabled = false, RequiresElevation = true },
+                commandLink2,
+                { "Command link #3", "Supplemental explanation" },
+                new CommandLink("Command link #4 (disabled)") { IsEnabled = false },
+                new CommandLink("Command link #5 (admin)") { RequiresElevation = true },
+                new CommandLink("Command link #6 (admin && disabled)") { IsEnabled = false, RequiresElevation = true },
+
+                // Common buttons are also supported.
+                Button.Abort,
+                Button.Help,
             },
             WindowTitle = nameof(TestCommandLinks),
         };
@@ -158,7 +166,7 @@ public sealed class DialogTests
     [Test]
     public void TestRadioButtons()
     {
-        RadioButton defaultRadioButton = new("Radio #2 (default)");
+        RadioButton radio2 = new("Radio #2 (default)");
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
@@ -167,10 +175,10 @@ public sealed class DialogTests
                 Button.OK,
                 Button.Cancel
             },
-            RadioButtons = new(defaultRadioButton)
+            RadioButtons = new(radio2)
             {
                 "Radio #1",
-                defaultRadioButton,
+                radio2,
                 new RadioButton("Radio #3 (disabled)") { IsEnabled = false },
             },
             WindowTitle = nameof(TestRadioButtons),

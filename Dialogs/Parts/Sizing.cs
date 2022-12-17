@@ -4,6 +4,7 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs.Parts;
 
 /// <summary>The sizing strategy of a dialog window.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class Sizing : ILayoutProvider<TASKDIALOGCONFIG>
 {
     /// <summary>The size of the window will be computed automatically.</summary>

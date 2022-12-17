@@ -1,17 +1,18 @@
-﻿using static Vanara.PInvoke.ComCtl32;
+﻿using Vanara.InteropServices;
+using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A dialog push or command link button This class cannot be inherited.</summary>
-public sealed class Button : CommitControl, INativeProvider<string>
+/// <summary>A dialog push button control.</summary>
+/// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
+public sealed class Button : CommitControl, INativeProvider<StrPtrUni>, IDisposable
 {
-    private readonly string _text;
+    private readonly SafeLPWSTR _text;
 
     /// <summary>Initializes the instance of the <see cref="Button"/> class.</summary>
-    /// <param name="label">The label of the commit control</param>
-    /// <param name="note">The supplemental instruction of the commit control</param>
-    public Button(string label, string? note = null) => _text = note is null ? label : $"{label}\n{note}";
+    /// <param name="text">The text of the push button.</param>
+    public Button(string text) => (Text, _text) = (text, new(text));
 
     /// <summary>Gets a new <i>Abort</i> button.</summary>
     public static CommonButton Abort => new(1 << 16, MB_RESULT.IDABORT);
@@ -47,5 +48,11 @@ public sealed class Button : CommitControl, INativeProvider<string>
     /// <summary>Gets a new <i>Yes</i> button.</summary>
     public static CommonButton Yes => new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_YES_BUTTON, MB_RESULT.IDYES);
 
-    string INativeProvider<string>.GetNative() => _text;
+    /// <summary>Gets the text of this push button.</summary>
+    public string Text { get; }
+
+    /// <inheritdoc/>
+    public void Dispose() => _text.Dispose();
+
+    StrPtrUni INativeProvider<StrPtrUni>.GetNative() => _text;
 }

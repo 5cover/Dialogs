@@ -4,7 +4,8 @@ using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A dialog button control. This class cannot be inherited.</summary>
+/// <summary>A dialog button control.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONFIG>, IEquatable<CommonButton?>
 {
     /// <summary>The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.</summary>

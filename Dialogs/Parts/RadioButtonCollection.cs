@@ -3,18 +3,24 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A collection of dialog radio button controls.</summary>
+/// <summary>A collection of dialog radio button controls. This class cannot be inherited.</summary>
+/// <inheritdoc path="/remarks"/>
 public sealed class RadioButtonCollection : IdControlCollection<RadioButton>, INotificationHandler
 {
+    private readonly DefaultRadioButton _defaultRadioButton;
+
     /// <summary>Initializes a new instance of the <see cref="RadioButtonCollection"/> class.</summary>
-    /// <param name="defaultRadioButton">
-    /// The default radio button. If <see langword="null"/>, there will be no default radio button.
-    /// </param>
-    public RadioButtonCollection(RadioButton? defaultRadioButton = null) : base(defaultRadioButton)
+    /// <param name="defaultRadioButton">The default radio button. Default value is <see cref="DefaultRadioButton.First"/>.</param>
+    public RadioButtonCollection(DefaultRadioButton? defaultRadioButton = null) : base((defaultRadioButton ?? DefaultRadioButton.First).RadioButton)
+        => _defaultRadioButton = defaultRadioButton ?? DefaultRadioButton.First;
+
+    /// <summary>Initializes a new instance of the <see cref="RadioButtonCollection"/> class.</summary>
+    /// <param name="defaultItem">The default radio button.</param>
+    public RadioButtonCollection(RadioButton defaultItem) : this(DefaultRadioButton.FromRadioButton(defaultItem))
     {
     }
 
-    private protected override TASKDIALOG_FLAGS Flags => DefaultItem is null ? TASKDIALOG_FLAGS.TDF_NO_DEFAULT_RADIO_BUTTON : default;
+    private protected override TASKDIALOG_FLAGS Flags => _defaultRadioButton.Flags;
 
     /// <summary>Adds a new radio button to the collection.</summary>
     /// <param name="text">The label.</param>

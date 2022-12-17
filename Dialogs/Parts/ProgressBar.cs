@@ -4,6 +4,7 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog progress bar control.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class ProgressBar : ProgressBarBase
 {
     private ushort _maximum = 100;

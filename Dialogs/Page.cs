@@ -6,7 +6,11 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-/// <summary>A page on a dialog. This class cannot be inherited.</summary>
+/// <summary>A page on a dialog.</summary>
+/// <remarks>
+/// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
+/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see cref="RadioButtons"/>.
+/// </remarks>
 public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposable
 {
     private readonly PartCollection _parts = new();
@@ -49,12 +53,12 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     }
 
     /// <summary>Event raised when a button is clicked.</summary>
-    public event EventHandler<ButtonClickedEventArgs>? ButtonClicked;
+    public event EventHandler<ControlClickedEventArgs>? ButtonClicked;
     /// <summary>
     /// Event raised when the page is about to be closed, either because a commit control was clicked, or the dialog window was
     /// closed using Alt-F4, Escape, or the title bar's close button.
     /// </summary>
-    public event EventHandler<ButtonClickedEventArgs>? Closing;
+    public event EventHandler<ControlClickedEventArgs>? Closing;
     /// <summary>Event raised when the page has been created.</summary>
     public event EventHandler? Created;
     /// <summary>Event raised when the page has been destroyed.</summary>
@@ -79,22 +83,16 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     /// <inheritdoc/>
     public void Dispose()
     {
-        FreeString(ref _wrap.pszWindowTitle);
-        FreeString(ref _wrap.pszMainInstruction);
-        FreeString(ref _wrap.pszContent);
-        FreeString(ref _wrap.pszVerificationText);
-        FreeString(ref _wrap.pszExpandedControlText);
-        FreeString(ref _wrap.pszCollapsedControlText);
-        FreeString(ref _wrap.pszFooter);
+        StringHelper.FreeString(_wrap.pszWindowTitle, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszMainInstruction, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszContent, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszVerificationText, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszExpandedControlText, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszCollapsedControlText, CharSet.Unicode);
+        StringHelper.FreeString(_wrap.pszFooter, CharSet.Unicode);
         Buttons?.Dispose();
         Expander?.Dispose();
         RadioButtons?.Dispose();
-
-        static void FreeString(ref nint ptr)
-        {
-            StringHelper.FreeString(ptr, CharSet.Unicode);
-            ptr = IntPtr.Zero;
-        }
     }
 
     TASKDIALOGCONFIG INativeProvider<TASKDIALOGCONFIG>.GetNative() => _wrap;
@@ -108,9 +106,9 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
 
         if (!hwnd.IsNull)
         {
-            while (_pendingUpdates.Any())
+            while (_pendingUpdates.Count > 0)
             {
-                _pendingUpdates.Dequeue()(new(OwnerDialog));
+                _pendingUpdates.Dequeue()(new(hwnd));
             }
         }
 
@@ -133,7 +131,7 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 }
 
                 var control = Buttons?.GetControlFromId((int)wParam);
-                ButtonClickedEventArgs e = new(control);
+                ControlClickedEventArgs e = new(control);
 
                 ButtonClicked?.Invoke(this, e);
                 if (e.Cancel)

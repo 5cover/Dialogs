@@ -4,7 +4,8 @@ namespace Scover.Dialogs.Parts;
 
 internal sealed record NativeIcon(bool IsHICON, nint Handle);
 
-/// <summary>An dialog icon control. Can be a standard or custom. This class cannot be inherited.</summary>
+/// <summary>An dialog icon control. Can be standard or custom.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class DialogIcon : INativeProvider<NativeIcon>
 {
     // todo : bar composition (requires preemptive testing) (see in KPreisser)

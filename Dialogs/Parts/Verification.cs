@@ -3,7 +3,8 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
 
-/// <summary>A dialog verification checkbox control. This class cannot be inherited.</summary>
+/// <summary>A dialog verification checkbox control.</summary>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class Verification : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler
 {
     private bool _isChecked;
