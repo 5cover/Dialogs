@@ -49,6 +49,10 @@ dotnet_diagnostic.HAA0601.severity = none
 dotnet_diagnostic.CA1001.severity = suggestion
 dotnet_diagnostic.CA1200.severity = suggestion
 
+# IDE0042: Deconstruct variable declaration
+dotnet_diagnostic.IDE0042.severity = none
+csharp_style_deconstructed_variable_declaration = true:silent
+
 [*.{cs,vb}]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 tab_width = 4

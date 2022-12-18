@@ -1,6 +1,6 @@
 ﻿namespace Scover.Dialogs.Parts;
 
-/// <summary>A distance unit for computing the width of a dialog.</summary>
+/// <summary>A distance unit.</summary>
 public enum DistanceUnit
 {
     /// <summary>Pixel.</summary>

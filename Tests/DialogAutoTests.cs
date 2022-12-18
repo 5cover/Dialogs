@@ -45,14 +45,8 @@ public sealed class DialogAutoTests
             Assert.That(e.ClickedControl, Is.EqualTo(clickedControl));
             e.Cancel = true;
         };
-
-        var result = new Dialog(page).Show();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.ClickedControl, Is.EqualTo(Button.Cancel));
-            Assert.That(result.SelectedRadioButton, Is.EqualTo(selectedRadioButton));
-        });
+        clickedControl = new Dialog(page).Show();
+        Assert.That(clickedControl, Is.Null);
     }
 
     [Test]

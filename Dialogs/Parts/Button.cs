@@ -1,18 +1,14 @@
-﻿using Vanara.InteropServices;
-using static Vanara.PInvoke.ComCtl32;
+﻿using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog push button control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
-public sealed class Button : CommitControl, INativeProvider<StrPtrUni>, IDisposable
+public sealed class Button : TextCommitControl
 {
-    private readonly SafeLPWSTR _text;
-
-    /// <summary>Initializes the instance of the <see cref="Button"/> class.</summary>
     /// <param name="text">The text of the push button.</param>
-    public Button(string text) => (Text, _text) = (text, new(text));
+    public Button(string text) : base(text) => Text = text;
 
     /// <summary>Gets a new <i>Abort</i> button.</summary>
     public static CommonButton Abort => new(1 << 16, MB_RESULT.IDABORT);
@@ -50,9 +46,4 @@ public sealed class Button : CommitControl, INativeProvider<StrPtrUni>, IDisposa
 
     /// <summary>Gets the text of this push button.</summary>
     public string Text { get; }
-
-    /// <inheritdoc/>
-    public void Dispose() => _text.Dispose();
-
-    StrPtrUni INativeProvider<StrPtrUni>.GetNative() => _text;
 }

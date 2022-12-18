@@ -1,33 +1,48 @@
-﻿namespace Scover.Dialogs.Parts;
+﻿using System.Collections;
+using static Vanara.PInvoke.ComCtl32;
 
-internal sealed class PartCollection
+using Part = Scover.Dialogs.Parts.DialogControl<Scover.Dialogs.Parts.PageUpdateInfo>;
+
+namespace Scover.Dialogs.Parts;
+
+internal sealed class PartCollection : IEnumerable<Part?>
 {
-    private readonly Dictionary<Type, object?> _parts = new();
+    private readonly Dictionary<Type, Part?> _parts = new();
 
-    public event EventHandler<object?>? PartAdded;
+    public event EventHandler<Part>? PartAdded;
 
-    public event EventHandler<object?>? PartRemoved;
+    public event EventHandler<Part>? PartRemoved;
 
-    public T? GetPart<T>() => (T?)_parts.GetValueOrDefault(typeof(T));
+    public IEnumerator<Part?> GetEnumerator() => _parts.Values.GetEnumerator();
 
-    public IEnumerable<T> GetParts<T>() => _parts.Values.OfType<T>();
+    public T? GetPart<T>() where T : Part => (T?)_parts.GetValueOrDefault(typeof(T));
 
-    public void SetPart<T, TContainer>(in TContainer container, T? value)
+    public void SetPart<T>(in TASKDIALOGCONFIG config, T? value) where T : Part
     {
         if (_parts.GetValueOrDefault(typeof(T)) is { } oldPart)
         {
             OnPartRemoved(oldPart);
         }
-
         _parts[typeof(T)] = value;
-        if (value is ILayoutProvider<TContainer> lp)
-        {
-            lp.SetIn(container);
-        }
         OnPartAdded(value);
+        value?.SetIn(config);
     }
 
-    private void OnPartAdded(object? part) => PartAdded?.Invoke(this, part);
+    IEnumerator IEnumerable.GetEnumerator() => _parts.Values.GetEnumerator();
 
-    private void OnPartRemoved(object? part) => PartRemoved?.Invoke(this, part);
+    private void OnPartAdded(Part? part)
+    {
+        if (part is not null)
+        {
+            PartAdded?.Invoke(this, part);
+        }
+    }
+
+    private void OnPartRemoved(Part? part)
+    {
+        if (part is not null)
+        {
+            PartRemoved?.Invoke(this, part);
+        }
+    }
 }

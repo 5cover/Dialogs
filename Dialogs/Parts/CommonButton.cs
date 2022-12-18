@@ -6,10 +6,10 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog button control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
-public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONFIG>, IEquatable<CommonButton?>
+public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
 {
     /// <summary>The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.</summary>
-    /// <remarks>The range is [0 ; <see cref="MaxId"/>].</remarks>
+    /// <remarks>The range is 0 to <see cref="MaxId"/>, inclusive.</remarks>
     internal const int MaxId = 11;
 
     private static readonly CommonButton[] _values =
@@ -47,7 +47,6 @@ public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONF
     {
     }
 
-    /// <summary>Gets the id of this common button.</summary>
     internal int Id { get; }
 
     /// <inheritdoc/>
@@ -59,7 +58,7 @@ public sealed class CommonButton : CommitControl, ILayoutProvider<TASKDIALOGCONF
     /// <inheritdoc/>
     public override int GetHashCode() => Id.GetHashCode();
 
-    void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container) => container.dwCommonButtons.SetFlag(_commonButton, true);
-
     internal static CommonButton? FromId(int id) => _values.SingleOrDefault(cb => cb.Id == id);
+
+    internal override void SetIn(in TASKDIALOGCONFIG config) => config.dwCommonButtons.SetFlag(_commonButton, true);
 }

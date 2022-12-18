@@ -3,10 +3,10 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-// State properties can be set at anytime. Disposable state properties are not disposed because they are not considered to be
+// States properties can be set at anytime. Disposable state properties are not disposed because they are not considered to be
 // owned by the page.
 
-// State is { get; set; }
+// States is { get; set; }
 
 public partial class Page
 {
@@ -18,11 +18,11 @@ public partial class Page
     /// <value>The text shown in the content area. Default value is <see langword="null"/>.</value>
     public string? Content
     {
-        get => _wrap.Content;
+        get => Config.Content;
         set
         {
-            _wrap.Content = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, _wrap.pszContent);
+            Config.Content = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, Config.pszContent);
         }
     }
 
@@ -34,8 +34,8 @@ public partial class Page
         set
         {
             _footerIcon = value;
-            value.SetFooterIcon(_wrap);
-            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, _wrap.footerIcon);
+            value.SetFooterIcon(Config);
+            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, Config.footerIcon);
         }
     }
 
@@ -44,11 +44,11 @@ public partial class Page
     /// <value>The text to show in the footer area. Default value is <see langword="null"/>.</value>
     public string? FooterText
     {
-        get => _wrap.Footer;
+        get => Config.Footer;
         set
         {
-            _wrap.Footer = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, _wrap.pszFooter);
+            Config.Footer = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, Config.pszFooter);
         }
     }
 
@@ -60,8 +60,8 @@ public partial class Page
         set
         {
             _icon = value;
-            value.SetMainIcon(_wrap);
-            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, _wrap.footerIcon);
+            value.SetMainIcon(Config);
+            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Config.mainIcon);
         }
     }
 
@@ -70,11 +70,11 @@ public partial class Page
     /// <value>The main instruction of the page. Default value is <see langword="null"/>.</value>
     public string? MainInstruction
     {
-        get => _wrap.MainInstruction;
+        get => Config.MainInstruction;
         set
         {
-            _wrap.MainInstruction = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _wrap.pszMainInstruction);
+            Config.MainInstruction = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, Config.pszMainInstruction);
         }
     }
 
@@ -84,6 +84,6 @@ public partial class Page
     public ProgressBar? ProgressBar
     {
         get => _parts.GetPart<ProgressBar>();
-        set => _parts.SetPart(_wrap, value);
+        set => _parts.SetPart(Config, value);
     }
 }

@@ -1,15 +1,17 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Scover.Dialogs.Parts;
 using Vanara.Extensions;
 using Vanara.PInvoke;
+using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
 internal static class Extensions
 {
-    /// <inheritdoc cref="INativeProvider{TNative}.GetNative"/>
-    public static TNative GetNative<TNative>(this INativeProvider<TNative> np) => np.GetNative();
+    public static HRESULT ForwardNotification<T>(this IEnumerable<DialogControl<T>?> handlers, TaskDialogNotification id, nint wParam, nint lParam)
+        => handlers.Select(h => h?.HandleNotification(id, wParam, lParam) ?? default).SingleOrDefault(h => h != default);
 
     [StackTraceHidden]
     public static InvalidEnumArgumentException NewInvalidEnumArgumentException<TEnum>(this TEnum value, string? argumentName = null) where TEnum : struct, Enum, IConvertible

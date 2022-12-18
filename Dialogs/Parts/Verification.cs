@@ -5,20 +5,15 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog verification checkbox control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
-public sealed class Verification : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler
+public sealed class Verification : DialogControl<PageUpdateInfo>
 {
     private bool _isChecked;
 
-    /// <summary>Initializes a new instance of the <see cref="Verification"/> class.</summary>
     /// <param name="text">The text to show near the verification checkbox.</param>
     public Verification(string text) => Text = text;
 
     /// <summary>Event raise when the verification is checked.</summary>
     public event EventHandler? Checked;
-
-    event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
-
-    private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
     /// <summary>Gets or sets whether the verification is checked.</summary>
     /// <value><see langword="true"/> if the verficiation checkbox is checked, <see langword="false"/> otherwise.</value>
@@ -40,23 +35,21 @@ public sealed class Verification : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateReq
     /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
     public void Focus() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, IsChecked, true));
 
-    HRESULT INotificationHandler.HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
     {
         if (id is TaskDialogNotification.TDN_VERIFICATION_CLICKED)
         {
             _isChecked = Convert.ToBoolean(wParam);
             Checked.Raise(this);
         }
-        return default;
+        return base.HandleNotification(id, wParam, lParam);
     }
 
-    void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
+    internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_VERIFICATION_FLAG_CHECKED, IsChecked);
-        container.VerificationText = Text;
+        config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_VERIFICATION_FLAG_CHECKED, IsChecked);
+        config.VerificationText = Text;
     }
-
-    private void OnUpdateRequested(Action<PageUpdate> args) => UpdateRequested?.Invoke(this, args);
 
     private void RequestIsCheckedUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, _isChecked, false));
 }

@@ -79,6 +79,44 @@ public sealed class DialogTests
     }
 
     [Test]
+    public void TestIcon()
+    {
+        ushort index = 0;
+        using var hIcon = Vanara.PInvoke.Shell32.ExtractAssociatedIcon(default, new(@"C:\Windows\System32\rstrui.exe"), ref index);
+        DialogIcon customIcon = DialogIcon.FromHandle(hIcon.DangerousGetHandle());
+
+        var buttonContinue = Button.Continue;
+        using Page page = new()
+        {
+            Buttons = new ButtonCollection()
+            {
+                buttonContinue,
+                Button.Close
+            },
+            Content = "Assert that the icon is displayed properly.",
+            Icon = DialogIcon.Error,
+            WindowTitle = nameof(TestIcon),
+        };
+        buttonContinue.Clicked += (s, e) =>
+        {
+            if (page.Icon == DialogIcon.Error)
+            {
+                page.Icon = DialogIcon.Information;
+            }
+            if (page.Icon == DialogIcon.Information)
+            {
+                page.Icon = customIcon;
+            }
+            if (page.Icon == customIcon)
+            {
+                page.Icon = DialogIcon.None;
+            }
+            e.Cancel = true;
+        };
+        _ = new Dialog(page).Show();
+    }
+
+    [Test]
     public void TestProgressBar()
     {
         Button
@@ -90,8 +128,8 @@ public sealed class DialogTests
             valueMinus10 = new("Value - 10"),
             toggleMode = new("Toggle mode"),
             cycleState = new("Cycle state"),
-            speedPlus1 = new("Speed + 1"),
-            speedMinus1 = new("Speed - 1");
+            intervalPlus1 = new("Interval + 1"),
+            intervalMinus1 = new("Interval - 1");
         using Page page = new()
         {
             Content = "Assert that the progress bar behaves properly.",
@@ -105,8 +143,8 @@ public sealed class DialogTests
                 valueMinus10,
                 toggleMode,
                 cycleState,
-                speedPlus1,
-                speedMinus1
+                intervalPlus1,
+                intervalMinus1
             },
             Sizing = Sizing.FromWidth(200),
             Expander = new() { IsExpanded = true },
@@ -162,13 +200,13 @@ public sealed class DialogTests
                     _ => throw new ArgumentException()
                 };
             }
-            else if (speedPlus1.Equals(e.ClickedControl))
+            else if (intervalPlus1.Equals(e.ClickedControl))
             {
-                pb.MarqueeSpeed++;
+                pb.MarqueeInterval++;
             }
-            else if (speedMinus1.Equals(e.ClickedControl))
+            else if (intervalMinus1.Equals(e.ClickedControl))
             {
-                pb.MarqueeSpeed--;
+                pb.MarqueeInterval--;
             }
             else
             {
@@ -186,7 +224,7 @@ public sealed class DialogTests
 {nameof(pb.Minimum)} = {pb.Minimum}
 {nameof(pb.Maximum)} = {pb.Maximum}
 {nameof(pb.Value)} = {pb.Value}
-{nameof(pb.MarqueeSpeed)} = {pb.MarqueeSpeed}";
+{nameof(pb.MarqueeInterval)} = {pb.MarqueeInterval}";
 
         void EnableDisable()
         {
@@ -194,7 +232,7 @@ public sealed class DialogTests
             minMinus10.IsEnabled = pb.Minimum > 0;
             maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
             maxMinus10.IsEnabled = pb.Maximum > 0;
-            speedMinus1.IsEnabled = pb.MarqueeSpeed > 1;
+            intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
         }
     }
 

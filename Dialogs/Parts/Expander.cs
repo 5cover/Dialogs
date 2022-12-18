@@ -6,17 +6,13 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog expander control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
-public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, INotificationHandler, IStateInitializer, IDisposable
+public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 {
     // An initial value is needed for the expander to be visible.
     private SafeLPWSTR _expandedInformation = new(" ");
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
     public event EventHandler? ExpandedChanged;
-
-    event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
-
-    private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
     /// <summary>Gets the expander collapse button text.</summary>
     /// <remarks>If the value is <see langword="null"/>, the text "Collapse" will be shown near the collapse button.</remarks>
@@ -46,7 +42,7 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     /// <value>The position of the <see cref="ExpandedInformation"/> when the expander is expanded. Default value is <see cref="ExpanderPosition.BelowContent"/>.</value>
     public ExpanderPosition ExpanderPosition { get; init; } = ExpanderPosition.BelowContent;
 
-    /// <summary>Gets whether to the expander is expanded.</summary>
+    /// <summary>Gets or sets whether the expander is expanded.</summary>
     /// <remarks>Setting this property while the dialog is shown will have no effect.</remarks>
     /// <value>
     /// <see langword="true"/> when the expander when the page is initially displayed, <see langword="false"/> otherwise.
@@ -57,26 +53,24 @@ public sealed class Expander : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequest
     /// <inheritdoc/>
     public void Dispose() => _expandedInformation.Dispose();
 
-    HRESULT INotificationHandler.HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
     {
         if (id is TaskDialogNotification.TDN_EXPANDO_BUTTON_CLICKED)
         {
             IsExpanded = Convert.ToBoolean(wParam);
             ExpandedChanged.Raise(this);
         }
-        return default;
+        return base.HandleNotification(id, wParam, lParam);
     }
 
-    void IStateInitializer.InitializeState() => RequestExpandedInformationUpdate();
-
-    void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
+    internal override void SetIn(in TASKDIALOGCONFIG container)
     {
         (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _expandedInformation);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }
 
-    private void OnUpdateRequested(Action<PageUpdate> update) => UpdateRequested?.Invoke(this, update);
+    private protected override void InitializeState() => RequestExpandedInformationUpdate();
 
     private void RequestExpandedInformationUpdate()
         => OnUpdateRequested(update => _ = update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _expandedInformation.DangerousGetHandle()));

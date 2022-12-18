@@ -1,16 +1,16 @@
 ﻿namespace Scover.Dialogs.Parts;
 
 /// <summary>A collection of dialog push button controls. This class cannot be inherited.</summary>
-/// <inheritdoc path="/remarks"/>
+/// <remarks>
+/// This class cannot be inherited and implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.
+/// </remarks>
 public sealed class ButtonCollection : CommitControlCollection
 {
-    /// <summary>Initializes a new instance of the <see cref="ButtonCollection"/> class.</summary>
     /// <remarks>The default button will be the first item of the collection.</remarks>
     public ButtonCollection() : base(null)
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="ButtonCollection"/> class.</summary>
     /// <param name="defaultItem">
     /// The default button. If <see langword="null"/>, the default button will be the first item of the collection.
     /// </param>
@@ -18,7 +18,6 @@ public sealed class ButtonCollection : CommitControlCollection
     {
     }
 
-    /// <summary>Initializes a new instance of the <see cref="ButtonCollection"/> class.</summary>
     /// <param name="defaultItem">
     /// The default button. If <see langword="null"/>, the default button will be the first item of the collection.
     /// </param>

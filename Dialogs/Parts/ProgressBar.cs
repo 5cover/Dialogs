@@ -5,41 +5,40 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog progress bar control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
-public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequester<PageUpdate>, IStateInitializer
+public sealed class ProgressBar : DialogControl<PageUpdateInfo>
 {
-    private int _marqueeSpeed = 30;
+    private int _marqueeInterval = 30;
     private ushort _maximum = 100;
     private ushort _minimum;
     private ProgressBarMode _mode = ProgressBarMode.Normal;
     private ProgressBarState _state = ProgressBarState.Normal;
     private int _value;
-    event EventHandler<Action<PageUpdate>>? IUpdateRequester<PageUpdate>.UpdateRequested { add => UpdateRequested += value; remove => UpdateRequested -= value; }
-    private event EventHandler<Action<PageUpdate>>? UpdateRequested;
 
-    /// <summary>Gets or sets the progress bar marquee speed.</summary>
+    /// <summary>Gets or sets the progress bar marquee interval.</summary>
     /// <remarks>
-    /// Since the marquee animation speed is a time period, setting the value to a higher number results in a slower speed and a
-    /// lower number results in a faster speed.
+    /// Since the marquee animation interval is a time period, setting the value to a higher number results in a slower speed
+    /// and a lower number results in a faster speed.
     /// </remarks>
     /// <value>The time, in milliseconds, between marque progress bar animation updates. Default value is 30.</value>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than or equal to zero.</exception>
-    public int MarqueeSpeed
+    public int MarqueeInterval
     {
-        get => _marqueeSpeed;
+        get => _marqueeInterval;
         set
         {
             if (value <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Must be greater than zero");
             }
-            _marqueeSpeed = value;
-            RequestSpeedUpdate();
+            _marqueeInterval = value;
+            RequestIntervalUpdate();
         }
     }
 
     /// <summary>Gets or sets the maximum progress bar value.</summary>
     /// <remarks>Default value is 100. The value must be greater than 0 and less than 65535.</remarks>
     /// <exception cref="OverflowException">The value is less than 0 or greater than 65535.</exception>
+    /// <value>The minimum of the <see cref="Value"/> property.</value>
     public int Maximum
     {
         get => _maximum;
@@ -53,6 +52,7 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
     /// <summary>Gets or sets the minimum progress bar value.</summary>
     /// <remarks>Default value is 0. The value must be greater than 0 and less than 65535.</remarks>
     /// <exception cref="OverflowException">The value is less than 0 or greater than 65535.</exception>
+    /// <value>The maximum of the <see cref="Value"/> property.</value>
     public int Minimum
     {
         get => _minimum;
@@ -60,7 +60,7 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
         {
             _minimum = checked((ushort)Math.Min(Value, value));
             RequestRangeUpdate();
-            RequestValueUpdate(); // Needed for some reason.
+            RequestValueUpdate(); // Needed to keep minimum synced.
         }
     }
 
@@ -87,7 +87,11 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
     }
 
     /// <summary>Gets or sets the progress bar state.</summary>
-    /// <remarks>Default value is <see cref="ProgressBarState.Normal"/>.</remarks>
+    /// <remarks>
+    /// When <see cref="Mode"/> is <see cref="ProgressBarMode.Marquee"/>, the progress bar will always take the appearance of
+    /// <see cref="ProgressBarState.Normal"/>, as abnormal states are not supported by dialog marquee progress bars.
+    /// </remarks>
+    /// <value>The current state of the progress bar. Default value is <see cref="ProgressBarState.Normal"/>.</value>
     public ProgressBarState State
     {
         get => _state;
@@ -102,7 +106,10 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
     }
 
     /// <summary>Gets or sets the current progress bar value.</summary>
-    /// <remarks>Default value is 0.</remarks>
+    /// <remarks>When set, the value is clamped between <see cref="Minimum"/> and <see cref="Maximum"/> (inclusive).</remarks>
+    /// <value>
+    /// The position of the progress bar when <see cref="Mode"/> is <see cref="ProgressBarMode.Normal"/>. Default value is 0.
+    /// </value>
     public int Value
     {
         get => _value;
@@ -112,34 +119,31 @@ public sealed class ProgressBar : ILayoutProvider<TASKDIALOGCONFIG>, IUpdateRequ
             RequestValueUpdate();
             if (State is not ProgressBarState.Normal)
             {
-                RequestValueUpdate(); // Needed to keep the value synced when state is abnormal for some reason.
+                RequestValueUpdate(); // Needed to keep value synced when state is abnormal.
             }
         }
     }
 
-    void IStateInitializer.InitializeState()
+    internal override void SetIn(in TASKDIALOGCONFIG container)
+    {
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_PROGRESS_BAR, _mode is ProgressBarMode.Normal);
+        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
+    }
+
+    private protected override void InitializeState()
     {
         RequestModeUpdate();
         RequestRangeUpdate();
-        RequestSpeedUpdate();
+        RequestIntervalUpdate();
         RequestStateUpdate();
         RequestValueUpdate();
     }
 
-    void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
-    {
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_PROGRESS_BAR, _mode is ProgressBarMode.Normal);
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
-        OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, true));
-    }
-
-    private void OnUpdateRequested(Action<PageUpdate> update) => UpdateRequested?.Invoke(this, update);
+    private void RequestIntervalUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeInterval));
 
     private void RequestModeUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee));
 
     private void RequestRangeUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_RANGE, 0, Macros.MAKELONG(_minimum, _maximum)));
-
-    private void RequestSpeedUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeSpeed));
 
     private void RequestStateUpdate() => RequestStateUpdate(_state);
 

@@ -5,7 +5,7 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>The sizing strategy of a dialog window.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
-public sealed class Sizing : ILayoutProvider<TASKDIALOGCONFIG>
+public sealed class Sizing : DialogControl<PageUpdateInfo>
 {
     /// <summary>The size of the window will be computed automatically.</summary>
     public const Sizing? Automatic = null;
@@ -36,9 +36,9 @@ public sealed class Sizing : ILayoutProvider<TASKDIALOGCONFIG>
         }));
     }
 
-    void ILayoutProvider<TASKDIALOGCONFIG>.SetIn(in TASKDIALOGCONFIG container)
+    internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SIZE_TO_CONTENT, _sizeToContent);
-        container.cxWidth = _width;
+        config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SIZE_TO_CONTENT, _sizeToContent);
+        config.cxWidth = _width;
     }
 }

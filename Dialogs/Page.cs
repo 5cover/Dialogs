@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Scover.Dialogs.Parts;
 using Vanara.Extensions;
 using Vanara.PInvoke;
@@ -11,34 +13,23 @@ namespace Scover.Dialogs;
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
 /// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see cref="RadioButtons"/>.
 /// </remarks>
-public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposable
+public sealed partial class Page : IDisposable
 {
     private readonly PartCollection _parts = new();
-    private readonly Queue<Action<PageUpdate>> _pendingUpdates = new();
-    private readonly TASKDIALOGCONFIG _wrap = new();
+    private readonly Queue<Action<PageUpdateInfo>> _pendingUpdates = new();
     private bool _ignoreButtonClicked;
+    private int _updateCount;
 
-    /// <summary>Initializes a new instance of the <see cref="Page"/> class.</summary>
+    /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
     {
-        _wrap.pfCallbackProc = Callback;
-        _parts.PartAdded += (s, part) =>
-        {
-            if (part is IUpdateRequester<PageUpdate> ur)
-            {
-                ur.UpdateRequested += Update;
-            }
-        };
-        _parts.PartRemoved += (s, part) =>
-        {
-            if (part is IUpdateRequester<PageUpdate> ur)
-            {
-                ur.UpdateRequested -= Update;
-            }
-        };
+        Config.pfCallbackProc = Callback;
+        _parts.PartAdded += (s, part) => part.UpdateRequested += Update;
+        _parts.PartRemoved += (s, part) => part.UpdateRequested -= Update;
 
-        void Update(object? sender, Action<PageUpdate> update)
+        void Update(object? sender, Action<PageUpdateInfo> update)
         {
+            Trace.WriteLine($"Update #{++_updateCount}: {update.Method.Name}");
             if (OwnerDialog.IsNull)
             {
                 _pendingUpdates.Enqueue(update);
@@ -51,12 +42,18 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     }
 
     /// <summary>Event raised when a button is clicked.</summary>
-    public event EventHandler<ControlClickedEventArgs>? ButtonClicked;
+    /// <remarks>
+    /// This event is raised before the <see cref="CommitControl.Clicked"/> event for individual commit controls. Set the <see
+    /// cref="CancelEventArgs.Cancel"/> property of the event arguments to <see langword="true"/> to prevent the commit control
+    /// from closing its containing page.
+    /// </remarks>
+    public event EventHandler<CommitControlClickedEventArgs>? ButtonClicked;
     /// <summary>
     /// Event raised when the page is about to be closed, either because a commit control was clicked, or the dialog window was
-    /// closed using Alt-F4, Escape, or the title bar's close button.
+    /// closed using Alt-F4, Escape, or the title bar's close button.Set the <see cref="CancelEventArgs.Cancel"/> property of
+    /// the event arguments to <see langword="true"/> to prevent the page from closing.
     /// </summary>
-    public event EventHandler<ControlClickedEventArgs>? Closing;
+    public event EventHandler<CommitControlClickedEventArgs>? Closing;
     /// <summary>Event raised when the page has been created.</summary>
     public event EventHandler? Created;
     /// <summary>Event raised when the page has been destroyed.</summary>
@@ -67,7 +64,11 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     public event EventHandler? HelpRequested;
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
+    /// <summary>Event raised when a button is clicked.</summary>
+    /// <remarks>This event is raised before the <see cref="RadioButton.Clicked"/> event for individual radio buttons.</remarks>
+    public event EventHandler<RadioButtonClickedEventArgs>? RadioButtonClicked;
 
+    internal TASKDIALOGCONFIG Config { get; } = new();
     internal HWND OwnerDialog { get; private set; }
 
     /// <summary>Closes the page.</summary>
@@ -81,22 +82,17 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
     /// <inheritdoc/>
     public void Dispose()
     {
-        StringHelper.FreeString(_wrap.pszWindowTitle, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszMainInstruction, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszContent, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszVerificationText, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszExpandedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszCollapsedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_wrap.pszFooter, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszWindowTitle, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszMainInstruction, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszContent, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszVerificationText, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszExpandedControlText, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszCollapsedControlText, CharSet.Unicode);
+        StringHelper.FreeString(Config.pszFooter, CharSet.Unicode);
         Buttons?.Dispose();
         Expander?.Dispose();
         RadioButtons?.Dispose();
     }
-
-    TASKDIALOGCONFIG INativeProvider<TASKDIALOGCONFIG>.GetNative() => _wrap;
-
-    internal DialogResult GetResult(int clickedButtonId, int clickedRadioButtonId)
-        => new(Buttons?.GetControlFromId(clickedButtonId), RadioButtons?.GetControlFromId(clickedRadioButtonId));
 
     private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)
     {
@@ -129,7 +125,7 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 }
 
                 var control = Buttons?.GetControlFromId((int)wParam);
-                ControlClickedEventArgs e = new(control);
+                CommitControlClickedEventArgs e = new(control);
 
                 ButtonClicked?.Invoke(this, e);
                 if (e.Cancel)
@@ -157,11 +153,10 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 Destroyed.Raise(this);
                 break;
 
-            case TaskDialogNotification.TDN_DIALOG_CONSTRUCTED:
-                foreach (var stateInitializer in _parts.GetParts<IStateInitializer>())
-                {
-                    stateInitializer.InitializeState();
-                }
+            case TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED:
+                var clickedRadioButton = RadioButtons!.GetControlFromId((int)wParam);
+                Debug.Assert(clickedRadioButton is not null);
+                RadioButtonClicked?.Invoke(this, new(clickedRadioButton));
                 break;
 
             // For Help button, sent after TDN_BUTTON_CLICKED
@@ -170,7 +165,7 @@ public sealed partial class Page : INativeProvider<TASKDIALOGCONFIG>, IDisposabl
                 break;
         }
 
-        return _parts.GetParts<INotificationHandler>().Select(sr => sr.HandleNotification(id, wParam, lParam)).SingleOrDefault(h => h != default);
+        return _parts.ForwardNotification(id, wParam, lParam);
     }
 
     private void SetElementText(TASKDIALOG_ELEMENTS element, nint pszText)

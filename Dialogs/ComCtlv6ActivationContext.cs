@@ -14,9 +14,10 @@
 // - Simplified a few comments.
 // - Adapted the constants.
 // - Adapted the code to use Vanara.
+// - Use default as NULL pointer constant
+// - Merge if statements
+// - Divided EnsureActivateContextCreated in 2 methods
 
-using System.Runtime.InteropServices;
-using Vanara.PInvoke;
 using static Vanara.PInvoke.Kernel32;
 
 namespace Scover.Dialogs;
@@ -32,12 +33,9 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 
     public ComCtlV6ActivationContext(bool enable)
     {
-        if (enable && WindowsVersion.IsWindowsXPOrLater)
+        if (enable && WindowsVersion.IsWindowsXPOrLater && EnsureActivateContextCreated() && !ActivateActCtx(activationContext, out _cookie))
         {
-            if (EnsureActivateContextCreated() && !ActivateActCtx(activationContext, out _cookie))
-            {
-                _cookie = 0;
-            }
+            _cookie = default;
         }
     }
 
@@ -45,16 +43,34 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 
     public void Dispose()
     {
-        if (_cookie != 0)
+        if (_cookie != default && DeactivateActCtx(default, _cookie))
         {
-            if (Win32Error.ThrowLastErrorIfFalse(DeactivateActCtx(0, _cookie)))
-            {
-                // deactivation succeeded
-                _cookie = 0;
-            }
+            // deactivation succeeded
+            _cookie = default;
         }
         activationContext?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private static string CreateTempManifestFile()
+    {
+        const string manifestResourceName = $"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest";
+        string manifestTempFilePath;
+
+        using (var manifestStream = typeof(ComCtlV6ActivationContext).Assembly.GetManifestResourceStream(manifestResourceName))
+        {
+            if (manifestStream is null)
+            {
+                throw new InvalidOperationException($"Unable to retrieve {manifestResourceName} embedded resource");
+            }
+
+            manifestTempFilePath = Path.GetRandomFileName();
+
+            using FileStream tempFileStream = new(manifestTempFilePath, FileMode.CreateNew, System.IO.FileAccess.ReadWrite, FileShare.Delete | FileShare.ReadWrite);
+            manifestStream.CopyTo(tempFileStream);
+        }
+
+        return manifestTempFilePath;
     }
 
     private static bool EnsureActivateContextCreated()
@@ -63,30 +79,12 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
         {
             if (contextCreationSucceeded)
             {
-                return contextCreationSucceeded;
+                return true;
             }
 
-            const string manifestResourceName = $"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest";
-            string manifestTempFilePath;
+            string manifestTempFilePath = CreateTempManifestFile();
 
-            using (var manifestStream = typeof(ComCtlV6ActivationContext).Assembly.GetManifestResourceStream(manifestResourceName))
-            {
-                if (manifestStream is null)
-                {
-                    throw new InvalidOperationException($"Unable to retrieve {manifestResourceName} embedded resource");
-                }
-
-                manifestTempFilePath = Path.GetRandomFileName();
-
-                using FileStream tempFileStream = new(manifestTempFilePath, FileMode.CreateNew, System.IO.FileAccess.ReadWrite, FileShare.Delete | FileShare.ReadWrite);
-                manifestStream.CopyTo(tempFileStream);
-            }
-
-            enableThemingActivationContext = new ACTCTX
-            {
-                cbSize = Marshal.SizeOf<ACTCTX>(),
-                lpSource = manifestTempFilePath,
-            };
+            enableThemingActivationContext = new ACTCTX(manifestTempFilePath);
 
             // Note this will fail gracefully if file specified by manifestFilePath doesn't exist.
             activationContext = CreateActCtx(enableThemingActivationContext);

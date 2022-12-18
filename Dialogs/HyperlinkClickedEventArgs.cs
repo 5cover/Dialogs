@@ -1,11 +1,10 @@
 ﻿namespace Scover.Dialogs;
 
 /// <summary>Provides date for the <see cref="Page.HyperlinkClicked"/> event.</summary>
-/// <remarks>This record cannot be inherited.</remarks>
+/// <remarks>This class cannot be inherited.</remarks>
 public sealed class HyperlinkClickedEventArgs : EventArgs
 {
-    /// <summary>Initializes a new instance of the <see cref="HyperlinkClickedEventArgs"/> class.</summary>
-    /// <param name="href">The value of <c>href</c> attribute of the hyperlink.</param>
+    /// <param name="href">The value of the <c>href</c> attribute of the hyperlink.</param>
     public HyperlinkClickedEventArgs(string? href) => Href = href;
 
     /// <summary>Gets the value of the <c>href</c> attribute of the hyperlink.</summary>
