@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using NUnit.Framework;
 using Scover.Dialogs;
-using Scover.Dialogs.Parts;
 
 namespace Tests;
 

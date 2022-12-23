@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using Vanara.PInvoke;
-using Part = Scover.Dialogs.Parts.DialogControl<Scover.Dialogs.Parts.PageUpdateInfo>;
+using Part = Scover.Dialogs.DialogControl<Scover.Dialogs.PageUpdateInfo>;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 internal sealed class PartCollection : IEnumerable<Part>
 {

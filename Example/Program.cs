@@ -1,5 +1,4 @@
 ﻿using Scover.Dialogs;
-using Scover.Dialogs.Parts;
 
 internal static class Program
 {

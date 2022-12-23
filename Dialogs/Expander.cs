@@ -2,7 +2,7 @@
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A dialog expander control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>

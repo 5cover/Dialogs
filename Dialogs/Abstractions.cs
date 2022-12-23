@@ -2,7 +2,7 @@
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 internal interface ITextControl
 {
@@ -66,7 +66,7 @@ public abstract class DialogControl<TUpdateInfo>
     }
 
     /// <summary>Layouts this object in a task dialog configuration object.</summary>
-    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>..</remarks>
+    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.</remarks>
     internal virtual void SetIn(in TASKDIALOGCONFIG config)
     {
     }

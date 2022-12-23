@@ -1,4 +1,4 @@
-﻿namespace Scover.Dialogs.Parts;
+﻿namespace Scover.Dialogs;
 
 /// <summary>The position of the expanded information relative to other elements of a dialog page.</summary>
 public enum ExpanderPosition

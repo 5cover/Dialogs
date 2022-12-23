@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>Temporary fixed version.</summary>
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 1)]

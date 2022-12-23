@@ -1,4 +1,4 @@
-﻿using Scover.Dialogs.Parts;
+﻿using System.Runtime.InteropServices;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
@@ -16,6 +16,7 @@ public class Dialog
 
     private readonly Page _firstPage;
     private HWND _handle;
+    private SafeHandle? _navigatedPagePtr;
 
     /// <param name="firstPage">The first page of the dialog.</param>
     /// <param name="chooseNextPage">
@@ -38,10 +39,14 @@ public class Dialog
             if (chooseNextPage(CurrentPage, args.ClickedControl) is { } nextPage)
             {
                 args.Cancel = true;
-                // todo : memleak
+
                 nextPage.UpdateRequested += Update;
                 nextPage.Closing += NavigateNextPage;
-                _ = _handle.SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, nextPage.CreateConfigPtr());
+
+                _navigatedPagePtr?.Dispose();
+                _navigatedPagePtr = nextPage.CreateConfigPtr();
+
+                _ = _handle.SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
                 CurrentPage = nextPage;
             }
         }

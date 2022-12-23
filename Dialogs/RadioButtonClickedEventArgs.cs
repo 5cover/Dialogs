@@ -1,6 +1,4 @@
-﻿using Scover.Dialogs.Parts;
-
-namespace Scover.Dialogs;
+﻿namespace Scover.Dialogs;
 
 /// <summary>Provides data for the an event about a click on a dialog radio button control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>

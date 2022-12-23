@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
-using Scover.Dialogs.Parts;
 using Vanara.Extensions;
 using Vanara.InteropServices;
 using Vanara.PInvoke;
@@ -8,15 +7,21 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>A page with that closes itself after a timeout.</summary>
+public class TimeoutPage : Page
+{
+}
+
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
 /// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see cref="RadioButtons"/>.
 /// </remarks>
-public sealed partial class Page : IDisposable
+public partial class Page : IDisposable
 {
     private readonly TASKDIALOGCONFIG _config = new();
     private readonly PartCollection _parts = new();
+    private bool _disposedValue;
     private bool _handleSent;
     private bool _ignoreButtonClicked;
 
@@ -33,6 +38,9 @@ public sealed partial class Page : IDisposable
 
         void Update(object? sender, Action<PageUpdateInfo> update) => OnUpdateRequested(update);
     }
+
+    /// <inheritdoc/>
+    ~Page() => Dispose(disposing: false);
 
     /// <summary>
     /// Event raised when the page is about to be closed, either because a commit control was clicked, or the dialog window was
@@ -64,16 +72,8 @@ public sealed partial class Page : IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        StringHelper.FreeString(_config.pszWindowTitle, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszMainInstruction, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszContent, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszVerificationText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszExpandedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszCollapsedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszFooter, CharSet.Unicode);
-        Buttons?.Dispose();
-        Expander?.Dispose();
-        RadioButtons?.Dispose();
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 
     internal SafeHGlobalHandle CreateConfigPtr()
@@ -90,6 +90,28 @@ public sealed partial class Page : IDisposable
         _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
         TaskDialogIndirect(_config, out int pnButton, out _, out _).ThrowIfFailed();
         return Buttons?.GetControlFromId(pnButton) ?? Button.OK; // An OK Button is shown by default when there are no buttons defined.
+    }
+
+    private protected virtual void Dispose(bool disposing)
+    {
+        if (_disposedValue)
+        {
+            return;
+        }
+        if (disposing)
+        {
+            Buttons?.Dispose();
+            Expander?.Dispose();
+            RadioButtons?.Dispose();
+        }
+        StringHelper.FreeString(_config.pszWindowTitle, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszMainInstruction, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszContent, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszVerificationText, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszExpandedControlText, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszCollapsedControlText, CharSet.Unicode);
+        StringHelper.FreeString(_config.pszFooter, CharSet.Unicode);
+        _disposedValue = true;
     }
 
     private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)

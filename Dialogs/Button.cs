@@ -1,7 +1,7 @@
 ﻿using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A dialog push button control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>

@@ -1,4 +1,4 @@
-﻿namespace Scover.Dialogs.Parts;
+﻿namespace Scover.Dialogs;
 
 /// <summary>A distance unit.</summary>
 public enum DistanceUnit

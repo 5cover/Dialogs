@@ -1,6 +1,6 @@
 ﻿using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>The state of a dialog progress bar control.</summary>
 public enum ProgressBarState

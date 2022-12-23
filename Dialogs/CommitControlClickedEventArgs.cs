@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Scover.Dialogs.Parts;
 
 namespace Scover.Dialogs;
 

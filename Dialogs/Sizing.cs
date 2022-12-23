@@ -1,7 +1,7 @@
 ﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>The sizing strategy of a dialog window.</summary>
 /// <remarks>This class cannot be inherited.</remarks>

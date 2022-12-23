@@ -1,5 +1,4 @@
-﻿using Scover.Dialogs.Parts;
-using static Vanara.PInvoke.ComCtl32;
+﻿using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 

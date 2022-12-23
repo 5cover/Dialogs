@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Vanara.InteropServices;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A dialog commit control with text.</summary>
 /// <remarks>This class implements <see cref="IDisposable"/>.</remarks>

@@ -1,9 +1,9 @@
 ﻿using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A header bar shown in top area of a dialog.</summary>
-/// <remarks>Only available on Windows 8 and later.</remarks>
+/// <remarks>Only available on Windows 8 and later. This class cannot be inherited.</remarks>
 public sealed class DialogHeader : DialogControl<PageUpdateInfo>
 {
     private readonly TaskDialogIcon _id;

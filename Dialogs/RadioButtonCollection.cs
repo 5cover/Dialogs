@@ -1,7 +1,7 @@
 ﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A collection of dialog radio button controls.</summary>
 /// <remarks>

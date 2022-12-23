@@ -1,7 +1,7 @@
 ﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A collection of <see cref="CommitControl"/> objects.</summary>
 /// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>

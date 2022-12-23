@@ -1,7 +1,7 @@
 ﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>An dialog icon control. Can be standard or custom.</summary>
 /// <remarks>This class cannot be inherited.</remarks>

@@ -1,4 +1,4 @@
-﻿namespace Scover.Dialogs.Parts;
+﻿namespace Scover.Dialogs;
 
 /// <summary>A collection of dialog push button controls. This class cannot be inherited.</summary>
 /// <remarks>

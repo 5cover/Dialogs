@@ -1,6 +1,6 @@
 ﻿using static Vanara.PInvoke.ComCtl32;
 
-namespace Scover.Dialogs.Parts;
+namespace Scover.Dialogs;
 
 /// <summary>A collection of dialog command link button controls. This class cannot be inherited.</summary>
 /// <remarks>
