@@ -7,11 +7,6 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-/// <summary>A page with that closes itself after a timeout.</summary>
-public class TimeoutPage : Page
-{
-}
-
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
@@ -78,14 +73,14 @@ public partial class Page : IDisposable
 
     internal SafeHGlobalHandle CreateConfigPtr()
     {
-        _parts.SetIn(_config);
+        _parts.SetPartsIn(_config);
         var ptr = _config.MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated);
         return new(ptr, bytesAllocated);
     }
 
     internal CommitControl Show(HWND parent, WindowLocation startupLocation)
     {
-        _parts.SetIn(_config);
+        _parts.SetPartsIn(_config);
         _config.hwndParent = parent;
         _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
         TaskDialogIndirect(_config, out int pnButton, out _, out _).ThrowIfFailed();
@@ -121,15 +116,11 @@ public partial class Page : IDisposable
             HandleRecieved?.Invoke(this, hwnd);
             _handleSent = true;
         }
-
         switch (id)
         {
             // Sent after TDN_DIALOG_CONSTRUCTED
             case TaskDialogNotification.TDN_CREATED:
                 Created.Raise(this);
-                break;
-
-            case TaskDialogNotification.TDN_NAVIGATED:
                 break;
 
             // Also sent when the dialog window was closed.
@@ -171,7 +162,6 @@ public partial class Page : IDisposable
                 HelpRequested.Raise(this);
                 break;
         }
-
         return _parts.Where(part => part is not null).Cast<DialogControl<PageUpdateInfo>>().ForwardNotification(new(id, wParam, lParam)) ?? default;
     }
 

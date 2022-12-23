@@ -9,7 +9,7 @@
     <Company>$(Authors)</Company>
     <Authors>Scover</Authors>
     <Product>Dialogs</Product>
-    <Description>A robust implementation of common Windows dialog constructions, such as timeout, multi-page, progress and task dialogs.</Description>
+    <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Dialogs</Title>
   </PropertyGroup>
