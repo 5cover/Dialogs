@@ -1,7 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Vanara.PInvoke;
-using static Vanara.PInvoke.ComCtl32;
-using static Vanara.PInvoke.User32;
+﻿using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
@@ -15,42 +12,13 @@ public class Dialog
     public const string MnemonicPrefix = "&";
 
     private readonly Page _firstPage;
-    private HWND _handle;
-    private SafeHandle? _navigatedPagePtr;
 
-    /// <param name="firstPage">The first page of the dialog.</param>
-    /// <param name="chooseNextPage">
-    /// For multi-page dialogs, a function that returns the next page to navigate to when the previous page has been closed, or
-    /// <see langword="null"/> to end the dialog early. Specifiy <see langword="null"/> to have a single-page dialog.
-    /// </param>
-    public Dialog(Page firstPage, Func<Page, CommitControl, Page?>? chooseNextPage = null)
+    /// <param name="page">The page of the dialog.</param>
+    public Dialog(Page page)
     {
-        firstPage.HandleRecieved += (s, handle) => _handle = handle;
-        firstPage.UpdateRequested += Update;
-        CurrentPage = _firstPage = firstPage;
-
-        if (chooseNextPage is not null)
-        {
-            firstPage.Closing += NavigateNextPage;
-        }
-
-        void NavigateNextPage(object? sender, CommitControlClickedEventArgs args)
-        {
-            if (chooseNextPage(CurrentPage, args.ClickedControl) is { } nextPage)
-            {
-                args.Cancel = true;
-
-                nextPage.UpdateRequested += Update;
-                nextPage.Closing += NavigateNextPage;
-
-                _navigatedPagePtr?.Dispose();
-                _navigatedPagePtr = nextPage.CreateConfigPtr();
-
-                _ = _handle.SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
-                CurrentPage = nextPage;
-            }
-        }
-        void Update(object? sender, Action<PageUpdateInfo> update) => update(new(_handle));
+        page.HandleRecieved += (s, handle) => Handle = handle.DangerousGetHandle();
+        page.UpdateRequested += (s, update) => update(new(Handle));
+        _firstPage = page;
     }
 
     /// <summary>Gets or sets whether to use an activation context for calling <c>TaskDialogIndirect</c>.</summary>
@@ -60,15 +28,8 @@ public class Dialog
     /// </remarks>
     public static bool UseActivationContext { get; set; } = true;
 
-    /// <summary>Gets the current page.</summary>
-    /// <value>
-    /// If <see cref="Show(nint?)"/> has not been called yet, the first page of the dialog, otherwise the page that is currently
-    /// being displayed in the dialog.
-    /// </value>
-    public Page CurrentPage { get; private set; }
-
     /// <summary>Gets the window handle of the dialog, or 0 if the dialog is currently not being shown.</summary>
-    public nint Handle => _handle.DangerousGetHandle();
+    public nint Handle { get; private protected set; }
 
     /// <summary>Gets or sets the window startup location.</summary>
     /// <value>The location of the dialog window when it is first shown. Default value is <see cref="WindowLocation.CenterScreen"/>.</value>

@@ -4,6 +4,13 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>A delegate that selects the next page to navigate to after a page closing or an explicit navigation request.</summary>
+/// <param name="clickedControl">
+/// The commit control that closed the previous page, or <see langword="null"/> if navigation was explicitly requested with <see cref="MultiPageDialog.Navigate()"/>.
+/// </param>
+/// <returns>The next page to navigate to, or <see langword="null"/> to end the navigation.</returns>
+public delegate Page? NextPageSelector(CommitControl? clickedControl);
+
 internal interface ITextControl
 {
     /// <summary>Gets the <c>LPWSTR</c> that represents the text of this control.</summary>

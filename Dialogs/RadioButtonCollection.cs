@@ -50,12 +50,7 @@ public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
         _ = base.HandleNotification(notif);
         if (notif.Id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED)
         {
-            var control = GetControlFromId((int)notif.WParam);
-            if (control is not null)
-            {
-                Selected = control;
-            }
-            return control?.HandleNotification(notif);
+            return GetControlFromId((int)notif.WParam)?.HandleNotification(notif);
         }
         return this.ForwardNotification(notif);
     }

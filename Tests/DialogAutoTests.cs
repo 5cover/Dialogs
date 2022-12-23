@@ -88,7 +88,7 @@ public sealed class DialogAutoTests
         {
             using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(500));
             int tickCount = 0;
-            while (await timer.WaitForNextTickAsync() && tickCount < 10)
+            while (await timer.WaitForNextTickAsync() && tickCount < 5)
             {
                 page.Content = GetRandomString();
                 page.MainInstruction = GetRandomString();
@@ -105,7 +105,6 @@ public sealed class DialogAutoTests
         static DialogIcon GetRandomIcon()
         {
             int id = 199;
-            int c = 0;
             while (id
                 is > 198 and < 1001
                 or > 1043 and < 1301
@@ -116,10 +115,8 @@ public sealed class DialogAutoTests
                 or > 5210 and < 5301
                 or > 5412 and < 6400)
             {
-                ++c;
                 id = Random.Shared.Next(2, 6401);
             }
-            Console.WriteLine($"c = {c}, id = {id}");
             return DialogIcon.FromId(id);
         }
 

@@ -132,6 +132,50 @@ public sealed class DialogTests
     }
 
     [Test]
+    public void TestNavigation()
+    {
+        using Page page1 = new()
+        {
+            MainInstruction = "Page 1",
+            Content = "First page with expander. Press F1 to navigate to Page 2.",
+            Expander = new("Expanded information")
+            {
+                ExpandButtonText = "Custom expand",
+                CollapseButtonText = "Custom collapse",
+                IsExpanded = true,
+            },
+            Buttons = new ButtonCollection() { Button.Yes, Button.No, Button.Cancel },
+        };
+        using Page page2 = new()
+        {
+            MainInstruction = "Page 2",
+            Content = "Second page with radio buttons. Press F1 to navigate to Page 3",
+            RadioButtons = new(DefaultRadioButton.None)
+            {
+                "Radio #1",
+                "Radio #2"
+            }
+        };
+        using Page page3 = new()
+        {
+            MainInstruction = "Page 3",
+            Content = "Third page with nothing at all. Press F1 to navigate to Page 1."
+        };
+        MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>()
+        {
+            [page1] = _ => page2,
+            [page2] = _ => page3,
+            [page3] = _ => page1,
+        });
+        page1.HelpRequested += Navigate;
+        page2.HelpRequested += Navigate;
+        page3.HelpRequested += Navigate;
+        _ = dlg.Show();
+
+        void Navigate(object? sender, EventArgs e) => dlg.Navigate();
+    }
+
+    [Test]
     public void TestProgressBar()
     {
         Button
@@ -168,39 +212,69 @@ public sealed class DialogTests
             ProgressBar = new(),
             WindowTitle = nameof(TestProgressBar),
         };
-
         var pb = page.ProgressBar;
-
-        EnableDisable();
         UpdateExpandedInfo();
-
-        minPlus10.Clicked += (_, _) => pb.Minimum += 10;
-        minMinus10.Clicked += (_, _) => pb.Minimum -= 10;
-        maxPlus10.Clicked += (_, _) => pb.Maximum += 10;
-        maxMinus10.Clicked += (_, _) => pb.Maximum -= 10;
-        valuePlus10.Clicked += (_, _) => pb.Value += 10;
-        valueMinus10.Clicked += (_, _) => pb.Value -= 10;
-        cycleState.Clicked += (_, _) => pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
-        toggleMode.Clicked += (_, _) => pb.State = pb.State switch
+        minPlus10.Clicked += (_, _) =>
         {
-            ProgressBarState.Error => ProgressBarState.Normal,
-            ProgressBarState.Normal => ProgressBarState.Paused,
-            ProgressBarState.Paused => ProgressBarState.Error,
-            _ => throw new ArgumentException()
+            pb.Minimum += 10;
+            minPlus10.IsEnabled = pb.Minimum < ushort.MaxValue;
+            UpdateExpandedInfo();
         };
-        intervalPlus1.Clicked += (_, _) => pb.MarqueeInterval++;
-        intervalMinus1.Clicked += (_, _) => pb.MarqueeInterval--;
-
-        foreach (var cc in page.Buttons)
+        minMinus10.Clicked += (_, _) =>
         {
-            cc.Clicked += (s, e) =>
+            pb.Minimum -= 10;
+            minMinus10.IsEnabled = pb.Minimum > 0;
+            UpdateExpandedInfo();
+        };
+        maxPlus10.Clicked += (_, _) =>
+        {
+            pb.Maximum += 10;
+            maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
+            UpdateExpandedInfo();
+        };
+        maxMinus10.Clicked += (_, _) =>
+        {
+            pb.Maximum -= 10;
+            maxMinus10.IsEnabled = pb.Maximum > 0;
+            UpdateExpandedInfo();
+        };
+        valuePlus10.Clicked += (_, _) =>
+        {
+            pb.Value += 10;
+            UpdateExpandedInfo();
+        };
+        valueMinus10.Clicked += (_, _) =>
+        {
+            pb.Value -= 10;
+            UpdateExpandedInfo();
+        };
+        cycleState.Clicked += (_, _) =>
+        {
+            pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
+            UpdateExpandedInfo();
+        };
+        toggleMode.Clicked += (_, _) =>
+        {
+            pb.State = pb.State switch
             {
-                e.Cancel = !Equals(s, Button.Cancel);
-                EnableDisable();
-                UpdateExpandedInfo();
+                ProgressBarState.Error => ProgressBarState.Normal,
+                ProgressBarState.Normal => ProgressBarState.Paused,
+                ProgressBarState.Paused => ProgressBarState.Error,
+                _ => throw new ArgumentException()
             };
-        }
-
+            UpdateExpandedInfo();
+        };
+        intervalPlus1.Clicked += (_, _) =>
+        {
+            pb.MarqueeInterval++;
+            UpdateExpandedInfo();
+        };
+        intervalMinus1.Clicked += (_, _) =>
+        {
+            pb.MarqueeInterval--;
+            intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
+            UpdateExpandedInfo();
+        };
         _ = new Dialog(page).Show();
 
         void UpdateExpandedInfo() => page.Expander.Text = $@"
@@ -210,15 +284,6 @@ public sealed class DialogTests
 {nameof(pb.Maximum)} = {pb.Maximum}
 {nameof(pb.Value)} = {pb.Value}
 {nameof(pb.MarqueeInterval)} = {pb.MarqueeInterval}";
-
-        void EnableDisable()
-        {
-            minPlus10.IsEnabled = pb.Minimum < ushort.MaxValue;
-            minMinus10.IsEnabled = pb.Minimum > 0;
-            maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
-            maxMinus10.IsEnabled = pb.Maximum > 0;
-            intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
-        }
     }
 
     [Test]
