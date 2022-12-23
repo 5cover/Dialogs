@@ -14,6 +14,9 @@ public sealed class Button : TextCommitControl
     public static CommonButton Abort => new(1 << 16, MB_RESULT.IDABORT);
 
     /// <summary>Gets a new <i>Cancel</i> button.</summary>
+    /// <remarks>
+    /// The cancel button is also returned when the dialog window has been closed using Alt-F4, Escape, or the title bar's close button.
+    /// </remarks>
     public static CommonButton Cancel => new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON, MB_RESULT.IDCANCEL);
 
     /// <summary>Gets a new <i>Close</i> button.</summary>

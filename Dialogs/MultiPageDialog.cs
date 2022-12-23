@@ -4,7 +4,8 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-/// <summary>A dialog with multiple pages.</summary>
+/// <summary>A dialog with multiple pages and support for navigation.</summary>
+/// <remarks>Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is closed.</remarks>
 public class MultiPageDialog : Dialog
 {
     private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
@@ -15,7 +16,11 @@ public class MultiPageDialog : Dialog
     /// <param name="nextPageSelectors">
     /// An dictionary of <see cref="NextPageSelector"/> delegates keyed by the page they navigate from.
     /// </param>
-    public MultiPageDialog(Page firstPage, IDictionary<Page, NextPageSelector> nextPageSelectors) : base(firstPage) => (CurrentPage, _nextPageSelectors) = (firstPage, nextPageSelectors);
+    public MultiPageDialog(Page firstPage, IDictionary<Page, NextPageSelector> nextPageSelectors) : base(firstPage)
+    {
+        (CurrentPage, _nextPageSelectors) = (firstPage, nextPageSelectors);
+        firstPage.Closing += Navigate;
+    }
 
     /// <summary>Gets the current page.</summary>
     /// <value>
@@ -27,16 +32,25 @@ public class MultiPageDialog : Dialog
     /// <summary>Sends an explicit navigation request to the dialog.</summary>
     public void Navigate() => Navigate(null);
 
-    void Navigate(CommitControl? clickedControl)
+    private void Navigate(object? sender, CommitControlClickedEventArgs e) => e.Cancel = Navigate(e.ClickedControl);
+
+    bool Navigate(CommitControl? clickedControl)
     {
         _navigatedPagePtr?.Dispose();
         if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser)
           && nextPageChooser(clickedControl) is { } nextPage)
         {
+            nextPage.Closing += Navigate;
             nextPage.UpdateRequested += (s, update) => update(new(Handle));
+
             _navigatedPagePtr = nextPage.CreateConfigPtr();
             _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
+
+            CurrentPage.Closing -= Navigate;
             CurrentPage = nextPage;
+
+            return true;
         }
+        return false;
     }
 }
