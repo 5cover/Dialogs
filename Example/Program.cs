@@ -1,9 +1,21 @@
 ﻿using Scover.Dialogs;
 
-internal static class Program
+using Page page1 = new()
 {
-    private static void Main()
+    MainInstruction = "Page #1",
+    Buttons = new CommandLinkCollection()
     {
-        Dialog.UseActivationContext = false;
+      { "Label", "Supplental instruction" },
+      Button.Cancel
     }
-}
+};
+using Page page2 = new()
+{
+    MainInstruction = "Page #2",
+    Expander = new("Expanded information")
+};
+
+var clickedButton = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>
+{
+    [page1] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page2,
+}).Show();

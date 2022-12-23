@@ -161,11 +161,11 @@ public sealed class DialogTests
             MainInstruction = "Page 3",
             Content = "Third page with nothing at all. Press F1 to navigate to Page 1."
         };
-        MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>()
+        MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>
         {
-            [page1] = _ => page2,
-            [page2] = _ => page3,
-            [page3] = _ => page1,
+            [page1] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page2,
+            [page2] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page3,
+            [page3] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page1,
         });
         page1.HelpRequested += Navigate;
         page2.HelpRequested += Navigate;

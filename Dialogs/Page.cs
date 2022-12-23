@@ -39,7 +39,7 @@ public partial class Page : IDisposable
 
     /// <summary>
     /// Event raised when the page is about to be closed, either because a commit control was clicked, or the dialog window was
-    /// closed using Alt-F4, Escape, or the title bar's close button.Set the <see cref="CancelEventArgs.Cancel"/> property of
+    /// closed using Alt-F4, Escape, or the title bar's close button. Set the <see cref="CancelEventArgs.Cancel"/> property of
     /// the event arguments to <see langword="true"/> to prevent the page from closing.
     /// </summary>
     public event EventHandler<CommitControlClickedEventArgs>? Closing;
