@@ -1,17 +1,30 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Scover.Dialogs.Parts;
 using Vanara.Extensions;
 using Vanara.PInvoke;
-using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
 internal static class Extensions
 {
-    public static HRESULT ForwardNotification<T>(this IEnumerable<DialogControl<T>?> handlers, TaskDialogNotification id, nint wParam, nint lParam)
-        => handlers.Select(h => h?.HandleNotification(id, wParam, lParam) ?? default).SingleOrDefault(h => h != default);
+    /// <summary>Asserts that <paramref name="t"/> isn't <see langword="null"/>.</summary>
+    /// <returns><paramref name="t"/>, not null.</returns>
+    public static T AssertNotNull<T>([NotNull] this T? t)
+    {
+        Debug.Assert(t is not null, $"{nameof(t)} is null.");
+        return t;
+    }
+
+    /// <summary>Forwards a notification to a collection of handlers.</summary>
+    /// <returns>
+    /// <see langword="null"/> if none of the handlers had a meaningful value to return, the notification-specific return value
+    /// of the first handler that did otherwise.
+    /// </returns>
+    public static HRESULT? ForwardNotification<T>(this IEnumerable<DialogControl<T>> handlers, Notification notif)
+        => handlers.Select(h => h.HandleNotification(notif)).FirstOrDefault(h => h is not null);
 
     [StackTraceHidden]
     public static InvalidEnumArgumentException NewInvalidEnumArgumentException<TEnum>(this TEnum value, string? argumentName = null) where TEnum : struct, Enum, IConvertible

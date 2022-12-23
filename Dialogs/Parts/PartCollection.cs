@@ -1,34 +1,47 @@
 ﻿using System.Collections;
-using static Vanara.PInvoke.ComCtl32;
 
 using Part = Scover.Dialogs.Parts.DialogControl<Scover.Dialogs.Parts.PageUpdateInfo>;
 
 namespace Scover.Dialogs.Parts;
 
-internal sealed class PartCollection : IEnumerable<Part?>
+internal sealed class PartCollection : IEnumerable<Part>
 {
-    private readonly Dictionary<Type, Part?> _parts = new();
+    private record PartRecord(Part? DefaultValue, Part? Value)
+    {
+        public Part? Value { get; set; } = Value;
+    }
+
+    private readonly Dictionary<Type, PartRecord> _parts = new();
 
     public event EventHandler<Part>? PartAdded;
 
     public event EventHandler<Part>? PartRemoved;
 
-    public IEnumerator<Part?> GetEnumerator() => _parts.Values.GetEnumerator();
+    public T? Get<T>() where T : Part
+    {
+        var p = _parts.GetValueOrDefault(typeof(T));
+        return (T?)(p?.Value ?? p?.DefaultValue);
+    }
 
-    public T? GetPart<T>() where T : Part => (T?)_parts.GetValueOrDefault(typeof(T));
+    public IEnumerator<Part> GetEnumerator() => _parts.Values.Select(p => p.Value ?? p.DefaultValue).Where(v => v is not null).GetEnumerator()!; // !: null was filtered out
 
-    public void SetPart<T>(in TASKDIALOGCONFIG config, T? value) where T : Part
+    public void Set<T>(T? value) where T : Part
     {
         if (_parts.GetValueOrDefault(typeof(T)) is { } oldPart)
         {
-            OnPartRemoved(oldPart);
+            _parts[typeof(T)].Value = value;
+            OnPartRemoved(oldPart.Value);
         }
-        _parts[typeof(T)] = value;
+        else
+        {
+            _parts.Add(typeof(T), new(null, value));
+        }
         OnPartAdded(value);
-        value?.SetIn(config);
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => _parts.Values.GetEnumerator();
+    public void SetDefaultValue<T>(T defaultValue) where T : Part => _parts.Add(typeof(T), new(defaultValue, defaultValue));
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     private void OnPartAdded(Part? part)
     {

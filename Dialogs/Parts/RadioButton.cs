@@ -25,7 +25,7 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
         set
         {
             _isEnabled = value;
-            RequestIsEnabledUpdate();
+            RequestUpdate(UpdateIsEnabled);
         }
     }
 
@@ -35,21 +35,29 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
     StrPtrUni ITextControl.NativeText => _nativeText;
 
     /// <summary>Simulates a click on this radio button.</summary>
-    public void Click() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_RADIO_BUTTON, update.ControlId));
+    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_RADIO_BUTTON, info.ControlId));
 
     /// <inheritdoc/>
     public void Dispose() => _nativeText.Dispose();
 
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <remarks>
+    /// <inheritdoc path="/remarks"/>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED"/></term>
+    /// <term>Raises <see cref="Clicked"/></term>
+    /// </item>
+    /// </remarks>
+    /// <inheritdoc/>
+    internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED)
+        if (notif.Id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED)
         {
-            Clicked.Raise(this);
+            Clicked?.Invoke(this, EventArgs.Empty);
         }
-        return base.HandleNotification(id, wParam, lParam);
+        return base.HandleNotification(notif);
     }
 
-    private protected override void InitializeState() => RequestIsEnabledUpdate();
+    private protected override void InitializeState() => RequestUpdate(UpdateIsEnabled);
 
-    private void RequestIsEnabledUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, update.ControlId, _isEnabled));
+    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, info.ControlId, _isEnabled);
 }

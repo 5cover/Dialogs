@@ -1,8 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Scover.Dialogs.Parts;
-using Vanara.Extensions;
-using Vanara.PInvoke;
-using static Vanara.PInvoke.ComCtl32;
+﻿using Scover.Dialogs.Parts;
 using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
@@ -35,7 +31,7 @@ public class Dialog
             if (chooseNextPage(args.ClickedControl) is { } nextPage)
             {
                 args.Cancel = true;
-                _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, CurrentPage.Config.MarshalToPtr(Marshal.AllocHGlobal, out _));
+                CurrentPage.Navigate(this, nextPage);
                 CurrentPage = nextPage;
             }
         }
@@ -52,8 +48,8 @@ public class Dialog
     /// </value>
     public Page CurrentPage { get; private set; }
 
-    /// <summary>Gets the window handle of the dialog window, or 0 if the dialog is currently not being shown.</summary>
-    public nint Handle => CurrentPage.OwnerDialog.DangerousGetHandle();
+    /// <summary>Gets the window handle of the dialog, or 0 if the dialog is currently not being shown.</summary>
+    public nint Handle => CurrentPage.GetHandle(this).DangerousGetHandle();
 
     /// <summary>Gets or sets the window startup location.</summary>
     /// <value>The location of the dialog window when it is first shown. Default value is <see cref="WindowLocation.CenterScreen"/>.</value>
@@ -62,33 +58,19 @@ public class Dialog
     /// <summary>Shows the dialog.</summary>
     /// <param name="owner">The owner window handle.</param>
     /// <returns>
-    /// The <see cref="CommitControl"/> that was clicked or <see langword="null"/> if <see cref="Button.Cancel"/> was clicked or
-    /// the dialog was closed using Alt-F4, Escape, or the title bar's close button.
+    /// The <see cref="CommitControl"/> that was clicked or <see cref="Button.Cancel"/> if the dialog was closed using Alt-F4,
+    /// Escape, or the title bar's close button.
     /// </returns>
     /// <exception cref="PlatformNotSupportedException">
     /// Cannot show the dialog becuase Windows Task Dialogs require Windows Vista or later.
     /// </exception>
-    public CommitControl? Show(nint? owner = null)
+    public CommitControl Show(nint? owner = null)
     {
         if (!WindowsVersion.SupportsTaskDialogs)
         {
             throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.");
         }
-
         using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
-
-        CurrentPage.Config.hwndParent = owner ?? GetActiveWindow();
-        CurrentPage.Config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, StartupLocation is WindowLocation.CenterParent);
-
-        TaskDialogIndirect(CurrentPage.Config, out int pnButton, out _, out _).ThrowIfFailed();
-        if (pnButton == Button.Cancel.Id)
-        {
-            return null;
-        }
-        if (CurrentPage.Buttons?.Any() ?? false)
-        {
-            return CurrentPage.Buttons.GetControlFromId(pnButton);
-        }
-        return CommonButton.FromId(pnButton);
+        return CurrentPage.Show(this, owner ?? GetActiveWindow(), StartupLocation);
     }
 }

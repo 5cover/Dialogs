@@ -11,10 +11,10 @@ namespace Scover.Dialogs;
 
 public partial class Page
 {
-    /// <summary>Gets whether to enable hyperlinks</summary>
+    /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
     /// <para>
-    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.ExpandedInformation"/> and
+    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.Text"/> and
     /// <see cref="FooterText"/> properties can use hyperlinks in the following form: <c>&lt;A
     /// HREF="executablestring"&gt;Hyperlink NativeText&lt;/A&gt;</c>
     /// </para>
@@ -26,13 +26,13 @@ public partial class Page
     /// </remarks>
     /// <value>
     /// <see langword="true"/> when hyperlinks are allowed for the <see cref="Content"/>, <see
-    /// cref="Expander.ExpandedInformation"/> and <see cref="FooterText"/> properties; otherwise, <see langword="false"/>.
+    /// cref="Expander.Text"/> and <see cref="FooterText"/> properties; otherwise, <see langword="false"/>.
     /// Default value is <see langword="false"/>.
     /// </value>
-    public bool AreHyperlinksEnabled
+    public bool AllowHyperlinks
     {
-        get => Config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS);
-        init => Config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS, value);
+        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS);
+        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS, value);
     }
 
     /// <summary>Gets the commit control collection.</summary>
@@ -43,8 +43,8 @@ public partial class Page
     /// <value>The collection of all the commit controls, buttons or command links. Default value is <see langword="null"/>.</value>
     public CommitControlCollection? Buttons
     {
-        get => _parts.GetPart<CommitControlCollection>();
-        init => _parts.SetPart(Config, value);
+        get => _parts.Get<CommitControlCollection>();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets the expander.</summary>
@@ -54,8 +54,17 @@ public partial class Page
     /// </value>
     public Expander? Expander
     {
-        get => _parts.GetPart<Expander>();
-        init => _parts.SetPart(Config, value);
+        get => _parts.Get<Expander>();
+        init => _parts.Set(value);
+    }
+
+    /// <summary>Gets the header.</summary>
+    /// <remarks>If the value is <see cref="DialogHeader.None"/>, no header bar will be displayed.</remarks>
+    /// <value>The header bar. Default value is <see cref="DialogHeader.None"/>.</value>
+    public DialogHeader Header
+    {
+        get => _parts.Get<DialogHeader>().AssertNotNull();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets whether to allow cancelation.</summary>
@@ -65,8 +74,8 @@ public partial class Page
     /// </value>
     public bool IsCancelable
     {
-        get => Config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION);
-        init => Config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION, value);
+        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION);
+        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION, value);
     }
 
     /// <summary>Gets whether to allow minimization.</summary>
@@ -75,8 +84,8 @@ public partial class Page
     /// </value>
     public bool IsMinimizable
     {
-        get => Config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED);
-        init => Config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED, value);
+        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED);
+        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED, value);
     }
 
     /// <summary>Gets whether text is displayed right to left.</summary>
@@ -86,8 +95,17 @@ public partial class Page
     /// </value>
     public bool IsRightToLeftLayout
     {
-        get => Config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT);
-        init => Config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT, value);
+        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT);
+        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT, value);
+    }
+
+    /// <summary>Gets the progress bar.</summary>
+    /// <remarks>If the value is <see langword="null"/>, no progress bar will be shown.</remarks>
+    /// <value>The progress bar of the page. Default value is <see langword="null"/>.</value>
+    public ProgressBar? ProgressBar
+    {
+        get => _parts.Get<ProgressBar>();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets the radio button list</summary>
@@ -97,16 +115,16 @@ public partial class Page
     /// <value>The list of all the radio buttons. Default value is <see langword="null"/>.</value>
     public RadioButtonCollection? RadioButtons
     {
-        get => _parts.GetPart<RadioButtonCollection>();
-        init => _parts.SetPart(Config, value);
+        get => _parts.Get<RadioButtonCollection>();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets the sizing strategy.</summary>
     /// <value>The sizing strategy to size the owner dialog window. Default value is <see cref="Sizing.Automatic"/>.</value>
-    public Sizing? Sizing
+    public Sizing Sizing
     {
-        get => _parts.GetPart<Sizing>();
-        init => _parts.SetPart(Config, value);
+        get => _parts.Get<Sizing>().AssertNotNull();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets the verification.</summary>
@@ -114,12 +132,12 @@ public partial class Page
     /// <value>The verification of the page. Default value is <see langword="null"/>.</value>
     public Verification? Verification
     {
-        get => _parts.GetPart<Verification>();
-        init => _parts.SetPart(Config, value);
+        get => _parts.Get<Verification>();
+        init => _parts.Set(value);
     }
 
     /// <summary>Gets the window title.</summary>
     /// <remarks>If the value is <see langword="null"/>, the window title will be the filename of the current executable.</remarks>
     /// <value>The title of the owner dialog window. Default value is <see langword="null"/>.</value>
-    public string? WindowTitle { get => Config.WindowTitle; init => Config.WindowTitle = value; }
+    public string? WindowTitle { get => _config.WindowTitle; init => _config.WindowTitle = value; }
 }

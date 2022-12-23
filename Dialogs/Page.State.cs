@@ -6,7 +6,10 @@ namespace Scover.Dialogs;
 // States properties can be set at anytime. Disposable state properties are not disposed because they are not considered to be
 // owned by the page.
 
-// States is { get; set; }
+// State is { get; set; }
+
+// Non-nullable reference types are used for element texts because SET_ELEMENT_TEXT and UPDATE_ELEMENT_TEXT do not work on null
+// string pointers.
 
 public partial class Page
 {
@@ -14,15 +17,15 @@ public partial class Page
     private DialogIcon _icon = DialogIcon.None;
 
     /// <summary>Gets or sets the content.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no text will be show in the content area.</remarks>
-    /// <value>The text shown in the content area. Default value is <see langword="null"/>.</value>
-    public string? Content
+    /// <remarks>If the value is <see cref="string.Empty"/>, no text will be show in the content area.</remarks>
+    /// <value>The text shown in the content area. Default value is <see cref="string.Empty"/>.</value>
+    public string Content
     {
-        get => Config.Content;
+        get => _config.Content ?? "";
         set
         {
-            Config.Content = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, Config.pszContent);
+            _config.Content = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, _config.pszContent);
         }
     }
 
@@ -33,22 +36,24 @@ public partial class Page
         get => _footerIcon;
         set
         {
+            DenyHIconIDTransition(_footerIcon, value);
             _footerIcon = value;
-            value.SetFooterIcon(Config);
-            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, Config.footerIcon);
+            _config.footerIcon = value.Handle;
+            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, value.IsHIcon);
+            ForEachDialog(dlg => dlg.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, value.Handle));
         }
     }
 
     /// <summary>Gets or sets the footer text.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no text will be shown in the footer area.</remarks>
-    /// <value>The text to show in the footer area. Default value is <see langword="null"/>.</value>
-    public string? FooterText
+    /// <remarks>If the value is <see cref="string.Empty"/>, no text will be shown in the footer area.</remarks>
+    /// <value>The text to show in the footer area. Default value is <see cref="string.Empty"/>.</value>
+    public string FooterText
     {
-        get => Config.Footer;
+        get => _config.Footer ?? "";
         set
         {
-            Config.Footer = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, Config.pszFooter);
+            _config.Footer = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, _config.pszFooter);
         }
     }
 
@@ -59,31 +64,32 @@ public partial class Page
         get => _icon;
         set
         {
+            DenyHIconIDTransition(_icon, value);
             _icon = value;
-            value.SetMainIcon(Config);
-            _ = OwnerDialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Config.mainIcon);
+            _config.mainIcon = Icon.Handle;
+            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, Icon.IsHIcon);
+            ForEachDialog(dlg => dlg.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
         }
     }
 
     /// <summary>Gets or sets the main instruction.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no main instruction will be shown.</remarks>
-    /// <value>The main instruction of the page. Default value is <see langword="null"/>.</value>
-    public string? MainInstruction
+    /// <remarks>If the value is <see cref="string.Empty"/>, no main instruction will be shown.</remarks>
+    /// <value>The main instruction of the page. Default value is <see cref="string.Empty"/>.</value>
+    public string MainInstruction
     {
-        get => Config.MainInstruction;
+        get => _config.MainInstruction ?? "";
         set
         {
-            Config.MainInstruction = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, Config.pszMainInstruction);
+            _config.MainInstruction = value;
+            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _config.pszMainInstruction);
         }
     }
 
-    /// <summary>Gets the progress bar.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no progress bar will be shown.</remarks>
-    /// <value>The progress bar of the page. Default value is <see langword="null"/>.</value>
-    public ProgressBar? ProgressBar
+    private void DenyHIconIDTransition(DialogIcon current, DialogIcon value)
     {
-        get => _parts.GetPart<ProgressBar>();
-        set => _parts.SetPart(Config, value);
+        if (_dialogs.Any() && current.IsHIcon != value.IsHIcon)
+        {
+            throw new ArgumentException("Cannot transition between HIcon and ID while the dialog is shown.");
+        }
     }
 }

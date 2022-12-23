@@ -32,14 +32,32 @@ public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
     /// <param name="text">The label.</param>
     public void Add(string text) => Add(new RadioButton(text));
 
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <remarks>
+    /// <inheritdoc path="/remarks"/>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED"/></term>
+    /// <term>Forwards the notification to the clicked radio button</term>
+    /// <term><see cref="RadioButton.HandleNotification(Notification)"/></term>
+    /// </item>
+    /// </remarks>
+    /// <returns>
+    /// The notification is forwarded to all items. <see langword="null"/> if none of the items had a meaningful value to
+    /// return, the notification-specific return value otherwise.
+    /// </returns>
+    /// <inheritdoc/>
+    internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED && GetControlFromId((int)wParam) is { } control)
+        _ = base.HandleNotification(notif);
+        if (notif.Id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED)
         {
-            Selected = control;
-            return control.HandleNotification(id, wParam, lParam);
+            var control = GetControlFromId((int)notif.WParam);
+            if (control is not null)
+            {
+                Selected = control;
+            }
+            return control?.HandleNotification(notif);
         }
-        return base.HandleNotification(id, wParam, lParam);
+        return this.ForwardNotification(notif);
     }
 
     private protected override void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)

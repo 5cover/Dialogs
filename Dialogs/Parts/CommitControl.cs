@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Vanara.InteropServices;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
@@ -27,7 +26,7 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
         set
         {
             _isEnabled = value;
-            RequestIsEnabledUpdate();
+            RequestUpdate(UpdateIsEnabled);
         }
     }
 
@@ -39,16 +38,26 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
         set
         {
             _requiresElevation = value;
-            RequestElevationUpdate();
+            RequestUpdate(UpdateElevation);
         }
     }
 
     /// <summary>Simulates a click on this button.</summary>
-    public void Click() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_BUTTON, update.ControlId));
+    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_BUTTON, info.ControlId));
 
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <remarks>
+    /// <inheritdoc path="/remarks"/>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
+    /// <term>Raises <see cref="Clicked"/></term>
+    /// <term><see cref="HRESULT.S_FALSE"/> if <see cref="CancelEventArgs.Cancel"/> was <see langword="true"/></term>
+    /// </item>
+    /// </remarks>
+    /// <inheritdoc/>
+    internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (id is TaskDialogNotification.TDN_BUTTON_CLICKED)
+        _ = base.HandleNotification(notif);
+        if (notif.Id == TaskDialogNotification.TDN_BUTTON_CLICKED)
         {
             CancelEventArgs e = new();
             Clicked?.Invoke(this, e);
@@ -57,34 +66,16 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
                 return HRESULT.S_FALSE;
             }
         }
-        return base.HandleNotification(id, wParam, lParam);
+        return null;
     }
 
-    private protected override void InitializeState()
+    private protected override void InitializeState() => RequestUpdate(info =>
     {
-        RequestElevationUpdate();
-        RequestIsEnabledUpdate();
-    }
+        UpdateElevation(info);
+        UpdateIsEnabled(info);
+    });
 
-    private void RequestElevationUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, update.ControlId, _requiresElevation));
+    private void UpdateElevation(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, info.ControlId, _requiresElevation);
 
-    private void RequestIsEnabledUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_BUTTON, update.ControlId, _isEnabled));
-}
-
-/// <summary>A dialog commit control with text.</summary>
-/// <remarks>This class implements <see cref="IDisposable"/>.</remarks>
-public abstract class TextCommitControl : CommitControl, ITextControl, IDisposable
-{
-    private readonly SafeLPWSTR _nativeText = SafeLPWSTR.Null;
-
-    private protected TextCommitControl(string? text) => _nativeText = new(text!); // !: null supported in base constructor.
-
-    StrPtrUni ITextControl.NativeText => _nativeText;
-
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        _nativeText.Dispose();
-        GC.SuppressFinalize(this);
-    }
+    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_BUTTON, info.ControlId, _isEnabled);
 }

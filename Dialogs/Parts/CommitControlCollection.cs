@@ -11,15 +11,29 @@ public abstract class CommitControlCollection : IdControlCollection<CommitContro
     {
     }
 
-    internal override CommitControl? GetControlFromId(int id) => Items.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
+    internal override CommitControl? GetControlFromId(int id) => this.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
 
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <remarks>
+    /// <inheritdoc path="/remarks"/>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
+    /// <term>Forwards the notification to the clicked commit control</term>
+    /// <term><see cref="CommitControl.HandleNotification(Notification)"/></term>
+    /// </item>
+    /// </remarks>
+    /// <returns>
+    /// The notification is forwarded to all items. <see langword="null"/> if none of the items had a meaningful value to
+    /// return, the notification-specific return value otherwise.
+    /// </returns>
+    /// <inheritdoc/>
+    internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (id is TaskDialogNotification.TDN_BUTTON_CLICKED && GetControlFromId((int)wParam) is { } control)
+        _ = base.HandleNotification(notif);
+        if (notif.Id is TaskDialogNotification.TDN_BUTTON_CLICKED)
         {
-            return control.HandleNotification(id, wParam, lParam);
+            return GetControlFromId((int)notif.WParam)?.HandleNotification(notif);
         }
-        return base.HandleNotification(id, wParam, lParam);
+        return this.ForwardNotification(notif);
     }
 
     private protected override int GetId(int index) => base.GetId(index) + CommonButton.MaxId;

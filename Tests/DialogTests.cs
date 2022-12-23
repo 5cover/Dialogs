@@ -13,7 +13,7 @@ public sealed class DialogTests
         Button button2 = new("Button #2");
         using Page page = new()
         {
-            AreHyperlinksEnabled = true,
+            AllowHyperlinks = true,
             IsCancelable = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
@@ -27,14 +27,15 @@ public sealed class DialogTests
             },
             Expander = new Expander()
             {
-                ExpandedInformation = nameof(Expander.ExpandedInformation),
+                Text = nameof(Expander.Text),
                 CollapseButtonText = nameof(Expander.CollapseButtonText),
                 ExpandButtonText = nameof(Expander.ExpandButtonText),
                 ExpanderPosition = ExpanderPosition.BelowContent,
                 IsExpanded = true
             },
             FooterIcon = DialogIcon.Information,
-            Icon = DialogIcon.ShieldWarningYellowBar,
+            Header = DialogHeader.Yellow,
+            Icon = DialogIcon.ErrorShield,
             ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 83 },
             RadioButtons = new RadioButtonCollection()
             {
@@ -79,41 +80,56 @@ public sealed class DialogTests
     }
 
     [Test]
-    public void TestIcon()
+    public void TestCustomIcon()
     {
         ushort index = 0;
         using var hIcon = Vanara.PInvoke.Shell32.ExtractAssociatedIcon(default, new(@"C:\Windows\System32\rstrui.exe"), ref index);
         DialogIcon customIcon = DialogIcon.FromHandle(hIcon.DangerousGetHandle());
+        using Page page = new()
+        {
+            Content = "Assert that the icon (restore point) is displayed properly.",
+            Icon = customIcon,
+            WindowTitle = nameof(TestCustomIcon),
+        };
+        _ = new Dialog(page).Show();
+    }
 
-        var buttonContinue = Button.Continue;
+    [Test]
+    public void TestIcon()
+    {
+        int cnt = 1;
+        Button buttonNextIcon = new("Next icon");
         using Page page = new()
         {
             Buttons = new ButtonCollection()
             {
-                buttonContinue,
-                Button.Close
+                buttonNextIcon,
+                Button.Cancel
             },
-            Content = "Assert that the icon is displayed properly.",
-            Icon = DialogIcon.Error,
+            Content = GetContent("information"),
+            Header = DialogHeader.Green,
+            Icon = DialogIcon.Information,
+            MainInstruction = "Main instruction",
+            Verification = new("Main instruction"),
             WindowTitle = nameof(TestIcon),
         };
-        buttonContinue.Clicked += (s, e) =>
+        page.Verification.IsChecked = true;
+        page.Verification.Checked += (s, e) => page.MainInstruction = page.Verification.IsChecked ? "Main instruction" : "";
+        buttonNextIcon.Clicked += (s, e) =>
         {
-            if (page.Icon == DialogIcon.Error)
-            {
-                page.Icon = DialogIcon.Information;
-            }
-            if (page.Icon == DialogIcon.Information)
-            {
-                page.Icon = customIcon;
-            }
-            if (page.Icon == customIcon)
-            {
-                page.Icon = DialogIcon.None;
-            }
             e.Cancel = true;
+            (page.Icon, string iconName) = (cnt++ % 4) switch
+            {
+                0 => (DialogIcon.None, "none"),
+                1 => (DialogIcon.SuccessShield, "success shield"),
+                2 => (DialogIcon.FromId(15), "executable"),
+                3 => (DialogIcon.Warning, "warning")
+            };
+            page.Content = GetContent(iconName);
         };
         _ = new Dialog(page).Show();
+
+        static string GetContent(string iconName) => $"Assert that the icon ({iconName}) is displayed properly.";
     }
 
     [Test]
@@ -159,66 +175,36 @@ public sealed class DialogTests
         EnableDisable();
         UpdateExpandedInfo();
 
-        page.ButtonClicked += (s, e) =>
+        minPlus10.Clicked += (_, _) => pb.Minimum += 10;
+        minMinus10.Clicked += (_, _) => pb.Minimum -= 10;
+        maxPlus10.Clicked += (_, _) => pb.Maximum += 10;
+        maxMinus10.Clicked += (_, _) => pb.Maximum -= 10;
+        valuePlus10.Clicked += (_, _) => pb.Value += 10;
+        valueMinus10.Clicked += (_, _) => pb.Value -= 10;
+        cycleState.Clicked += (_, _) => pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
+        toggleMode.Clicked += (_, _) => pb.State = pb.State switch
         {
-            e.Cancel = true;
-            if (minPlus10.Equals(e.ClickedControl))
-            {
-                pb.Minimum += 10;
-            }
-            else if (minMinus10.Equals(e.ClickedControl))
-            {
-                pb.Minimum -= 10;
-            }
-            else if (maxPlus10.Equals(e.ClickedControl))
-            {
-                pb.Maximum += 10;
-            }
-            else if (maxMinus10.Equals(e.ClickedControl))
-            {
-                pb.Maximum -= 10;
-            }
-            else if (valuePlus10.Equals(e.ClickedControl))
-            {
-                pb.Value += 10;
-            }
-            else if (valueMinus10.Equals(e.ClickedControl))
-            {
-                pb.Value -= 10;
-            }
-            else if (toggleMode.Equals(e.ClickedControl))
-            {
-                pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
-            }
-            else if (cycleState.Equals(e.ClickedControl))
-            {
-                pb.State = pb.State switch
-                {
-                    ProgressBarState.Error => ProgressBarState.Normal,
-                    ProgressBarState.Normal => ProgressBarState.Paused,
-                    ProgressBarState.Paused => ProgressBarState.Error,
-                    _ => throw new ArgumentException()
-                };
-            }
-            else if (intervalPlus1.Equals(e.ClickedControl))
-            {
-                pb.MarqueeInterval++;
-            }
-            else if (intervalMinus1.Equals(e.ClickedControl))
-            {
-                pb.MarqueeInterval--;
-            }
-            else
-            {
-                e.Cancel = false;
-            }
-
-            EnableDisable();
-            UpdateExpandedInfo();
+            ProgressBarState.Error => ProgressBarState.Normal,
+            ProgressBarState.Normal => ProgressBarState.Paused,
+            ProgressBarState.Paused => ProgressBarState.Error,
+            _ => throw new ArgumentException()
         };
+        intervalPlus1.Clicked += (_, _) => pb.MarqueeInterval++;
+        intervalMinus1.Clicked += (_, _) => pb.MarqueeInterval--;
+
+        foreach (var cc in page.Buttons)
+        {
+            cc.Clicked += (s, e) =>
+            {
+                e.Cancel = !Equals(s, Button.Cancel);
+                EnableDisable();
+                UpdateExpandedInfo();
+            };
+        }
+
         _ = new Dialog(page).Show();
 
-        void UpdateExpandedInfo() => page.Expander.ExpandedInformation = $@"
+        void UpdateExpandedInfo() => page.Expander.Text = $@"
 {nameof(pb.Mode)} = {pb.Mode}
 {nameof(pb.State)} = {pb.State}
 {nameof(pb.Minimum)} = {pb.Minimum}

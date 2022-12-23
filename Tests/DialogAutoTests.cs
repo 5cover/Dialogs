@@ -11,7 +11,7 @@ public sealed class DialogAutoTests
     public void TestClick()
     {
         CommitControl? clickedControl = null;
-        RadioButton? selectedRadioButton = null;
+        RadioButton? selectedRadioButton = new("Radio #1");
         using Page page = new()
         {
             Content = "Assert that the correct buttons get clicked",
@@ -24,14 +24,13 @@ public sealed class DialogAutoTests
             },
             RadioButtons = new RadioButtonCollection()
             {
-                "Radio #1",
+                selectedRadioButton,
                 "Radio #2",
             },
             WindowTitle = nameof(TestClick),
         };
         page.Created += (s, e) =>
         {
-            selectedRadioButton = page.RadioButtons.First();
             selectedRadioButton.Click();
             foreach (CommitControl cc in page.Buttons)
             {
@@ -40,13 +39,16 @@ public sealed class DialogAutoTests
             }
             page.Close();
         };
-        page.ButtonClicked += (s, e) =>
+        foreach (var cc in page.Buttons)
         {
-            Assert.That(e.ClickedControl, Is.EqualTo(clickedControl));
-            e.Cancel = true;
-        };
+            cc.Clicked += (s, e) =>
+            {
+                Assert.That(s, Is.EqualTo(clickedControl));
+                e.Cancel = true;
+            };
+        }
         clickedControl = new Dialog(page).Show();
-        Assert.That(clickedControl, Is.Null);
+        Assert.That(clickedControl, Is.EqualTo(Button.Cancel));
     }
 
     [Test]

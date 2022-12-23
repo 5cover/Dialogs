@@ -7,13 +7,14 @@ namespace Scover.Dialogs.Parts;
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class Sizing : DialogControl<PageUpdateInfo>
 {
-    /// <summary>The size of the window will be computed automatically.</summary>
-    public const Sizing? Automatic = null;
-
     private readonly bool _sizeToContent;
+
     private readonly uint _width;
 
     private Sizing(bool sizeToContent, uint width) => (_sizeToContent, _width) = (sizeToContent, width);
+
+    /// <summary>The size of the window will be computed automatically.</summary>
+    public static Sizing Automatic { get; } = new(false, 0);
 
     /// <summary>The size of the window will be computed based on the content area, similar to the message box sizing behavior.</summary>
     public static Sizing Content { get; } = new(true, 0);

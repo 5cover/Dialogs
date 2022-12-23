@@ -31,7 +31,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Must be greater than zero");
             }
             _marqueeInterval = value;
-            RequestIntervalUpdate();
+            RequestUpdate(UpdateInterval);
         }
     }
 
@@ -45,7 +45,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _maximum = checked((ushort)Math.Max(Value, value));
-            RequestRangeUpdate();
+            RequestUpdate(UpdateRange);
         }
     }
 
@@ -59,8 +59,11 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _minimum = checked((ushort)Math.Min(Value, value));
-            RequestRangeUpdate();
-            RequestValueUpdate(); // Needed to keep minimum synced.
+            RequestUpdate(info =>
+            {
+                UpdateRange(info);
+                UpdateValue(info); // Needed to keep minimum synced.
+            });
         }
     }
 
@@ -72,17 +75,20 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _mode = value;
-            if (value is ProgressBarMode.Marquee)
+            RequestUpdate(info =>
             {
-                // Set underlying state to normal -- This is because marquee doesn't support abnormal states.
-                RequestStateUpdate(ProgressBarState.Normal);
-            }
-            RequestModeUpdate();
-            if (value is ProgressBarMode.Normal)
-            {
-                RequestValueUpdate(); // Needed for transitioning from Marquee to Normal
-                RequestStateUpdate(); // Update the underlying state after leaving Marquee mode
-            }
+                if (_mode is ProgressBarMode.Marquee)
+                {
+                    // Set underlying state to normal -- This is because marquee doesn't support abnormal states.
+                    UpdateState(info, ProgressBarState.Normal);
+                }
+                UpdateMode(info);
+                if (_mode is ProgressBarMode.Normal)
+                {
+                    UpdateValue(info); // Needed for transitioning from Marquee to Normal
+                    UpdateState(info); // Update the underlying state after leaving Marquee mode
+                }
+            });
         }
     }
 
@@ -100,7 +106,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
             _state = value;
             if (Mode is ProgressBarMode.Normal) // Marquee doesn't support abnormal states.
             {
-                RequestStateUpdate();
+                RequestUpdate(UpdateState);
             }
         }
     }
@@ -116,11 +122,15 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _value = Math.Clamp(value, Minimum, Maximum);
-            RequestValueUpdate();
-            if (State is not ProgressBarState.Normal)
+            /*RequestUpdate(info =>
             {
-                RequestValueUpdate(); // Needed to keep value synced when state is abnormal.
-            }
+                UpdateValue(info);
+                if (State is not ProgressBarState.Normal)
+                {
+                    UpdateValue(info); // Needed to keep value synced when state is abnormal.
+                }
+            });*/
+            RequestUpdate(UpdateValue);
         }
     }
 
@@ -130,24 +140,24 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
     }
 
-    private protected override void InitializeState()
+    private protected override void InitializeState() => RequestUpdate(info =>
     {
-        RequestModeUpdate();
-        RequestRangeUpdate();
-        RequestIntervalUpdate();
-        RequestStateUpdate();
-        RequestValueUpdate();
-    }
+        UpdateMode(info);
+        UpdateRange(info);
+        UpdateInterval(info);
+        UpdateState(info);
+        UpdateValue(info);
+    });
 
-    private void RequestIntervalUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeInterval));
+    private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state);
 
-    private void RequestModeUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee));
+    private void UpdateInterval(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeInterval);
 
-    private void RequestRangeUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_RANGE, 0, Macros.MAKELONG(_minimum, _maximum)));
+    private void UpdateMode(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
 
-    private void RequestStateUpdate() => RequestStateUpdate(_state);
+    private void UpdateRange(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_RANGE, 0, Macros.MAKELONG(_minimum, _maximum));
 
-    private void RequestStateUpdate(ProgressBarState state) => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state));
+    private void UpdateState(PageUpdateInfo info) => UpdateState(info, _state);
 
-    private void RequestValueUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_POS, _value));
+    private void UpdateValue(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_POS, _value);
 }

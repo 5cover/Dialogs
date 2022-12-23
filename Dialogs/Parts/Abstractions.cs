@@ -30,37 +30,53 @@ public sealed class PageUpdateInfo
     internal HWND Dialog { get; }
 }
 
+internal sealed record Notification(TaskDialogNotification Id, nint WParam, nint LParam);
+
 /// <summary>A dialog control.</summary>
 public abstract class DialogControl<TUpdateInfo>
 {
     internal event EventHandler<Action<TUpdateInfo>>? UpdateRequested;
 
-    /// <summary>Handles a notification as part of the Chain of Responsibility pattern.</summary>
+    /// <summary>Handles a notification.</summary>
     /// <remarks>
-    /// Overrides must call the base method, as it handles state initialization. The base method always returns <see langword="default"/>.
+    /// Overrides must call base method before processing.
+    /// <list type="table">
+    /// <listheader>
+    /// <term>Notification</term>
+    /// <term>Behavior</term>
+    /// <term>Return value</term>
+    /// </listheader>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_DIALOG_CONSTRUCTED"/></term>
+    /// <term>Calls <see cref="InitializeState"/></term>
+    /// <term><see langword="null"/></term>
+    /// </item>
+    /// </list>
     /// </remarks>
-    /// <returns><see langword="default"/> if the notification wasn't handled, the notification-specific return value otherwise.</returns>
-    internal virtual HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <returns>
+    /// <see langword="null"/> if there was no meaningful value to return, the notification-specific return value otherwise.
+    /// </returns>
+    internal virtual HRESULT? HandleNotification(Notification notif)
     {
-        if (id == TaskDialogNotification.TDN_DIALOG_CONSTRUCTED)
+        if (notif.Id == TaskDialogNotification.TDN_DIALOG_CONSTRUCTED)
         {
             InitializeState();
         }
-        return default;
+        return null;
     }
 
     /// <summary>Layouts this object in a task dialog configuration object.</summary>
-    /// <remarks>Overrides should not call base.</remarks>
+    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>..</remarks>
     internal virtual void SetIn(in TASKDIALOGCONFIG config)
     {
     }
 
     /// <summary>Initializes state properties.</summary>
-    /// <remarks>Overrides should not call base.</remarks>
+    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.</remarks>
     private protected virtual void InitializeState()
     {
     }
 
     /// <summary>Raises the <see cref="UpdateRequested"/> event.</summary>
-    private protected void OnUpdateRequested(Action<TUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
+    private protected void RequestUpdate(Action<TUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
 }

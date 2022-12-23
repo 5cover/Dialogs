@@ -52,6 +52,10 @@ dotnet_diagnostic.CA1200.severity = suggestion
 # IDE0042: Deconstruct variable declaration
 dotnet_diagnostic.IDE0042.severity = none
 csharp_style_deconstructed_variable_declaration = true:silent
+csharp_style_prefer_switch_expression = true:suggestion
+
+# CS8509: The switch expression does not handle all possible values of its input type (it is not exhaustive).
+dotnet_diagnostic.CS8509.severity = silent
 
 [*.{cs,vb}]
 dotnet_style_operator_placement_when_wrapping = beginning_of_line

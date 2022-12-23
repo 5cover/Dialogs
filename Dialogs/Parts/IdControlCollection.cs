@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using Vanara.Extensions;
 using Vanara.InteropServices;
-using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs.Parts;
@@ -10,45 +9,45 @@ namespace Scover.Dialogs.Parts;
 /// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>
 public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, ICollection<T>, IDisposable where T : notnull, DialogControl<IdControlUpdateInfo>
 {
+    private readonly List<T> _items = new();
     private SafeNativeArray<TASKDIALOG_BUTTON>? _nativeArray;
 
     private protected IdControlCollection(T? defaultItem) => DefaultItem = defaultItem;
 
     /// <inheritdoc/>
-    public int Count => Items.Count;
+    public int Count => _items.Count;
 
     /// <summary>Gets the default item of this collection.</summary>
     public T? DefaultItem { get; }
 
-    bool ICollection<T>.IsReadOnly => ((ICollection<T>)Items).IsReadOnly;
+    bool ICollection<T>.IsReadOnly => ((ICollection<T>)_items).IsReadOnly;
     private protected virtual TASKDIALOG_FLAGS Flags { get; }
-    private protected List<T> Items { get; } = new();
 
     /// <inheritdoc/>
     public void Add(T item)
     {
         AddItem(item);
-        Items.Add(item);
+        _items.Add(item);
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        foreach (var item in Items)
+        foreach (var item in _items)
         {
             RemoveItem(item);
         }
-        Items.Clear();
+        _items.Clear();
     }
 
     /// <inheritdoc/>
-    public bool Contains(T item) => Items.Contains(item);
+    public bool Contains(T item) => _items.Contains(item);
 
     /// <inheritdoc/>
     public virtual void Dispose()
     {
         _nativeArray?.Dispose();
-        foreach (var disposable in Items.OfType<IDisposable>())
+        foreach (var disposable in _items.OfType<IDisposable>())
         {
             disposable.Dispose();
         }
@@ -57,41 +56,35 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     }
 
     /// <inheritdoc/>
-    public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
 
     /// <inheritdoc/>
     public bool Remove(T item)
     {
         RemoveItem(item);
-        return Items.Remove(item);
+        return _items.Remove(item);
     }
 
     /// <inheritdoc/>
-    void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Items.CopyTo(array, arrayIndex);
+    void ICollection<T>.CopyTo(T[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
 
-    IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
 
     internal virtual T? GetControlFromId(int id)
     {
         var index = GetIndex(id);
-        return index >= 0 && index < Items.Count ? Items[index] : null;
-    }
-
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
-    {
-        _ = base.HandleNotification(id, wParam, lParam);
-        return Items.ForwardNotification(id, wParam, lParam);
+        return index >= 0 && index < _items.Count ? _items[index] : null;
     }
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        foreach (var part in Items)
+        foreach (var part in _items)
         {
             part.SetIn(config);
         }
 
         _nativeArray?.Dispose();
-        _nativeArray = new(Items.OfType<ITextControl>().Select((item, index) => new TASKDIALOG_BUTTON
+        _nativeArray = new(_items.OfType<ITextControl>().Select((item, index) => new TASKDIALOG_BUTTON
         {
             pszButtonText = (nint)item.NativeText,
             nButtonID = GetId(index)
@@ -99,7 +92,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
 
         config.dwFlags |= Flags;
 
-        int defaultItemIndex = DefaultItem is null ? -1 : Items.IndexOf(DefaultItem);
+        int defaultItemIndex = DefaultItem is null ? -1 : _items.IndexOf(DefaultItem);
         SetConfigProperties(config, _nativeArray, (uint)_nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
     }
 
@@ -119,7 +112,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     }
 
     private void ItemUpdateRequested(object? sender, Action<IdControlUpdateInfo> e)
-        => OnUpdateRequested(update => e(new(update.Dialog, GetId(Items.IndexOf((T)sender!)))));
+        => RequestUpdate(info => e(new(info.Dialog, GetId(_items.IndexOf((T)sender.AssertNotNull())))));
 
     private void RemoveItem(T item) => item.UpdateRequested -= ItemUpdateRequested;
 }

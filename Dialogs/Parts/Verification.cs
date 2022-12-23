@@ -23,26 +23,38 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
         set
         {
             _isChecked = value;
-            RequestIsCheckedUpdate();
+            RequestUpdate(UpdateIsChecked);
         }
     }
 
     /// <summary>Gets the verification text.</summary>
-    /// <remarks>If the value is <see langword="null"/>, no verification checkbox will be shown.</remarks>
-    /// <value>The text shown next to the verification checkbox. Default value is <see langword="null"/>.</value>
-    public string? Text { get; }
+    /// <remarks>If the value is <see cref="string.Empty"/>, no verification checkbox will be shown.</remarks>
+    /// <value>The text shown next to the verification checkbox. Default value is <see cref="string.Empty"/>.</value>
+    public string Text { get; } = "";
 
     /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
-    public void Focus() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, IsChecked, true));
+    public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, IsChecked, true));
 
-    internal override HRESULT HandleNotification(TaskDialogNotification id, nint wParam, nint lParam)
+    /// <remarks>
+    /// <inheritdoc path="/remarks"/>
+    /// <item>
+    /// <term><see cref="TaskDialogNotification.TDN_VERIFICATION_CLICKED"/></term>
+    /// <term>Raises <see cref="Checked"/></term>
+    /// </item>
+    /// </remarks>
+    /// <inheritdoc/>
+    internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (id is TaskDialogNotification.TDN_VERIFICATION_CLICKED)
+        if (base.HandleNotification(notif) is HRESULT returnValue)
         {
-            _isChecked = Convert.ToBoolean(wParam);
+            return returnValue;
+        }
+        if (notif.Id is TaskDialogNotification.TDN_VERIFICATION_CLICKED)
+        {
+            _isChecked = Convert.ToBoolean(notif.WParam);
             Checked.Raise(this);
         }
-        return base.HandleNotification(id, wParam, lParam);
+        return null;
     }
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
@@ -51,5 +63,5 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
         config.VerificationText = Text;
     }
 
-    private void RequestIsCheckedUpdate() => OnUpdateRequested(update => update.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, _isChecked, false));
+    private void UpdateIsChecked(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, _isChecked, false);
 }

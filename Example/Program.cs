@@ -1,68 +1,90 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System.Text;
 using Scover.Dialogs;
 using Scover.Dialogs.Parts;
-using Vanara.PInvoke;
 
-internal class Program
+internal static class Program
 {
-    private static void Main(string[] args)
+    private static DialogIcon GetRandomIcon()
+    {
+        int id = 199;
+        int c = 0;
+        while (id
+            is > 198 and < 1001
+            or > 1043 and < 1301
+            or > 1306 and < 1400
+            or > 1405 and < 5100
+            or > 5102 and < 5201
+            or > 5206 and < 5210
+            or > 5210 and < 5301
+            or > 5412 and < 6400)
+        {
+            ++c;
+            id = Random.Shared.Next(2, 6401);
+        }
+        Console.WriteLine($"c = {c}, id = {id}");
+        return DialogIcon.FromId(id);
+    }
+
+    private static string GetRandomString(int maxLength = 200)
+    {
+        Random random = new();
+        var plainText = new StringBuilder();
+        var length = random.Next(10, maxLength);
+        Console.WriteLine($"Length = {length}");
+        for (; length > 0; --length)
+        {
+            // Avoid CJK ranges becuase CJK ranges characters are often shown when layout fails.
+            _ = plainText.Append((char)random.Next(char.MinValue, '\u2E80'));
+        }
+
+        return plainText.ToString();
+    }
+
+    private static void Main()
     {
         Dialog.UseActivationContext = false;
-        MegaTest();
     }
 
-    private static void MegaTest()
+    private static void TestOuttaControl()
     {
-        Button button2 = new("Button #2");
         using Page page = new()
         {
-            AreHyperlinksEnabled = true,
             IsCancelable = true,
-            IsMinimizable = true,
-            IsRightToLeftLayout = false,
-            Buttons = new ButtonCollection(button2)
+            Expander = new()
             {
-                "Button #1",
-                button2,
-                new Button("Button #3 (Admin)") { RequiresElevation = true },
-                new Button("Button #4 (Disabled)") { IsEnabled = false },
-                new Button("Button #5 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
-            },
-            Expander = new Expander()
-            {
-                ExpandedInformation = nameof(Expander.ExpandedInformation),
-                CollapseButtonText = nameof(Expander.CollapseButtonText),
-                ExpandButtonText = nameof(Expander.ExpandButtonText),
-                ExpanderPosition = ExpanderPosition.BelowContent,
+                CollapseButtonText = GetRandomString(40),
+                ExpandButtonText = GetRandomString(40),
                 IsExpanded = true
             },
-            FooterIcon = DialogIcon.Information,
-            Icon = DialogIcon.ShieldWarningYellowBar,
-            ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 83 },
-            RadioButtons = new RadioButtonCollection()
+            Buttons = new CommandLinkCollection()
             {
-                "Radio #1",
-                "Radio #2",
-                new RadioButton("Radio #3 (disabled)") { IsEnabled = false }
+                { GetRandomString(40), GetRandomString() },
+                { GetRandomString(40), GetRandomString() },
             },
-            Sizing = Sizing.FromWidth(500, DistanceUnit.Pixel),
-            Content = $"{nameof(page.Content)} with <A>hyperlink</A>. Assert that the page is displayed properly.",
-            FooterText = nameof(page.FooterText),
-            MainInstruction = nameof(page.MainInstruction),
-            Verification = new(nameof(page.Verification)) { IsChecked = true },
-            WindowTitle = nameof(MegaTest),
+            RadioButtons = new()
+            {
+                GetRandomString(40),
+                GetRandomString(40),
+            },
+            WindowTitle = GetRandomString(40),
+            Verification = new(GetRandomString()),
+            FooterText = " ",
         };
-        Dialog dlg = new(page);
-        var r = dlg.Show();
-        Console.WriteLine(r is Button b ? b.Text : (r?.ToString() ?? "null"));
-    }
+        page.Created += async (s, e) =>
+        {
+            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(1000));
+            while (await timer.WaitForNextTickAsync())
+            {
+                page.Content = GetRandomString();
+                page.MainInstruction = GetRandomString();
+                page.Expander.Text = GetRandomString();
+                page.FooterText = GetRandomString();
+                page.Icon = GetRandomIcon();
+                page.FooterIcon = GetRandomIcon();
+            }
+            page.Close();
+        };
 
-    private static void NativeTest() => ComCtl32.TaskDialog(HWND.NULL,
-                                           HINSTANCE.NULL,
-                                           "Test",
-                                           "Main instruction",
-                                           "Content",
-                                           ComCtl32.TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CLOSE_BUTTON,
-                                           new((nint)ComCtl32.TaskDialogIcon.TD_SECURITYSUCCESS_ICON),
-                                           out _).ThrowIfFailed();
+        _ = new Dialog(page).Show();
+    }
 }

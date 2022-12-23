@@ -6,6 +6,7 @@ namespace Scover.Dialogs.Parts;
 
 /// <summary>A dialog button control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
+[DebuggerDisplay($"{{{nameof(_commonButton)}}}")]
 public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
 {
     /// <summary>The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.</summary>
@@ -58,7 +59,18 @@ public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
     /// <inheritdoc/>
     public override int GetHashCode() => Id.GetHashCode();
 
-    internal static CommonButton? FromId(int id) => _values.SingleOrDefault(cb => cb.Id == id);
+    /// <exception cref="ArgumentException"><paramref name="id"/> is an unknown common button ID.</exception>
+    internal static CommonButton FromId(int id)
+    {
+        try
+        {
+            return _values.Single(cb => cb.Id == id);
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new ArgumentException("Unknown common button ID", nameof(id), e);
+        }
+    }
 
     internal override void SetIn(in TASKDIALOGCONFIG config) => config.dwCommonButtons.SetFlag(_commonButton, true);
 }
