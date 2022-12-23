@@ -14,9 +14,8 @@ public partial class Page
     /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
     /// <para>
-    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.Text"/> and
-    /// <see cref="FooterText"/> properties can use hyperlinks in the following form: <c>&lt;A
-    /// HREF="executablestring"&gt;Hyperlink NativeText&lt;/A&gt;</c>
+    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.Text"/> and <see
+    /// cref="FooterText"/> properties can use hyperlinks in the following form: <c>&lt;A HREF="executablestring"&gt;Hyperlink NativeText&lt;/A&gt;</c>
     /// </para>
     /// Enabling hyperlinks when using content from an unsafe source may cause security vulnerabilities.
     /// <para>
@@ -25,9 +24,8 @@ public partial class Page
     /// </para>
     /// </remarks>
     /// <value>
-    /// <see langword="true"/> when hyperlinks are allowed for the <see cref="Content"/>, <see
-    /// cref="Expander.Text"/> and <see cref="FooterText"/> properties; otherwise, <see langword="false"/>.
-    /// Default value is <see langword="false"/>.
+    /// <see langword="true"/> when hyperlinks are allowed for the <see cref="Content"/>, <see cref="Expander.Text"/> and <see
+    /// cref="FooterText"/> properties; otherwise, <see langword="false"/>. Default value is <see langword="false"/>.
     /// </value>
     public bool AllowHyperlinks
     {

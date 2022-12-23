@@ -61,6 +61,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     /// <item>
     /// <term><see cref="TaskDialogNotification.TDN_EXPANDO_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="ExpandedChanged"/></term>
+    /// <term><see langword="null"/></term>
     /// </item>
     /// </remarks>
     /// <inheritdoc/>

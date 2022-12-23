@@ -40,15 +40,13 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     /// <item>
     /// <term><see cref="TaskDialogNotification.TDN_VERIFICATION_CLICKED"/></term>
     /// <term>Raises <see cref="Checked"/></term>
+    /// <term><see langword="null"/></term>
     /// </item>
     /// </remarks>
     /// <inheritdoc/>
     internal override HRESULT? HandleNotification(Notification notif)
     {
-        if (base.HandleNotification(notif) is HRESULT returnValue)
-        {
-            return returnValue;
-        }
+        _ = base.HandleNotification(notif);
         if (notif.Id is TaskDialogNotification.TDN_VERIFICATION_CLICKED)
         {
             _isChecked = Convert.ToBoolean(notif.WParam);

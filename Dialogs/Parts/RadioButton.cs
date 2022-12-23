@@ -45,6 +45,7 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
     /// <item>
     /// <term><see cref="TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="Clicked"/></term>
+    /// <term><see langword="null"/></term>
     /// </item>
     /// </remarks>
     /// <inheritdoc/>
