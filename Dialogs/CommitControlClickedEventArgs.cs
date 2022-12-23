@@ -12,8 +12,8 @@ public sealed class CommitControlClickedEventArgs : CancelEventArgs
     /// cref="CancelEventArgs.Cancel"/> property set to <see langword="false"/>.
     /// </summary>
     /// <param name="clickedCotnrol">The commit control that initiated the closing of the dialog.</param>
-    public CommitControlClickedEventArgs(CommitControl? clickedCotnrol) => ClickedControl = clickedCotnrol;
+    public CommitControlClickedEventArgs(CommitControl clickedCotnrol) => ClickedControl = clickedCotnrol;
 
     /// <summary>Gets a reference to the commit control that initiated the closing of the dialog.</summary>
-    public CommitControl? ClickedControl { get; set; }
+    public CommitControl ClickedControl { get; set; }
 }

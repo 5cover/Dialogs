@@ -30,10 +30,6 @@ public sealed class DialogHeader : DialogControl<PageUpdateInfo>
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        if (!WindowsVersion.IsWindows8OrLater)
-        {
-            throw new PlatformNotSupportedException("Dialog headers are only available on Windows 8 and later.");
-        }
         if (!config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN))
         {
             config.mainIcon = (nint)_id;

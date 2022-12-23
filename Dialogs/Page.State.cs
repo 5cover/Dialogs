@@ -40,7 +40,7 @@ public partial class Page
             _footerIcon = value;
             _config.footerIcon = value.Handle;
             _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, value.IsHIcon);
-            ForEachDialog(dlg => dlg.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, value.Handle));
+            OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, value.Handle));
         }
     }
 
@@ -68,7 +68,7 @@ public partial class Page
             _icon = value;
             _config.mainIcon = Icon.Handle;
             _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, Icon.IsHIcon);
-            ForEachDialog(dlg => dlg.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
+            OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
         }
     }
 
@@ -87,7 +87,7 @@ public partial class Page
 
     private void DenyHIconIDTransition(DialogIcon current, DialogIcon value)
     {
-        if (_dialogs.Any() && current.IsHIcon != value.IsHIcon)
+        if (_handleSent && current.IsHIcon != value.IsHIcon)
         {
             throw new ArgumentException("Cannot transition between HIcon and ID while the dialog is shown.");
         }

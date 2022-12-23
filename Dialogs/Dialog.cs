@@ -1,4 +1,6 @@
 ﻿using Scover.Dialogs.Parts;
+using Vanara.PInvoke;
+using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
@@ -12,33 +14,45 @@ public class Dialog
     /// <summary>The mnemonic (accelerator) prefix used by all dialog controls.</summary>
     public const string MnemonicPrefix = "&";
 
+    private readonly Page _firstPage;
+    private HWND _handle;
+
     /// <param name="firstPage">The first page of the dialog.</param>
     /// <param name="chooseNextPage">
     /// For multi-page dialogs, a function that returns the next page to navigate to when the previous page has been closed, or
     /// <see langword="null"/> to end the dialog early. Specifiy <see langword="null"/> to have a single-page dialog.
     /// </param>
-    public Dialog(Page firstPage, Func<CommitControl?, Page?>? chooseNextPage = null)
+    public Dialog(Page firstPage, Func<Page, CommitControl, Page?>? chooseNextPage = null)
     {
-        CurrentPage = firstPage;
+        firstPage.HandleRecieved += (s, handle) => _handle = handle;
+        firstPage.UpdateRequested += Update;
+        CurrentPage = _firstPage = firstPage;
 
         if (chooseNextPage is not null)
         {
-            CurrentPage.Closing += NavigateNextPage;
+            firstPage.Closing += NavigateNextPage;
         }
 
         void NavigateNextPage(object? sender, CommitControlClickedEventArgs args)
         {
-            if (chooseNextPage(args.ClickedControl) is { } nextPage)
+            if (chooseNextPage(CurrentPage, args.ClickedControl) is { } nextPage)
             {
                 args.Cancel = true;
-                CurrentPage.Navigate(this, nextPage);
+                // todo : memleak
+                nextPage.UpdateRequested += Update;
+                nextPage.Closing += NavigateNextPage;
+                _ = _handle.SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, nextPage.CreateConfigPtr());
                 CurrentPage = nextPage;
             }
         }
+        void Update(object? sender, Action<PageUpdateInfo> update) => update(new(_handle));
     }
 
-    /// <summary>Gets or sets whether to use a <see cref="ComCtlV6ActivationContext"/> instance.</summary>
-    /// <remarks>Default value is <see langword="true"/>.</remarks>
+    /// <summary>Gets or sets whether to use an activation context for calling <c>TaskDialogIndirect</c>.</summary>
+    /// <remarks>
+    /// If this is <see langword="false"/> and the calling project doesn't have a reference to ComCtl32 V6 in its manifest, <see
+    /// cref="Show(nint?)"/> will throw <see cref="EntryPointNotFoundException"/>. Default value is <see langword="true"/>.
+    /// </remarks>
     public static bool UseActivationContext { get; set; } = true;
 
     /// <summary>Gets the current page.</summary>
@@ -49,7 +63,7 @@ public class Dialog
     public Page CurrentPage { get; private set; }
 
     /// <summary>Gets the window handle of the dialog, or 0 if the dialog is currently not being shown.</summary>
-    public nint Handle => CurrentPage.GetHandle(this).DangerousGetHandle();
+    public nint Handle => _handle.DangerousGetHandle();
 
     /// <summary>Gets or sets the window startup location.</summary>
     /// <value>The location of the dialog window when it is first shown. Default value is <see cref="WindowLocation.CenterScreen"/>.</value>
@@ -66,11 +80,14 @@ public class Dialog
     /// </exception>
     public CommitControl Show(nint? owner = null)
     {
-        if (!WindowsVersion.SupportsTaskDialogs)
+        try
         {
-            throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.");
+            using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
+            return _firstPage.Show(owner ?? GetActiveWindow(), StartupLocation);
         }
-        using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
-        return CurrentPage.Show(this, owner ?? GetActiveWindow(), StartupLocation);
+        catch (EntryPointNotFoundException e)
+        {
+            throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.", e);
+        }
     }
 }

@@ -33,7 +33,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 
     public ComCtlV6ActivationContext(bool enable)
     {
-        if (enable && WindowsVersion.IsWindowsXPOrLater && EnsureActivateContextCreated() && !ActivateActCtx(activationContext, out _cookie))
+        if (enable && EnsureActivateContextCreated() && !ActivateActCtx(activationContext, out _cookie))
         {
             _cookie = default;
         }

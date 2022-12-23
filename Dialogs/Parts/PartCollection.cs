@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-
+using Vanara.PInvoke;
 using Part = Scover.Dialogs.Parts.DialogControl<Scover.Dialogs.Parts.PageUpdateInfo>;
 
 namespace Scover.Dialogs.Parts;
@@ -40,6 +40,14 @@ internal sealed class PartCollection : IEnumerable<Part>
     }
 
     public void SetDefaultValue<T>(T defaultValue) where T : Part => _parts.Add(typeof(T), new(defaultValue, defaultValue));
+
+    public void SetIn(in ComCtl32.TASKDIALOGCONFIG config)
+    {
+        foreach (var part in _parts.Values)
+        {
+            part.Value?.SetIn(config);
+        }
+    }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
