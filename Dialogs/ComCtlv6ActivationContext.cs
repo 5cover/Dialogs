@@ -27,7 +27,6 @@ namespace Scover.Dialogs;
 internal sealed class ComCtlV6ActivationContext : IDisposable
 {
     private static readonly object contextCreationLock = new();
-    private static ACTCTX actCtxInfo;
     private static SafeHACTCTX? activationContext;
     private static bool contextCreationSucceeded;
     private readonly GenericSafeHandle? _cookie;

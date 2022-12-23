@@ -17,7 +17,7 @@ public abstract class CommitControlCollection : IdControlCollection<CommitContro
     /// <inheritdoc path="/remarks"/>
     /// <item>
     /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
-    /// <term>Forwards the notification to the clicked commit control and raised <see cref="AnyClicked"/>.</term>
+    /// <term>Forwards the notification to the clicked commit control.</term>
     /// <term><see cref="CommitControl.HandleNotification(Notification)"/></term>
     /// </item>
     /// </remarks>

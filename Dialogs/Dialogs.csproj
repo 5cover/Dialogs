@@ -12,7 +12,7 @@
     <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Dialogs</Title>
-    <PackageLicenseExpression>mit</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageIcon>icon.png</PackageIcon>
     <Copyright>(c) Scover 2022</Copyright>
