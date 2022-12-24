@@ -41,7 +41,7 @@ using Page page2 = new()
 
 var clickedButton = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>
 {
-    [page1] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page2,
+    [page1] = _ => page2,
 }).Show();
 ```
 
