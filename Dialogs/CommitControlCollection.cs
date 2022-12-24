@@ -24,7 +24,8 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
     /// The default button. If <see langword="null"/>, the default button will be the first item of the collection.
     /// </param>
     /// <param name="style">The commit control style to use.</param>
-    public CommitControlCollection(CommitControl? defaultItem = null, CommitControlStyle style = CommitControlStyle.PushButtons) : base(defaultItem) => Style = style;
+    /// <param name="items">The items already in the collection.</param>
+    public CommitControlCollection(CommitControlStyle style = CommitControlStyle.PushButtons, IList<CommitControl>? items = null, CommitControl? defaultItem = null) : base(items, defaultItem) => Style = style;
 
     /// <summary>Gets or sets the commit control style to use for this collection.</summary>
     public CommitControlStyle Style { get; set; }
@@ -37,14 +38,10 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
         _ => throw Style.InvalidEnumArgumentException()
     };
 
-    /// <summary>Adds a new command link to the collection.</summary>
-    /// <param name="label">The command link label.</param>
+    /// <summary>Adds a new commit control to the collection.</summary>
+    /// <param name="text">The push button text or the command link label.</param>
     /// <param name="note">The command link supplemental instruction.</param>
-    public void Add(string label, string? note = null) => Add(new CommandLink(label, note));
-
-    /// <summary>Adds a new push button to the collection.</summary>
-    /// <param name="text">The push button text.</param>
-    public void Add(string text) => Add(new Button(text));
+    public void Add(string text, string? note = null) => Add(new CommandLink(text, note));
 
     /// <summary>Adds a new push button to the collection.</summary>
     /// <param name="button">The button to add.</param>

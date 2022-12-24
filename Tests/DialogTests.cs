@@ -16,7 +16,7 @@ public sealed class DialogTests
             IsCancelable = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
-            Buttons = new(button2)
+            Buttons = new(defaultItem: button2)
             {
                 "Button #1",
                 button2,
@@ -60,7 +60,7 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the command links are displayed properly.",
-            Buttons = new(commandLink2, CommitControlStyle.CommandLinks)
+            Buttons = new(defaultItem: commandLink2, style: CommitControlStyle.CommandLinks)
             {
                 "Command link #1",
                 commandLink2,
@@ -151,7 +151,7 @@ public sealed class DialogTests
         {
             MainInstruction = "Page 2",
             Content = "Second page with radio buttons. Press F1 to navigate to Page 3",
-            RadioButtons = new(DefaultRadioButton.None)
+            RadioButtons = new(defaultItem: DefaultRadioButton.None)
             {
                 "Radio #1",
                 "Radio #2"
@@ -296,7 +296,7 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
-            RadioButtons = new(radio2)
+            RadioButtons = new(defaultItem: new(radio2))
             {
                 "Radio #1",
                 radio2,

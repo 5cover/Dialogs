@@ -9,10 +9,10 @@ namespace Scover.Dialogs;
 /// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>
 public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, ICollection<T>, IDisposable where T : notnull, DialogControl<IdControlUpdateInfo>
 {
-    private readonly List<T> _items = new();
+    private readonly IList<T> _items;
     private SafeNativeArray<TASKDIALOG_BUTTON>? _nativeArray;
 
-    private protected IdControlCollection(T? defaultItem) => DefaultItem = defaultItem;
+    private protected IdControlCollection(IList<T>? items, T? defaultItem) => (_items, DefaultItem) = (items ?? new List<T>(), defaultItem);
 
     /// <inheritdoc/>
     public int Count => _items.Count;

@@ -66,13 +66,17 @@ public partial class Page
 
     /// <summary>Gets whether to allow cancelation.</summary>
     /// <value>
-    /// <see langword="true"/> if the owner dialog window can be closed using Alt-F4, Escape or the title bar's close button
-    /// even if no cancel button is specified, <see langword="false"/> otherwise. Default value is <see langword="false"/>.
+    /// <see langword="true"/> if the owner dialog window should be able to be closed using Alt-F4, Escape or the title bar's
+    /// close button and a <i>Cancel</i> button should be visible, <see langword="false"/> otherwise. Default value is <see langword="false"/>.
     /// </value>
     public bool IsCancelable
     {
         get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION);
-        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION, value);
+        init
+        {
+            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION, value);
+            _config.dwCommonButtons.SetFlag(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON, value);
+        }
     }
 
     /// <summary>Gets whether to allow minimization.</summary>

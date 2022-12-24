@@ -11,16 +11,10 @@ public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
 {
     private readonly DefaultRadioButton _defaultRadioButton;
 
-    /// <summary>Initializes a new empty <see cref="RadioButtonCollection"/>.</summary>
-    /// <param name="defaultRadioButton">The default radio button. Default value is <see cref="DefaultRadioButton.First"/>.</param>
-    public RadioButtonCollection(DefaultRadioButton? defaultRadioButton = null) : base((defaultRadioButton ?? DefaultRadioButton.First).RadioButton)
-        => (_defaultRadioButton, Selected) = (defaultRadioButton ?? DefaultRadioButton.First, DefaultItem);
-
-    /// <summary>Initializes a new empty <see cref="RadioButtonCollection"/>.</summary>
-    /// <param name="defaultItem">The default radio button.</param>
-    public RadioButtonCollection(RadioButton defaultItem) : this(DefaultRadioButton.FromRadioButton(defaultItem))
-    {
-    }
+    /// <param name="defaultItem">The default radio button. Default value is <see cref="DefaultRadioButton.First"/>.</param>
+    /// <param name="items">The items already in the collection.</param>
+    public RadioButtonCollection(IList<RadioButton>? items = null, DefaultRadioButton? defaultItem = null) : base(items, (defaultItem ?? DefaultRadioButton.First).RadioButton)
+        => (_defaultRadioButton, Selected) = (defaultItem ?? DefaultRadioButton.First, DefaultItem);
 
     /// <summary>Gets a reference to the currently selected radio button.</summary>
     /// <value>The currently selected radio button, or <see langword="null"/> if no radio button is currently selected.</value>

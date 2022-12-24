@@ -6,7 +6,7 @@ namespace Scover.Dialogs;
 
 internal sealed class PartCollection : IEnumerable<Part>
 {
-    private record PartRecord(Part? DefaultValue, Part? Value)
+    private sealed record PartRecord(Part? DefaultValue, Part? Value)
     {
         public Part? Value { get; set; } = Value;
     }

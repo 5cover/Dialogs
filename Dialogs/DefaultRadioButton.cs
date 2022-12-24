@@ -6,8 +6,11 @@ namespace Scover.Dialogs;
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class DefaultRadioButton
 {
+    /// <param name="radioButton">The default radio button.</param>
+    public DefaultRadioButton(RadioButton radioButton) : this(radioButton, default) { }
+
     private DefaultRadioButton(RadioButton? radioButton, TASKDIALOG_FLAGS flags)
-            => (RadioButton, Flags) = (radioButton, flags);
+        => (RadioButton, Flags) = (radioButton, flags);
 
     /// <summary>The default radio button is the first element of the collection.</summary>
     public static DefaultRadioButton First { get; } = new(null, default);
@@ -18,6 +21,4 @@ public sealed class DefaultRadioButton
     internal TASKDIALOG_FLAGS Flags { get; }
 
     internal RadioButton? RadioButton { get; }
-
-    internal static DefaultRadioButton FromRadioButton(RadioButton radioButton) => new(radioButton, default);
 }
