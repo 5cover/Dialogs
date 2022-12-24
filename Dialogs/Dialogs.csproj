@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
     <PackageTags>ui;taskdialog;dialog</PackageTags>
     <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <FileVersion>1.0.3.0</FileVersion>
     <Version>1.0.3</Version>
   </PropertyGroup>
 
