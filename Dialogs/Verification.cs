@@ -1,10 +1,12 @@
-﻿using Vanara.PInvoke;
+﻿using System.Diagnostics;
+using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
 /// <summary>A dialog verification checkbox control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
+[DebuggerDisplay($"{{{nameof(Text)}}}")]
 public sealed class Verification : DialogControl<PageUpdateInfo>
 {
     private bool _isChecked;

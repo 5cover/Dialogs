@@ -3,13 +3,52 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>A style of commit controls.</summary>
+public enum CommitControlStyle
+{
+    /// <summary>Commit controls are shown as push buttons.</summary>
+    PushButtons,
+
+    /// <summary>Commit controls are show as command link buttons.</summary>
+    CommandLinks,
+
+    /// <summary>Commit controls are shown as command link buttons without the arrow icon.</summary>
+    CommandLinksNoIcon
+}
+
 /// <summary>A collection of <see cref="CommitControl"/> objects.</summary>
 /// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>
-public abstract class CommitControlCollection : IdControlCollection<CommitControl>
+public sealed class CommitControlCollection : IdControlCollection<CommitControl>
 {
-    private protected CommitControlCollection(CommitControl? defaultItem) : base(defaultItem)
+    /// <param name="defaultItem">
+    /// The default button. If <see langword="null"/>, the default button will be the first item of the collection.
+    /// </param>
+    /// <param name="style">The commit control style to use.</param>
+    public CommitControlCollection(CommitControl? defaultItem = null, CommitControlStyle style = CommitControlStyle.PushButtons) : base(defaultItem) => Style = style;
+
+    /// <summary>Gets or sets the commit control style to use for this collection.</summary>
+    public CommitControlStyle Style { get; set; }
+
+    private protected override TASKDIALOG_FLAGS Flags => Style switch
     {
-    }
+        CommitControlStyle.PushButtons => default,
+        CommitControlStyle.CommandLinks => TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS,
+        CommitControlStyle.CommandLinksNoIcon => TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS_NO_ICON,
+        _ => throw Style.InvalidEnumArgumentException()
+    };
+
+    /// <summary>Adds a new command link to the collection.</summary>
+    /// <param name="label">The command link label.</param>
+    /// <param name="note">The command link supplemental instruction.</param>
+    public void Add(string label, string? note = null) => Add(new CommandLink(label, note));
+
+    /// <summary>Adds a new push button to the collection.</summary>
+    /// <param name="text">The push button text.</param>
+    public void Add(string text) => Add(new Button(text));
+
+    /// <summary>Adds a new push button to the collection.</summary>
+    /// <param name="button">The button to add.</param>
+    public void Add(CommonButton button) => base.Add(button.CloneDeep());
 
     internal override CommitControl? GetControlFromId(int id) => this.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
 

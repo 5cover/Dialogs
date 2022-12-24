@@ -1,4 +1,5 @@
-﻿using Vanara.InteropServices;
+﻿using System.Diagnostics;
+using Vanara.InteropServices;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
@@ -6,7 +7,8 @@ namespace Scover.Dialogs;
 
 /// <summary>A dialog radio button control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
-public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextControl, IDisposable
+[DebuggerDisplay($"{{{nameof(_nativeText)}}}")]
+public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextControl, IDisposable, IEquatable<RadioButton?>
 {
     private readonly SafeLPWSTR _nativeText;
     private bool _isEnabled = true;
@@ -39,6 +41,15 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
 
     /// <inheritdoc/>
     public void Dispose() => _nativeText.Dispose();
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => Equals(obj as RadioButton);
+
+    /// <inheritdoc/>
+    public bool Equals(RadioButton? other) => other is not null && Text == other.Text;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => Text.GetHashCode();
 
     /// <remarks>
     /// <inheritdoc path="/remarks"/>

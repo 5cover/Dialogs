@@ -1,21 +1,14 @@
-﻿using Scover.Dialogs;
+﻿using Vanara.PInvoke;
+using static Vanara.PInvoke.ComCtl32;
 
-using Page page1 = new()
+using TASKDIALOGCONFIG config = new()
 {
-    MainInstruction = "Page #1",
-    Buttons = new CommandLinkCollection()
+    dwCommonButtons = TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON,
+    pfCallbackProc = (hwnd, id, wParam, lParam, refData) =>
     {
-      { "Label", "Supplental instruction" },
-      Button.Cancel
+        Console.WriteLine(id);
+        return default;
     }
 };
-using Page page2 = new()
-{
-    MainInstruction = "Page #2",
-    Expander = new("Expanded information")
-};
-
-var clickedButton = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>
-{
-    [page1] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page2,
-}).Show();
+TaskDialogIndirect(config, out var clickedButtonId, out var selectedRadioButtonId, out var isVerificationChecked);
+Console.WriteLine($"clicked button : {clickedButtonId} ({(User32.MB_RESULT)clickedButtonId})");

@@ -16,7 +16,7 @@ public sealed class DialogTests
             IsCancelable = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
-            Buttons = new ButtonCollection(button2)
+            Buttons = new(button2)
             {
                 "Button #1",
                 button2,
@@ -60,7 +60,7 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the command links are displayed properly.",
-            Buttons = new CommandLinkCollection(commandLink2)
+            Buttons = new(commandLink2, CommitControlStyle.CommandLinks)
             {
                 "Command link #1",
                 commandLink2,
@@ -100,10 +100,10 @@ public sealed class DialogTests
         Button buttonNextIcon = new("Next icon");
         using Page page = new()
         {
-            Buttons = new ButtonCollection()
+            Buttons = new()
             {
                 buttonNextIcon,
-                Button.Cancel
+                Button.Close,
             },
             Content = GetContent("information"),
             Header = DialogHeader.Green,
@@ -137,6 +137,7 @@ public sealed class DialogTests
         using Page page1 = new()
         {
             MainInstruction = "Page 1",
+            Buttons = new() { Button.Yes, Button.No },
             Content = "First page with expander. Press F1 to navigate to Page 2.",
             Expander = new("Expanded information")
             {
@@ -144,7 +145,7 @@ public sealed class DialogTests
                 CollapseButtonText = "Custom collapse",
                 IsExpanded = true,
             },
-            Buttons = new ButtonCollection() { Button.Yes, Button.No, Button.Cancel },
+            IsCancelable = true,
         };
         using Page page2 = new()
         {
@@ -154,18 +155,20 @@ public sealed class DialogTests
             {
                 "Radio #1",
                 "Radio #2"
-            }
+            },
+            IsCancelable = true,
         };
         using Page page3 = new()
         {
             MainInstruction = "Page 3",
-            Content = "Third page with nothing at all. Press F1 to navigate to Page 1."
+            Content = "Third page with nothing at all. Press F1 to navigate to Page 1.",
+            IsCancelable = true,
         };
         MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>
         {
-            [page1] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page2,
-            [page2] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page3,
-            [page3] = clickedControl => Button.Cancel.Equals(clickedControl) ? null : page1,
+            [page1] = _ => page2,
+            [page2] = _ => page3,
+            [page3] = _ => page1,
         });
         page1.HelpRequested += Navigate;
         page2.HelpRequested += Navigate;
@@ -192,7 +195,7 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the progress bar behaves properly.",
-            Buttons = new ButtonCollection()
+            Buttons = new()
             {
                 minPlus10,
                 minMinus10,
@@ -293,11 +296,6 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
-            Buttons = new ButtonCollection()
-            {
-                Button.OK,
-                Button.Cancel
-            },
             RadioButtons = new(radio2)
             {
                 "Radio #1",

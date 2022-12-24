@@ -33,7 +33,7 @@ public sealed class Sizing : DialogControl<PageUpdateInfo>
         {
             DistanceUnit.Pixel => width * 4 / Macros.SignedLOWORD((int)User32.GetDialogBaseUnits()),
             DistanceUnit.DLU => width,
-            _ => throw unit.NewInvalidEnumArgumentException(nameof(unit))
+            _ => throw unit.InvalidEnumArgumentException()
         }));
     }
 

@@ -16,7 +16,6 @@ public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
     private static readonly CommonButton[] _values =
     {
         Button.Abort,
-        Button.Cancel,
         Button.Close,
         Button.Continue,
         Button.Help,
@@ -71,6 +70,8 @@ public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
             throw new ArgumentException("Unknown common button ID", nameof(id), e);
         }
     }
+
+    internal CommonButton CloneDeep() => new(_commonButton, Id);
 
     internal override void SetIn(in TASKDIALOGCONFIG config) => config.dwCommonButtons.SetFlag(_commonButton, true);
 }

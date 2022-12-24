@@ -38,13 +38,13 @@ public class Dialog
     /// <summary>Shows the dialog.</summary>
     /// <param name="owner">The owner window handle.</param>
     /// <returns>
-    /// The <see cref="CommitControl"/> that was clicked or <see cref="Button.Cancel"/> if the dialog was closed using Alt-F4,
+    /// The <see cref="CommitControl"/> that was clicked or <see langword="null"/> if the dialog was closed using Alt-F4,
     /// Escape, or the title bar's close button.
     /// </returns>
     /// <exception cref="PlatformNotSupportedException">
     /// Cannot show the dialog becuase Windows Task Dialogs require Windows Vista or later.
     /// </exception>
-    public CommitControl Show(nint? owner = null)
+    public CommitControl? Show(nint? owner = null)
     {
         try
         {

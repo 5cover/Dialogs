@@ -1,4 +1,5 @@
-﻿using Vanara.InteropServices;
+﻿using System.Diagnostics;
+using Vanara.InteropServices;
 using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
@@ -6,13 +7,14 @@ namespace Scover.Dialogs;
 
 /// <summary>A dialog expander control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
+[DebuggerDisplay($"{{{nameof(Text)}}}")]
 public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 {
-    private SafeLPWSTR _text;
+    private SafeLPWSTR _nativeText;
 
     /// <param name="text">The expanded information of the footer.</param>
     // An non-empty initial value is needed for the expander to be visible when no text is set. Set it to the Zero Width Space character.
-    public Expander(string? text = null) => _text = new(text ?? "\u200B");
+    public Expander(string? text = null) => _nativeText = new(text ?? "\u200B");
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
     public event EventHandler? ExpandedChanged;
@@ -44,17 +46,17 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     /// <value>The expanded information. Default value is <see cref="string.Empty"/>.</value>
     public string Text
     {
-        get => (string?)_text ?? "";
+        get => (string?)_nativeText ?? "";
         set
         {
-            _text.Dispose();
-            _text = new(value);
+            _nativeText.Dispose();
+            _nativeText = new(value);
             RequestUpdate(UpdateExpandedInformation);
         }
     }
 
     /// <inheritdoc/>
-    public void Dispose() => _text.Dispose();
+    public void Dispose() => _nativeText.Dispose();
 
     /// <remarks>
     /// <inheritdoc path="/remarks"/>
@@ -77,7 +79,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 
     internal override void SetIn(in TASKDIALOGCONFIG container)
     {
-        (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _text);
+        (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _nativeText);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }
@@ -85,5 +87,5 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     private protected override void InitializeState() => RequestUpdate(UpdateExpandedInformation);
 
     private void UpdateExpandedInformation(PageUpdateInfo info)
-        => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _text.DangerousGetHandle());
+        => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _nativeText.DangerousGetHandle());
 }

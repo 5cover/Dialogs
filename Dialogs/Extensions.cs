@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Vanara.Extensions;
 using Vanara.PInvoke;
 
@@ -26,7 +27,7 @@ internal static class Extensions
         => handlers.Select(h => h.HandleNotification(notif)).FirstOrDefault(h => h is not null);
 
     [StackTraceHidden]
-    public static InvalidEnumArgumentException NewInvalidEnumArgumentException<TEnum>(this TEnum value, string? argumentName = null) where TEnum : struct, Enum, IConvertible
+    public static InvalidEnumArgumentException InvalidEnumArgumentException<TEnum>(this TEnum value, [CallerArgumentExpression(nameof(value))] string argumentName = "") where TEnum : struct, Enum, IConvertible
         => new(argumentName, value.ToInt32(CultureInfo.InvariantCulture), typeof(TEnum));
 
     public static void Raise(this EventHandler? @event, object sender) => @event?.Invoke(sender, EventArgs.Empty);

@@ -5,7 +5,10 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs;
 
 /// <summary>A dialog with multiple pages and support for navigation.</summary>
-/// <remarks>Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is closed.</remarks>
+/// <remarks>
+/// Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is committed. Navigation doesn't
+/// occur when the dialog window is closed.
+/// </remarks>
 public class MultiPageDialog : Dialog
 {
     private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
@@ -30,9 +33,12 @@ public class MultiPageDialog : Dialog
     public Page CurrentPage { get; private set; }
 
     /// <summary>Sends an explicit navigation request to the dialog.</summary>
-    public void Navigate() => Navigate(null);
+    /// <returns>
+    /// <see langword="true"/> if a navigation target page was found and successfully navigated to, otherwise <see langword="false"/>.
+    /// </returns>
+    public bool Navigate() => Navigate(null);
 
-    private void Navigate(object? sender, CommitControlClickedEventArgs e) => e.Cancel = Navigate(e.ClickedControl);
+    private void Navigate(object? sender, ClosingEventArgs e) => e.Cancel = e.ClickedControl is not null && Navigate(e.ClickedControl);
 
     bool Navigate(CommitControl? clickedControl)
     {

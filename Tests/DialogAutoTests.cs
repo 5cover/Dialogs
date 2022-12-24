@@ -15,14 +15,13 @@ public sealed class DialogAutoTests
         using Page page = new()
         {
             Content = "Assert that the correct buttons get clicked",
-            Buttons = new ButtonCollection()
+            Buttons = new()
             {
                 Button.OK,
-                Button.Cancel,
                 "Custom #1",
                 "Custom #2",
             },
-            RadioButtons = new RadioButtonCollection()
+            RadioButtons = new()
             {
                 selectedRadioButton,
                 "Radio #2",
@@ -48,7 +47,7 @@ public sealed class DialogAutoTests
             };
         }
         clickedControl = new Dialog(page).Show();
-        Assert.That(clickedControl, Is.EqualTo(Button.Cancel));
+        Assert.That(clickedControl, Is.Null);
     }
 
     [Test]
@@ -70,7 +69,7 @@ public sealed class DialogAutoTests
                 ExpandButtonText = GetRandomString(40),
                 IsExpanded = true
             },
-            Buttons = new CommandLinkCollection()
+            Buttons = new()
             {
                 { GetRandomString(40), GetRandomString() },
                 { GetRandomString(40), GetRandomString() },

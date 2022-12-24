@@ -17,8 +17,8 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <inheritdoc/>
     public int Count => _items.Count;
 
-    /// <summary>Gets the default item of this collection.</summary>
-    public T? DefaultItem { get; }
+    /// <summary>Gets or sets the default item of this collection.</summary>
+    public T? DefaultItem { get; set; }
 
     bool ICollection<T>.IsReadOnly => ((ICollection<T>)_items).IsReadOnly;
     private protected virtual TASKDIALOG_FLAGS Flags { get; }
