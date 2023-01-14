@@ -36,7 +36,7 @@ public sealed class DialogTests
             Header = DialogHeader.Yellow,
             Icon = DialogIcon.ErrorShield,
             ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 83 },
-            RadioButtons = new RadioButtonCollection()
+            RadioButtons =
             {
                 "Radio #1",
                 "Radio #2",
@@ -100,11 +100,7 @@ public sealed class DialogTests
         Button buttonNextIcon = new("Next icon");
         using Page page = new()
         {
-            Buttons = new()
-            {
-                buttonNextIcon,
-                Button.Close,
-            },
+            Buttons = { buttonNextIcon, Button.Close, },
             Content = GetContent("information"),
             Header = DialogHeader.Green,
             Icon = DialogIcon.Information,
@@ -137,7 +133,7 @@ public sealed class DialogTests
         using Page page1 = new()
         {
             MainInstruction = "Page 1",
-            Buttons = new() { Button.Yes, Button.No },
+            Buttons = { Button.Yes, Button.No },
             Content = "First page with expander. Press F1 to navigate to Page 2.",
             Expander = new("Expanded information")
             {
@@ -195,7 +191,7 @@ public sealed class DialogTests
         using Page page = new()
         {
             Content = "Assert that the progress bar behaves properly.",
-            Buttons = new()
+            Buttons =
             {
                 minPlus10,
                 minMinus10,

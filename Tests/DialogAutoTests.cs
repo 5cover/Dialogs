@@ -15,17 +15,8 @@ public sealed class DialogAutoTests
         using Page page = new()
         {
             Content = "Assert that the correct buttons get clicked",
-            Buttons = new()
-            {
-                Button.OK,
-                "Custom #1",
-                "Custom #2",
-            },
-            RadioButtons = new()
-            {
-                selectedRadioButton,
-                "Radio #2",
-            },
+            Buttons = { Button.OK, "Custom #1", "Custom #2", },
+            RadioButtons = { selectedRadioButton, "Radio #2", },
             WindowTitle = nameof(TestClick),
         };
         page.Created += (s, e) =>
@@ -69,16 +60,12 @@ public sealed class DialogAutoTests
                 ExpandButtonText = GetRandomString(40),
                 IsExpanded = true
             },
-            Buttons = new()
+            Buttons =
             {
                 { GetRandomString(40), GetRandomString() },
                 { GetRandomString(40), GetRandomString() },
             },
-            RadioButtons = new()
-            {
-                GetRandomString(40),
-                GetRandomString(40),
-            },
+            RadioButtons = { GetRandomString(40), GetRandomString(40), },
             WindowTitle = GetRandomString(40),
             Verification = new(GetRandomString()),
             FooterText = " ",

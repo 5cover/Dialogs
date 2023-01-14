@@ -28,6 +28,8 @@ public partial class Page : IDisposable
 
         _parts.SetDefaultValue(Sizing.Automatic);
         _parts.SetDefaultValue(DialogHeader.None);
+        _parts.SetDefaultValue(new RadioButtonCollection());
+        _parts.SetDefaultValue(new CommitControlCollection());
 
         _parts.PartAdded += (s, part) => part.UpdateRequested += Update;
         _parts.PartRemoved += (s, part) => part.UpdateRequested -= Update;
@@ -100,9 +102,9 @@ public partial class Page : IDisposable
         }
         if (disposing)
         {
-            Buttons?.Dispose();
+            Buttons.Dispose();
             Expander?.Dispose();
-            RadioButtons?.Dispose();
+            RadioButtons.Dispose();
         }
         StringHelper.FreeString(_config.pszWindowTitle, CharSet.Unicode);
         StringHelper.FreeString(_config.pszMainInstruction, CharSet.Unicode);
@@ -176,7 +178,7 @@ public partial class Page : IDisposable
         return _parts.Where(part => part is not null).Cast<DialogControl<PageUpdateInfo>>().ForwardNotification(new(id, wParam, lParam)) ?? default;
     }
 
-    private CommitControl? GetClicked(int pnButton) => pnButton == (int)MB_RESULT.IDCANCEL ? null : Buttons is null ? Button.OK : Buttons.GetControlFromId(pnButton).AssertNotNull();
+    private CommitControl? GetClicked(int pnButton) => pnButton == (int)MB_RESULT.IDCANCEL ? null : Buttons.Any() ? Buttons.GetControlFromId(pnButton).AssertNotNull() : Button.OK;
 
     private void OnUpdateRequested(Action<PageUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
 

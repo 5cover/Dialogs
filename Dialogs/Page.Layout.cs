@@ -38,9 +38,9 @@ public partial class Page
     /// object is disposed with the page.
     /// </remarks>
     /// <value>The collection of all the commit controls, buttons or command links. Default value is <see langword="null"/>.</value>
-    public CommitControlCollection? Buttons
+    public CommitControlCollection Buttons
     {
-        get => _parts.Get<CommitControlCollection>();
+        get => _parts.Get<CommitControlCollection>().AssertNotNull();
         init => _parts.Set(value);
     }
 
@@ -114,9 +114,9 @@ public partial class Page
     /// If the value is <see langword="null"/>, no radio button will be shown. The referenced object is disposed with the page.
     /// </remarks>
     /// <value>The list of all the radio buttons. Default value is <see langword="null"/>.</value>
-    public RadioButtonCollection? RadioButtons
+    public RadioButtonCollection RadioButtons
     {
-        get => _parts.Get<RadioButtonCollection>();
+        get => _parts.Get<RadioButtonCollection>().AssertNotNull();
         init => _parts.Set(value);
     }
 
