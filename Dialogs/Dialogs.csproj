@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -18,9 +17,10 @@
     <Copyright>(c) Scover 2022</Copyright>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
     <PackageTags>ui;taskdialog;dialog</PackageTags>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
-    <Version>1.0.3</Version>
+    <PackageReleaseNotes>Page.Buttons and Page.RadioButtons are now non nullable</PackageReleaseNotes>
+    <Version>1.0.4</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -32,10 +32,6 @@
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <DebugType>portable</DebugType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="XPThemes.manifest" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="XPThemes.manifest" />
@@ -54,5 +50,4 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
 </Project>
