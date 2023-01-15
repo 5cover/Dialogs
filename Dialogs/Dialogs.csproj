@@ -12,7 +12,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Title>Dialogs</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageIcon>icon.png</PackageIcon>
     <Copyright>(c) Scover 2022</Copyright>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
