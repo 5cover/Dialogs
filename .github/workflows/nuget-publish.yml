@@ -13,20 +13,17 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@master
-
-#  latest image has .NET already installed!
-#      - name: Setup .NET environment
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '2.2.105' 
+        
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v1
+        with:
+          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
+          nuget-version: 'latest'
           
       - name: Build solution and generate NuGet package
         run: |  
           cd Dialogs
           dotnet pack -c Release -o out  
-
-      - name: Install NuGet client
-        uses: warrenbuckley/Setup-Nuget@v1
         
       - name: Add private GitHub registry to NuGet
         run: nuget sources add -name "GPR" -Source https://nuget.pkg.github.com/5cover/index.json -Username 5cover -Password ${{ secrets.GITHUB_TOKEN }}
