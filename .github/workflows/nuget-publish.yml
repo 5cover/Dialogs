@@ -1,4 +1,4 @@
-name: NuGet Publish
+name: Publish NuGet package
 
 on:
   push:
@@ -7,8 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
-    name: Update NuGet 
+    runs-on: windows-latest 
     steps:
 
       - name: Checkout repository
@@ -20,13 +19,10 @@ jobs:
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}
           nuget-version: 'latest'
           
-      - name: Build solution and generate NuGet package
+      - name: Build and pack solution
         run: |  
           cd Dialogs
           dotnet pack -c Release -o out  
         
-      - name: Add private GitHub registry to NuGet
-        run: nuget sources add -name "GPR" -Source https://nuget.pkg.github.com/5cover/index.json -Username 5cover -Password ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Push generated package to NuGet registry
+      - name: Push package to the NuGet registry
         run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --no-symbols --skip-duplicate
