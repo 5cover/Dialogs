@@ -14,7 +14,7 @@ using Scover.Dialogs;
 using Page page = new()
 {
     Content = "Sample text",
-    Buttons = new() { Button.Yes, Button.No }
+    Buttons = { Button.Yes, Button.No }
 };
 
 var clickedButton = new Dialog(page).Show();
@@ -27,7 +27,7 @@ using Scover.Dialogs;
 using Page page1 = new()
 {
     MainInstruction = "Page #1",
-    Buttons = new()
+    Buttons =
     {
       { "Label", "Supplental instruction" },
       Button.Cancel
