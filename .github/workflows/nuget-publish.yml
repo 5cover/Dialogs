@@ -32,4 +32,4 @@ jobs:
         run: nuget sources add -name "GPR" -Source https://nuget.pkg.github.com/5cover/index.json -Username 5cover -Password ${{ secrets.GITHUB_TOKEN }}
         
       - name: Push generated package to GitHub registry
-        run: nuget push .\Dialogs\Dialogs\out\*.nupkg -Source "GPR" -SkipDuplicate
+        run: nuget push .\Dialogs\out\*.nupkg -Source "GPR" -SkipDuplicate
