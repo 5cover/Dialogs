@@ -1,4 +1,4 @@
-name: Publish NuGet package
+name: Publish NuGet Package
 
 on:
   push:
@@ -7,22 +7,20 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest 
-    steps:
+    runs-on: ubuntu-latest
 
-      - name: Checkout repository
-        uses: actions/checkout@master
-        
-      - name: Setup NuGet
-        uses: nuget/setup-nuget@v1
-        with:
-          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
-          nuget-version: 'latest'
-          
-      - name: Build and pack solution
-        run: |  
-          cd Dialogs
-          dotnet pack -c Release -o out  
-        
-      - name: Push package to the NuGet registry
-        run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --no-symbols --skip-duplicate
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@master
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build code
+      run: dotnet build
+
+    - name: Pack NuGet Package
+      run: dotnet pack --configuration Release
+
+    - name: Publish NuGet Package
+      run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
