@@ -1,14 +1,20 @@
 ﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
-using TASKDIALOGCONFIG config = new()
+internal sealed class Program
 {
-    dwCommonButtons = TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON,
-    pfCallbackProc = (hwnd, id, wParam, lParam, refData) =>
+    private static void Main()
     {
-        Console.WriteLine(id);
-        return default;
+        using TASKDIALOGCONFIG config = new()
+        {
+            dwCommonButtons = TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON,
+            pfCallbackProc = (hwnd, id, wParam, lParam, refData) =>
+            {
+                Console.WriteLine(id);
+                return default;
+            }
+        };
+        _ = TaskDialogIndirect(config, out var clickedButtonId, out var selectedRadioButtonId, out var isVerificationChecked);
+        Console.WriteLine($"clicked button : {clickedButtonId} ({(User32.MB_RESULT)clickedButtonId})");
     }
-};
-TaskDialogIndirect(config, out var clickedButtonId, out var selectedRadioButtonId, out var isVerificationChecked);
-Console.WriteLine($"clicked button : {clickedButtonId} ({(User32.MB_RESULT)clickedButtonId})");
+}

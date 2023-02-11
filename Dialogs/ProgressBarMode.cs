@@ -1,9 +1,5 @@
 ﻿namespace Scover.Dialogs;
 
-/*var progressBar = User32.FindWindowEx(Handle, HWND.NULL, "PROGRESS_CLASS", null);
-User32.GetWindowRect(progressBar, out RECT progressBarRect);
-return progressBarRect.Width;*/
-
 /// <summary>The mode of a dialog progress bar.</summary>
 public enum ProgressBarMode
 {

@@ -1,4 +1,5 @@
-﻿using Vanara.PInvoke;
+﻿using System.Diagnostics;
+using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -79,7 +80,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
             {
                 if (_mode is ProgressBarMode.Marquee)
                 {
-                    // Set underlying state to normal -- This is because marquee doesn't support abnormal states.
+                    // Set underlying state to normal -- Marquee doesn't support abnormal states.
                     UpdateState(info, ProgressBarState.Normal);
                 }
                 UpdateMode(info);
@@ -122,14 +123,6 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _value = Math.Clamp(value, Minimum, Maximum);
-            /*RequestUpdate(info =>
-            {
-                UpdateValue(info);
-                if (State is not ProgressBarState.Normal)
-                {
-                    UpdateValue(info); // Needed to keep value synced when state is abnormal.
-                }
-            });*/
             RequestUpdate(UpdateValue);
         }
     }
@@ -140,7 +133,10 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
     }
 
-    private protected override void InitializeState() => RequestUpdate(info =>
+    private protected override void InitializeState()
+    {
+        Debug.WriteLine("ProgressBar.InitializeState() called");
+        RequestUpdate(info =>
     {
         UpdateMode(info);
         UpdateRange(info);
@@ -148,6 +144,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         UpdateState(info);
         UpdateValue(info);
     });
+    }
 
     private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state);
 

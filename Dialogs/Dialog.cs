@@ -1,4 +1,5 @@
-﻿using static Vanara.PInvoke.User32;
+﻿using Vanara.PInvoke;
+using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
@@ -14,12 +15,7 @@ public class Dialog
     private readonly Page _firstPage;
 
     /// <param name="page">The page of the dialog.</param>
-    public Dialog(Page page)
-    {
-        page.HandleRecieved += (s, handle) => Handle = handle.DangerousGetHandle();
-        page.UpdateRequested += (s, update) => update(new(Handle));
-        _firstPage = page;
-    }
+    public Dialog(Page page) => _firstPage = page;
 
     /// <summary>Gets or sets whether to use an activation context for calling <c>TaskDialogIndirect</c>.</summary>
     /// <remarks>
@@ -46,6 +42,8 @@ public class Dialog
     /// </exception>
     public CommitControl? Show(nint? owner = null)
     {
+        _firstPage.HandleRecieved += SetHandle;
+        _firstPage.UpdateRequested += PerformUpdate;
         try
         {
             using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
@@ -53,7 +51,20 @@ public class Dialog
         }
         catch (EntryPointNotFoundException e)
         {
-            throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.", e);
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT || Environment.OSVersion.Version < new Version(6, 0, 6000))
+            {
+                throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.", e);
+            }
+            throw;
         }
+        finally
+        {
+            _firstPage.HandleRecieved -= SetHandle;
+            _firstPage.UpdateRequested -= PerformUpdate;
+        }
+
+        void SetHandle(object? sender, HWND handle) => Handle = handle.DangerousGetHandle();
     }
+
+    private protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
 }

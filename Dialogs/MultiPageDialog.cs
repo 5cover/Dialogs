@@ -40,21 +40,21 @@ public class MultiPageDialog : Dialog
 
     private void Navigate(object? sender, ClosingEventArgs e) => e.Cancel = e.ClickedControl is not null && Navigate(e.ClickedControl);
 
-    bool Navigate(CommitControl? clickedControl)
+    private bool Navigate(CommitControl? clickedControl)
     {
         _navigatedPagePtr?.Dispose();
         if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser)
           && nextPageChooser(clickedControl) is { } nextPage)
         {
+            CurrentPage.Closing -= Navigate;
+            CurrentPage.UpdateRequested -= PerformUpdate;
             nextPage.Closing += Navigate;
-            nextPage.UpdateRequested += (s, update) => update(new(Handle));
+            nextPage.UpdateRequested += PerformUpdate;
 
             _navigatedPagePtr = nextPage.CreateConfigPtr();
             _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
 
-            CurrentPage.Closing -= Navigate;
             CurrentPage = nextPage;
-
             return true;
         }
         return false;

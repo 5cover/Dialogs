@@ -21,4 +21,8 @@ public sealed class DefaultRadioButton
     internal TASKDIALOG_FLAGS Flags { get; }
 
     internal RadioButton? RadioButton { get; }
+
+    /// <summary>Creates a new <see cref="DefaultRadioButton"/> instance.</summary>
+    /// <param name="radioButton">The default radio button.</param>
+    public static implicit operator DefaultRadioButton(RadioButton radioButton) => new(radioButton);
 }

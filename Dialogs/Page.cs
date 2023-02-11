@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Vanara.Extensions;
 using Vanara.InteropServices;
@@ -17,9 +18,11 @@ public partial class Page : IDisposable
 {
     private readonly TASKDIALOGCONFIG _config = new();
     private readonly PartCollection _parts = new();
+    private readonly Queue<Action<PageUpdateInfo>> _queuedUpdates = new();
     private bool _disposedValue;
     private bool _handleSent;
     private bool _ignoreButtonClicked;
+    private int _inCallback;
 
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
@@ -34,7 +37,18 @@ public partial class Page : IDisposable
         _parts.PartAdded += (s, part) => part.UpdateRequested += Update;
         _parts.PartRemoved += (s, part) => part.UpdateRequested -= Update;
 
-        void Update(object? sender, Action<PageUpdateInfo> update) => OnUpdateRequested(update);
+        void Update(object? sender, Action<PageUpdateInfo> update)
+        {
+            // Enqueue the update if we're in the TaskDialog callback.
+            if (_inCallback == 0)
+            {
+                OnUpdateRequested(update);
+            }
+            else
+            {
+                _queuedUpdates.Enqueue(update);
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -83,14 +97,10 @@ public partial class Page : IDisposable
 
     internal CommitControl? Show(HWND parent, WindowLocation startupLocation)
     {
-        // If Cancel is in Buttons, there is no way to differenciate a click on Cancel from a dialog window close action. Cancel
-        // is returned in this case.
-
         _parts.SetPartsIn(_config);
         _config.hwndParent = parent;
         _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
         TaskDialogIndirect(_config, out int pnButton, out _, out _).ThrowIfFailed();
-        // An OK Button is shown by default when there are no buttons defined.
         return GetClicked(pnButton);
     }
 
@@ -118,64 +128,80 @@ public partial class Page : IDisposable
 
     private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)
     {
-        if (!_handleSent)
+        _ = Interlocked.Increment(ref _inCallback);
+        try
         {
-            HandleRecieved?.Invoke(this, hwnd);
-            _handleSent = true;
-        }
-        switch (id)
-        {
-            // Sent after TDN_DIALOG_CONSTRUCTED
-            case TaskDialogNotification.TDN_CREATED:
-                Created.Raise(this);
-                break;
+            Debug.WriteLine(id, hwnd.DangerousGetHandle().ToString());
+            if (!_handleSent)
+            {
+                HandleRecieved?.Invoke(this, hwnd);
+                _handleSent = true;
+            }
+            switch (id)
+            {
+                // Sent after TDN_DIALOG_CONSTRUCTED
+                case TaskDialogNotification.TDN_CREATED:
+                    Created.Raise(this);
+                    break;
 
-            case TaskDialogNotification.TDN_NAVIGATED:
-                Created.Raise(this);
-                break;
+                case TaskDialogNotification.TDN_NAVIGATED:
+                    Created.Raise(this);
+                    break;
 
-            // Also sent when the dialog window was closed.
-            case TaskDialogNotification.TDN_BUTTON_CLICKED:
-                if (_ignoreButtonClicked)
-                {
-                    // stop handling now
-                    return default;
-                }
-                var control = GetClicked((int)wParam);
-                // wParam is IDCANCEL when the dialog window was closed. Cannot be a button click because we use a Button for
-                // Cancel instead of a CommonButton. Check for the Help button because it is non-committing and natively doesnt
-                // close the dialog, so it wouldn't make sense to raise Closing for it. If S_FALSE is returned for the Help
-                // button, TDN_HELP will not be sent.
-                if (control is null || !control.Equals(Button.Help))
-                {
-                    ClosingEventArgs e = new(control);
-                    Closing?.Invoke(this, e);
-                    if (e.Cancel)
+                // Also sent when the dialog window was closed.
+                case TaskDialogNotification.TDN_BUTTON_CLICKED:
+                    if (_ignoreButtonClicked)
                     {
-                        return HRESULT.S_FALSE;
+                        // stop handling now
+                        return default;
                     }
-                }
-                break;
+                    var control = GetClicked((int)wParam);
 
-            case TaskDialogNotification.TDN_HYPERLINK_CLICKED:
-                HyperlinkClicked?.Invoke(this, new(Marshal.PtrToStringUni(lParam)));
-                break;
+                    // The Help button is non-committing and natively doesn't close the dialog, so it doesn't raise Closing. If
+                    // S_FALSE is returned for the Help button, TDN_HELP will not be sent.
+                    if (control is null || !control.Equals(Button.Help))
+                    {
+                        ClosingEventArgs e = new(control);
+                        Closing?.Invoke(this, e);
+                        if (e.Cancel)
+                        {
+                            return HRESULT.S_FALSE;
+                        }
+                    }
+                    break;
 
-            case TaskDialogNotification.TDN_DESTROYED:
-                Destroyed.Raise(this);
-                break;
+                case TaskDialogNotification.TDN_HYPERLINK_CLICKED:
+                    HyperlinkClicked?.Invoke(this, new(Marshal.PtrToStringUni(lParam)));
+                    break;
 
-            case TaskDialogNotification.TDN_DIALOG_CONSTRUCTED:
-                // Needed for reverting icon after header.
-                OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
-                break;
+                case TaskDialogNotification.TDN_DESTROYED:
+                    Destroyed.Raise(this);
+                    break;
 
-            // For Help button, sent after TDN_BUTTON_CLICKED
-            case TaskDialogNotification.TDN_HELP:
-                HelpRequested.Raise(this);
-                break;
+                case TaskDialogNotification.TDN_DIALOG_CONSTRUCTED:
+                    // Needed for having an icon after the header was set.
+                    OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
+                    break;
+
+                // For Help button, sent after TDN_BUTTON_CLICKED
+                case TaskDialogNotification.TDN_HELP:
+                    HelpRequested.Raise(this);
+                    break;
+            }
+            return _parts.Where(part => part is not null).Cast<DialogControl<PageUpdateInfo>>().ForwardNotification(new(id, wParam, lParam)) ?? default;
         }
-        return _parts.Where(part => part is not null).Cast<DialogControl<PageUpdateInfo>>().ForwardNotification(new(id, wParam, lParam)) ?? default;
+        finally
+        {
+            _ = Interlocked.Decrement(ref _inCallback);
+            if (_inCallback == 0)
+            {
+                foreach (var update in _queuedUpdates)
+                {
+                    OnUpdateRequested(update);
+                }
+            }
+            Debug.WriteLine("Callback exited");
+        }
     }
 
     private CommitControl? GetClicked(int pnButton) => pnButton == (int)MB_RESULT.IDCANCEL ? null : Buttons.Any() ? Buttons.GetControlFromId(pnButton).AssertNotNull() : Button.OK;

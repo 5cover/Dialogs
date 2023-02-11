@@ -189,8 +189,8 @@ public sealed class DialogTests
             maxMinus10 = new("Max - 10"),
             valuePlus10 = new("Value + 10"),
             valueMinus10 = new("Value - 10"),
-            toggleMode = new("Toggle mode"),
-            cycleState = new("Cycle state"),
+            toggleMode = new("Change mode"),
+            cycleState = new("Change state"),
             intervalPlus1 = new("Interval + 1"),
             intervalMinus1 = new("Interval - 1");
         using Page page = new()
@@ -301,13 +301,34 @@ public sealed class DialogTests
     }
 
     [Test]
+    public void TestProgressBarNavigation()
+    {
+        using Page page1 = new()
+        {
+            Content = "This is the first page.",
+            WindowTitle = nameof(TestProgressBarNavigation)
+        };
+        using Page page2 = new()
+        {
+            Content = "This is the second page. Assert that the progress bar is shown properly. The bar should be half-filled.",
+            ProgressBar = new()
+            {
+                Value = 5,
+                Maximum = 10,
+            },
+            WindowTitle = nameof(TestProgressBarNavigation)
+        };
+        _ = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>() { [page1] = _ => page2 }).Show();
+    }
+
+    [Test]
     public void TestRadioButtons()
     {
         RadioButton radio2 = new("Radio #2 (default)");
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
-            RadioButtons = new(defaultItem: new(radio2))
+            RadioButtons = new(defaultItem: radio2)
             {
                 "Radio #1",
                 radio2,
