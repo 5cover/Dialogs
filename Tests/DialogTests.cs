@@ -6,6 +6,11 @@ namespace Tests;
 [TestFixture]
 public sealed class DialogTests
 {
+    static DialogTests()
+    {
+        Dialog.UseActivationContext = true;
+    }
+
     [Test]
     public void MegaTest()
     {
@@ -213,47 +218,55 @@ public sealed class DialogTests
         };
         var pb = page.ProgressBar;
         UpdateExpandedInfo();
-        minPlus10.Clicked += (_, _) =>
+        minPlus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Minimum += 10;
             minPlus10.IsEnabled = pb.Minimum < ushort.MaxValue;
             UpdateExpandedInfo();
         };
-        minMinus10.Clicked += (_, _) =>
+        minMinus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Minimum -= 10;
             minMinus10.IsEnabled = pb.Minimum > 0;
             UpdateExpandedInfo();
         };
-        maxPlus10.Clicked += (_, _) =>
+        maxPlus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Maximum += 10;
             maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
             UpdateExpandedInfo();
         };
-        maxMinus10.Clicked += (_, _) =>
+        maxMinus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Maximum -= 10;
             maxMinus10.IsEnabled = pb.Maximum > 0;
             UpdateExpandedInfo();
         };
-        valuePlus10.Clicked += (_, _) =>
+        valuePlus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Value += 10;
             UpdateExpandedInfo();
         };
-        valueMinus10.Clicked += (_, _) =>
+        valueMinus10.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Value -= 10;
             UpdateExpandedInfo();
         };
-        cycleState.Clicked += (_, _) =>
+        cycleState.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.Mode = pb.Mode is ProgressBarMode.Normal ? ProgressBarMode.Marquee : ProgressBarMode.Normal;
             UpdateExpandedInfo();
         };
-        toggleMode.Clicked += (_, _) =>
+        toggleMode.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.State = pb.State switch
             {
                 ProgressBarState.Error => ProgressBarState.Normal,
@@ -263,13 +276,15 @@ public sealed class DialogTests
             };
             UpdateExpandedInfo();
         };
-        intervalPlus1.Clicked += (_, _) =>
+        intervalPlus1.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.MarqueeInterval++;
             UpdateExpandedInfo();
         };
-        intervalMinus1.Clicked += (_, _) =>
+        intervalMinus1.Clicked += (_, e) =>
         {
+            e.Cancel = true;
             pb.MarqueeInterval--;
             intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
             UpdateExpandedInfo();
