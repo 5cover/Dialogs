@@ -17,8 +17,10 @@
     <Copyright>(c) Scover 2022</Copyright>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
     <PackageTags>ui;taskdialog;dialog</PackageTags>
-    <PackageReleaseNotes>Page.Buttons and Page.RadioButtons are now non nullable</PackageReleaseNotes>
-    <Version>1.0.5</Version>
+    <PackageReleaseNotes>Removed debug prints
+simplified Dialog.Show()
+Slightly improved documentation</PackageReleaseNotes>
+    <Version>1.0.6</Version>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>

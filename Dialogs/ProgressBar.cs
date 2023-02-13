@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Vanara.PInvoke;
+﻿using Vanara.PInvoke;
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -133,10 +132,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
     }
 
-    private protected override void InitializeState()
-    {
-        Debug.WriteLine("ProgressBar.InitializeState() called");
-        RequestUpdate(info =>
+    private protected override void InitializeState() => RequestUpdate(info =>
     {
         UpdateMode(info);
         UpdateRange(info);
@@ -144,7 +140,6 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         UpdateState(info);
         UpdateValue(info);
     });
-    }
 
     private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state);
 

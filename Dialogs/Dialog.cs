@@ -38,7 +38,10 @@ public class Dialog
     /// Escape, or the title bar's close button.
     /// </returns>
     /// <exception cref="PlatformNotSupportedException">
-    /// Cannot show the dialog becuase Windows Task Dialogs require Windows Vista or later.
+    /// Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.
+    /// </exception>
+    /// <exception cref="EntryPointNotFoundException">
+    /// One or more required <see langword="extern"/> functions could not be found.
     /// </exception>
     public CommitControl? Show(nint? owner = null)
     {
@@ -49,13 +52,9 @@ public class Dialog
             using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
             return _firstPage.Show(owner ?? GetActiveWindow(), StartupLocation);
         }
-        catch (EntryPointNotFoundException e)
+        catch (EntryPointNotFoundException e) when (Environment.OSVersion.Platform != PlatformID.Win32NT || Environment.OSVersion.Version < new Version(6, 0, 6000))
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT || Environment.OSVersion.Version < new Version(6, 0, 6000))
-            {
-                throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.", e);
-            }
-            throw;
+            throw new PlatformNotSupportedException("Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.", e);
         }
         finally
         {

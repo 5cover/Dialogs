@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Vanara.Extensions;
 using Vanara.InteropServices;
@@ -128,10 +127,9 @@ public partial class Page : IDisposable
 
     private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)
     {
-        _ = Interlocked.Increment(ref _inCallback);
+        ++_inCallback;
         try
         {
-            Debug.WriteLine(id, hwnd.DangerousGetHandle().ToString());
             if (!_handleSent)
             {
                 HandleRecieved?.Invoke(this, hwnd);
@@ -192,15 +190,14 @@ public partial class Page : IDisposable
         }
         finally
         {
-            _ = Interlocked.Decrement(ref _inCallback);
+            --_inCallback;
             if (_inCallback == 0)
             {
-                foreach (var update in _queuedUpdates)
+                while (_queuedUpdates.Any())
                 {
-                    OnUpdateRequested(update);
+                    OnUpdateRequested(_queuedUpdates.Dequeue());
                 }
             }
-            Debug.WriteLine("Callback exited");
         }
     }
 
