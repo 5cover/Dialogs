@@ -1,13 +1,15 @@
 ﻿using System.Runtime.InteropServices;
+
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
 /// <summary>A dialog with multiple pages and support for navigation.</summary>
 /// <remarks>
-/// Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is committed. Navigation doesn't
-/// occur when the dialog window is closed.
+/// Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is
+/// committed. Navigation doesn't occur when the dialog window is closed.
 /// </remarks>
 public class MultiPageDialog : Dialog
 {
@@ -27,14 +29,15 @@ public class MultiPageDialog : Dialog
 
     /// <summary>Gets the current page.</summary>
     /// <value>
-    /// If <see cref="Dialog.Show(nint?)"/> has not been called yet, the first page of the dialog, otherwise the page that is
-    /// currently being displayed in the dialog.
+    /// If <see cref="Dialog.Show(nint?)"/> has not been called yet, the first page of the dialog, otherwise
+    /// the page that is currently being displayed in the dialog.
     /// </value>
     public Page CurrentPage { get; private set; }
 
     /// <summary>Sends an explicit navigation request to the dialog.</summary>
     /// <returns>
-    /// <see langword="true"/> if a navigation target page was found and successfully navigated to, otherwise <see langword="false"/>.
+    /// <see langword="true"/> if a navigation target page was found and successfully navigated to,
+    /// otherwise <see langword="false"/>.
     /// </returns>
     public bool Navigate() => Navigate(null);
 

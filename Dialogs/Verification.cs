@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -18,7 +20,9 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     public event EventHandler? Checked;
 
     /// <summary>Gets or sets whether the verification is checked.</summary>
-    /// <value><see langword="true"/> if the verficiation checkbox is checked, <see langword="false"/> otherwise.</value>
+    /// <value>
+    /// <see langword="true"/> if the verficiation checkbox is checked, <see langword="false"/> otherwise.
+    /// </value>
     public bool IsChecked
     {
         get => _isChecked;
@@ -30,8 +34,12 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     }
 
     /// <summary>Gets the verification text.</summary>
-    /// <remarks>If the value is <see cref="string.Empty"/>, no verification checkbox will be shown.</remarks>
-    /// <value>The text shown next to the verification checkbox. Default value is <see cref="string.Empty"/>.</value>
+    /// <remarks>
+    /// If the value is <see cref="string.Empty"/>, no verification checkbox will be shown.
+    /// </remarks>
+    /// <value>
+    /// The text shown next to the verification checkbox. Default value is <see cref="string.Empty"/>.
+    /// </value>
     public string Text { get; } = "";
 
     /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>

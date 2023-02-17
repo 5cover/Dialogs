@@ -1,12 +1,17 @@
 ﻿using Vanara.InteropServices;
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
-/// <summary>A delegate that selects the next page to navigate to after a page closing or an explicit navigation request.</summary>
+/// <summary>
+/// A delegate that selects the next page to navigate to after a page closing or an explicit navigation
+/// request.
+/// </summary>
 /// <param name="clickedControl">
-/// The commit control that closed the previous page, or <see langword="null"/> if navigation was explicitly requested with <see cref="MultiPageDialog.Navigate()"/>.
+/// The commit control that closed the previous page, or <see langword="null"/> if navigation was explicitly
+/// requested with <see cref="MultiPageDialog.Navigate()"/>.
 /// </param>
 /// <returns>The next page to navigate to, or <see langword="null"/> to end the navigation.</returns>
 public delegate Page? NextPageSelector(CommitControl? clickedControl);
@@ -61,7 +66,8 @@ public abstract class DialogControl<TUpdateInfo>
     /// </list>
     /// </remarks>
     /// <returns>
-    /// <see langword="null"/> if there was no meaningful value to return, the notification-specific return value otherwise.
+    /// <see langword="null"/> if there was no meaningful value to return, the notification-specific return
+    /// value otherwise.
     /// </returns>
     internal virtual HRESULT? HandleNotification(Notification notif)
     {
@@ -73,17 +79,21 @@ public abstract class DialogControl<TUpdateInfo>
     }
 
     /// <summary>Layouts this object in a task dialog configuration object.</summary>
-    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.</remarks>
+    /// <remarks>
+    /// Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.
+    /// </remarks>
     internal virtual void SetIn(in TASKDIALOGCONFIG config)
     {
     }
 
     /// <summary>Initializes state properties.</summary>
-    /// <remarks>Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.</remarks>
-    private protected virtual void InitializeState()
+    /// <remarks>
+    /// Overrides should not call base method defined in <see cref="DialogControl{TUpdateInfo}"/>.
+    /// </remarks>
+    protected virtual void InitializeState()
     {
     }
 
     /// <summary>Raises the <see cref="UpdateRequested"/> event.</summary>
-    private protected void RequestUpdate(Action<TUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
+    protected void RequestUpdate(Action<TUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
 }

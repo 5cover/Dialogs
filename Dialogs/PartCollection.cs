@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+
 using Vanara.PInvoke;
+
 using Part = Scover.Dialogs.DialogControl<Scover.Dialogs.PageUpdateInfo>;
 
 namespace Scover.Dialogs;

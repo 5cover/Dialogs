@@ -1,4 +1,5 @@
 ﻿using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -20,7 +21,9 @@ public sealed class DialogIcon
     /// <summary>Gets the icon consisting of a lowercase letter i in a circle.</summary>
     public static DialogIcon Information { get; } = new(TaskDialogIcon.TD_INFORMATION_ICON);
 
-    /// <summary>Gets a special <see cref="DialogIcon"/> instance that represents the absence of an icon.</summary>
+    /// <summary>
+    /// Gets a special <see cref="DialogIcon"/> instance that represents the absence of an icon.
+    /// </summary>
     public static DialogIcon None { get; } = new(default, false);
 
     /// <summary>Gets the icon consisting of an user account control (UAC) shield.</summary>
@@ -39,7 +42,9 @@ public sealed class DialogIcon
     internal bool IsHIcon { get; }
 
     /// <summary>Creates a new <see cref="DialogIcon"/> from an icon handle.</summary>
-    /// <param name="hIcon">The icon handle to use. The caller is responsible for freeing the icon resource.</param>
+    /// <param name="hIcon">
+    /// The icon handle to use. The caller is responsible for freeing the icon resource.
+    /// </param>
     /// <returns>A new instance of the <see cref="DialogIcon"/> class.</returns>
     public static DialogIcon FromHandle(nint hIcon) => new(hIcon, true);
 

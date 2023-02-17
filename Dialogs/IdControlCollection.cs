@@ -1,18 +1,25 @@
 ﻿using System.Collections;
+
 using Vanara.Extensions;
 using Vanara.InteropServices;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
 /// <summary>A collection of dialog controls with IDs.</summary>
-/// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>
+/// <remarks>
+/// This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its
+/// items.
+/// </remarks>
 public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, ICollection<T>, IDisposable where T : notnull, DialogControl<IdControlUpdateInfo>
 {
     private readonly IList<T> _items;
     private SafeNativeArray<TASKDIALOG_BUTTON>? _nativeArray;
 
-    private protected IdControlCollection(IList<T>? items, T? defaultItem) => (_items, DefaultItem) = (items ?? new List<T>(), defaultItem);
+    /// <param name="items">The initial items.</param>
+    /// <param name="defaultItem">The default item.</param>
+    protected IdControlCollection(IList<T>? items, T? defaultItem) => (_items, DefaultItem) = (items ?? new List<T>(), defaultItem);
 
     /// <inheritdoc/>
     public int Count => _items.Count;
@@ -21,7 +28,11 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     public T? DefaultItem { get; set; }
 
     bool ICollection<T>.IsReadOnly => ((ICollection<T>)_items).IsReadOnly;
-    private protected virtual TASKDIALOG_FLAGS Flags { get; }
+
+    /// <summary>
+    /// Flags to add to <see cref="TASKDIALOGCONFIG.dwFlags"/> in <see cref="SetIn(in TASKDIALOGCONFIG)"/>.
+    /// </summary>
+    protected virtual TASKDIALOG_FLAGS Flags { get; }
 
     /// <inheritdoc/>
     public void Add(T item)
@@ -96,11 +107,22 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
         SetConfigProperties(config, _nativeArray, (uint)_nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
     }
 
-    private protected virtual int GetId(int index) => index + 1;
+    /// <summary>Gets the corresponding ID for a given index.</summary>
+    /// <returns>The ID of the item at the specified index.</returns>
+    protected virtual int GetId(int index) => index + 1;
 
-    private protected virtual int GetIndex(int id) => id - 1;
+    /// <summary>Gets the corresponding index for a given ID.</summary>
+    /// <returns>The index of the item with the specified ID.</returns>
+    protected virtual int GetIndex(int id) => id - 1;
 
-    private protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
+    /// <summary>
+    /// Sets the appropriates fields and properties in <paramref name="config"/> for the given arguments.
+    /// </summary>
+    /// <param name="config">The object to configure.</param>
+    /// <param name="nativeButtonArrayHandle">The handle to the array containing the native buttons.</param>
+    /// <param name="nativeButtonArrayCount">The count of native buttons.</param>
+    /// <param name="defaultItemId">The ID of the default item.</param>
+    protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
 
     private void AddItem(T item)
     {

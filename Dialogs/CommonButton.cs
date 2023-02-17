@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+
 using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
@@ -9,7 +10,9 @@ namespace Scover.Dialogs;
 [DebuggerDisplay($"{{{nameof(_commonButton)}}}")]
 public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
 {
-    /// <summary>The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.</summary>
+    /// <summary>
+    /// The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.
+    /// </summary>
     /// <remarks>The range is 0 to <see cref="MaxId"/>, inclusive.</remarks>
     internal const int MaxId = 11;
 

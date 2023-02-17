@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+
 using Vanara.Extensions;
 using Vanara.InteropServices;
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 using static Vanara.PInvoke.User32;
 
@@ -11,7 +13,8 @@ namespace Scover.Dialogs;
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
-/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see cref="RadioButtons"/>.
+/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see
+/// cref="RadioButtons"/>.
 /// </remarks>
 public partial class Page : IDisposable
 {
@@ -54,22 +57,30 @@ public partial class Page : IDisposable
     ~Page() => Dispose(disposing: false);
 
     /// <summary>
-    /// Event raised when the page is about to be closed, either because a commit control was clicked, or the dialog window was
-    /// closed using Alt-F4, Escape, or the title bar's close button. Set the <see cref="CancelEventArgs.Cancel"/> property of
-    /// the event arguments to <see langword="true"/> to prevent the page from closing.
+    /// Event raised when the page is about to be closed, either because a commit control was clicked, or
+    /// the dialog window was closed using Alt-F4, Escape, or the title bar's close button. Set the <see
+    /// cref="CancelEventArgs.Cancel"/> property of the event arguments to <see langword="true"/> to prevent
+    /// the page from closing.
     /// </summary>
     public event EventHandler<ClosingEventArgs>? Closing;
+
     /// <summary>Event raised when this page is created or navigated to.</summary>
     public event EventHandler? Created;
+
     /// <summary>Event raised when this page is destroyed.</summary>
     public event EventHandler? Destroyed;
+
     /// <summary>
-    /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was clicked, or the F1 key was pressed.
+    /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
+    /// clicked, or the F1 key was pressed.
     /// </summary>
     public event EventHandler? HelpRequested;
+
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
+
     internal event EventHandler<HWND>? HandleRecieved;
+
     internal event EventHandler<Action<PageUpdateInfo>>? UpdateRequested;
 
     /// <summary>Closes the page.</summary>
@@ -103,7 +114,8 @@ public partial class Page : IDisposable
         return GetClicked(pnButton);
     }
 
-    private protected virtual void Dispose(bool disposing)
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    protected virtual void Dispose(bool disposing)
     {
         if (_disposedValue)
         {
@@ -155,8 +167,9 @@ public partial class Page : IDisposable
                     }
                     var control = GetClicked((int)wParam);
 
-                    // The Help button is non-committing and natively doesn't close the dialog, so it doesn't raise Closing. If
-                    // S_FALSE is returned for the Help button, TDN_HELP will not be sent.
+                    // The Help button is non-committing and natively doesn't close the dialog, so it
+                    // doesn't raise Closing. If S_FALSE is returned for the Help button, TDN_HELP will not
+                    // be sent.
                     if (control is null || !control.Equals(Button.Help))
                     {
                         ClosingEventArgs e = new(control);

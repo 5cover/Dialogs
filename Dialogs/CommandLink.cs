@@ -6,7 +6,8 @@ public sealed class CommandLink : TextCommitControl
 {
     /// <param name="label">The command link label.</param>
     /// <param name="note">
-    /// The command link supplemental instruction. If <see langword="null"/>, there will be no supplemental instruction area.
+    /// The command link supplemental instruction. If <see langword="null"/>, there will be no supplemental
+    /// instruction area.
     /// </param>
     public CommandLink(string label, string? note = null) : base(note is null ? label : $"{label}\n{note}")
         => (Label, Note) = (label, note);

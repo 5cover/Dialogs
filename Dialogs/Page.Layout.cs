@@ -2,9 +2,10 @@
 
 namespace Scover.Dialogs;
 
-// Layout properties can only be set during initialization using the object initializer syntax. However, they still follow the
-// state of the dialog at showtime. Another page must be navigated to in the containing dialog in order to change these
-// properties after initialization. Disposable layout properties are disposed, because they are considered to be owned by the page.
+// Layout properties can only be set during initialization using the object initializer syntax. However,
+// they still follow the state of the dialog at showtime. Another page must be navigated to in the
+// containing dialog in order to change these properties after initialization. Disposable layout properties
+// are disposed, because they are considered to be owned by the page.
 
 // Layout is { get; init; }
 
@@ -13,18 +14,20 @@ public partial class Page
     /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
     /// <para>
-    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.Text"/> and <see
-    /// cref="FooterText"/> properties can use hyperlinks in the following form: <c>&lt;A HREF="executablestring"&gt;Hyperlink NativeText&lt;/A&gt;</c>
+    /// When this property is <see langword="true"/>, the <see cref="Content"/>, <see cref="Expander.Text"/>
+    /// and <see cref="FooterText"/> properties can use hyperlinks in the following form: <c>&lt;A
+    /// HREF="executablestring"&gt;Hyperlink NativeText&lt;/A&gt;</c>
     /// </para>
     /// Enabling hyperlinks when using content from an unsafe source may cause security vulnerabilities.
     /// <para>
-    /// Dialogs will not actually execute hyperlinks. To take action when the user presses a hyperlink, handle the <see
-    /// cref="HyperlinkClicked"/> event.
+    /// Dialogs will not actually execute hyperlinks. To take action when the user presses a hyperlink,
+    /// handle the <see cref="HyperlinkClicked"/> event.
     /// </para>
     /// </remarks>
     /// <value>
-    /// <see langword="true"/> when hyperlinks are allowed for the <see cref="Content"/>, <see cref="Expander.Text"/> and <see
-    /// cref="FooterText"/> properties; otherwise, <see langword="false"/>. Default value is <see langword="false"/>.
+    /// <see langword="true"/> when hyperlinks are allowed for the <see cref="Content"/>, <see
+    /// cref="Expander.Text"/> and <see cref="FooterText"/> properties; otherwise, <see langword="false"/>.
+    /// Default value is <see langword="false"/>.
     /// </value>
     public bool AllowHyperlinks
     {
@@ -34,10 +37,13 @@ public partial class Page
 
     /// <summary>Gets the commit control collection.</summary>
     /// <remarks>
-    /// If the value is <see langword="null"/>, the <see cref="Button.OK"/> button will be shown by default. The referenced
-    /// object is disposed with the page.
+    /// If the value is <see langword="null"/>, the <see cref="Button.OK"/> button will be shown by default.
+    /// The referenced object is disposed with the page.
     /// </remarks>
-    /// <value>The collection of all the commit controls, buttons or command links. Default value is <see langword="null"/>.</value>
+    /// <value>
+    /// The collection of all the commit controls, buttons or command links. Default value is <see
+    /// langword="null"/>.
+    /// </value>
     public CommitControlCollection Buttons
     {
         get => _parts.Get<CommitControlCollection>().AssertNotNull();
@@ -46,8 +52,8 @@ public partial class Page
 
     /// <summary>Gets the expander.</summary>
     /// <value>
-    /// The expander area or <see langword="null"/> if it is not defined. Default value is <see langword="null"/>. The
-    /// referenced object is disposed with the page.
+    /// The expander area or <see langword="null"/> if it is not defined. Default value is <see
+    /// langword="null"/>. The referenced object is disposed with the page.
     /// </value>
     public Expander? Expander
     {
@@ -66,8 +72,9 @@ public partial class Page
 
     /// <summary>Gets whether to allow cancelation.</summary>
     /// <value>
-    /// <see langword="true"/> if the owner dialog window should be able to be closed using Alt-F4, Escape or the title bar's
-    /// close button and a <i>Cancel</i> button should be visible, <see langword="false"/> otherwise. Default value is <see langword="false"/>.
+    /// <see langword="true"/> if the owner dialog window should be able to be closed using Alt-F4, Escape
+    /// or the title bar's close button and a <i>Cancel</i> button should be visible, <see
+    /// langword="false"/> otherwise. Default value is <see langword="false"/>.
     /// </value>
     public bool IsCancelable
     {
@@ -81,7 +88,8 @@ public partial class Page
 
     /// <summary>Gets whether to allow minimization.</summary>
     /// <value>
-    /// Whether the owner dialog window has a minimize box on its title bar when it is shown modeless. Default value is <see langword="false"/>.
+    /// Whether the owner dialog window has a minimize box on its title bar when it is shown modeless.
+    /// Default value is <see langword="false"/>.
     /// </value>
     public bool IsMinimizable
     {
@@ -91,8 +99,8 @@ public partial class Page
 
     /// <summary>Gets whether text is displayed right to left.</summary>
     /// <value>
-    /// <see langword="true"/> when the content of the dialog is displayed right to left; otherwise, <see langword="false"/>.
-    /// The default value is <see langword="false"/>.
+    /// <see langword="true"/> when the content of the dialog is displayed right to left; otherwise, <see
+    /// langword="false"/>. The default value is <see langword="false"/>.
     /// </value>
     public bool IsRightToLeftLayout
     {
@@ -111,7 +119,8 @@ public partial class Page
 
     /// <summary>Gets the radio button list</summary>
     /// <remarks>
-    /// If the value is <see langword="null"/>, no radio button will be shown. The referenced object is disposed with the page.
+    /// If the value is <see langword="null"/>, no radio button will be shown. The referenced object is
+    /// disposed with the page.
     /// </remarks>
     /// <value>The list of all the radio buttons. Default value is <see langword="null"/>.</value>
     public RadioButtonCollection RadioButtons
@@ -121,7 +130,10 @@ public partial class Page
     }
 
     /// <summary>Gets the sizing strategy.</summary>
-    /// <value>The sizing strategy to size the owner dialog window. Default value is <see cref="Sizing.Automatic"/>.</value>
+    /// <value>
+    /// The sizing strategy to size the owner dialog window. Default value is <see
+    /// cref="Sizing.Automatic"/>.
+    /// </value>
     public Sizing Sizing
     {
         get => _parts.Get<Sizing>().AssertNotNull();
@@ -138,7 +150,10 @@ public partial class Page
     }
 
     /// <summary>Gets the window title.</summary>
-    /// <remarks>If the value is <see langword="null"/>, the window title will be the filename of the current executable.</remarks>
+    /// <remarks>
+    /// If the value is <see langword="null"/>, the window title will be the filename of the current
+    /// executable.
+    /// </remarks>
     /// <value>The title of the owner dialog window. Default value is <see langword="null"/>.</value>
     public string? WindowTitle { get => _config.WindowTitle; init => _config.WindowTitle = value; }
 }

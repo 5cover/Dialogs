@@ -19,7 +19,9 @@ public sealed class DialogHeader : DialogControl<PageUpdateInfo>
     /// <summary>Gets the green header.</summary>
     public static DialogHeader Green { get; } = new(TaskDialogIcon.TD_SECURITYSUCCESS_ICON);
 
-    /// <summary>Gets the <see cref="DialogHeader"/> instance that represents the absence of a header.</summary>
+    /// <summary>
+    /// Gets the <see cref="DialogHeader"/> instance that represents the absence of a header.
+    /// </summary>
     public static DialogHeader None { get; } = new(default);
 
     /// <summary>Gets the red header.</summary>

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+
 using Scover.Dialogs;
 
 namespace Tests;
@@ -6,8 +7,6 @@ namespace Tests;
 [TestFixture]
 public sealed class DialogTests
 {
-    static DialogTests() => Dialog.UseActivationContext = true;
-
     [Test]
     public void MegaTest()
     {

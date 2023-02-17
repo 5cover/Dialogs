@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+
 using Vanara.Extensions;
 using Vanara.PInvoke;
 
@@ -20,8 +21,8 @@ internal static class Extensions
 
     /// <summary>Forwards a notification to a collection of handlers.</summary>
     /// <returns>
-    /// <see langword="null"/> if none of the handlers had a meaningful value to return, the notification-specific return value
-    /// of the first handler that did otherwise.
+    /// <see langword="null"/> if none of the handlers had a meaningful value to return, the
+    /// notification-specific return value of the first handler that did otherwise.
     /// </returns>
     public static HRESULT? ForwardNotification<T>(this IEnumerable<DialogControl<T>> handlers, Notification notif)
         => handlers.Select(h => h.HandleNotification(notif)).FirstOrDefault(h => h is not null);

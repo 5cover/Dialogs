@@ -1,4 +1,5 @@
 ﻿using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -16,10 +17,12 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
 
     /// <summary>Gets or sets the progress bar marquee interval.</summary>
     /// <remarks>
-    /// Since the marquee animation interval is a time period, setting the value to a higher number results in a slower speed
-    /// and a lower number results in a faster speed.
+    /// Since the marquee animation interval is a time period, setting the value to a higher number results
+    /// in a slower speed and a lower number results in a faster speed.
     /// </remarks>
-    /// <value>The time, in milliseconds, between marque progress bar animation updates. Default value is 30.</value>
+    /// <value>
+    /// The time, in milliseconds, between marque progress bar animation updates. Default value is 30.
+    /// </value>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than or equal to zero.</exception>
     public int MarqueeInterval
     {
@@ -28,7 +31,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         {
             if (value <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Must be greater than zero");
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Value is less than or equal to zero.");
             }
             _marqueeInterval = value;
             RequestUpdate(UpdateInterval);
@@ -37,28 +40,42 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
 
     /// <summary>Gets or sets the maximum progress bar value.</summary>
     /// <remarks>Default value is 100. The value must be greater than 0 and less than 65535.</remarks>
-    /// <exception cref="OverflowException">The value is less than 0 or greater than 65535.</exception>
-    /// <value>The minimum of the <see cref="Value"/> property.</value>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The value is less than 0 or greater than 65535 -- OR -- the value is less than <see cref="Value"/>.
+    /// </exception>
+    /// <value>The maximum of the <see cref="Value"/> property.</value>
     public int Maximum
     {
         get => _maximum;
         set
         {
-            _maximum = checked((ushort)Math.Max(Value, value));
+            if (value < Value)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"The value is less than {nameof(Value)} ({Value}).");
+            }
+            _maximum = CheckAndConvertToUInt16(value);
             RequestUpdate(UpdateRange);
         }
     }
 
     /// <summary>Gets or sets the minimum progress bar value.</summary>
     /// <remarks>Default value is 0. The value must be greater than 0 and less than 65535.</remarks>
-    /// <exception cref="OverflowException">The value is less than 0 or greater than 65535.</exception>
-    /// <value>The maximum of the <see cref="Value"/> property.</value>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The value is less than 0 or greater than 65535 -- OR -- the value greater than than <see
+    /// cref="Value"/>.
+    /// </exception>
+    /// <value>The minimum of the <see cref="Value"/> property.</value>
     public int Minimum
     {
         get => _minimum;
         set
+
         {
-            _minimum = checked((ushort)Math.Min(Value, value));
+            if (value > Value)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, $"The value is greater than {nameof(Value)} ({Value}).");
+            }
+            _minimum = CheckAndConvertToUInt16(value);
             RequestUpdate(info =>
             {
                 UpdateRange(info);
@@ -94,10 +111,13 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
 
     /// <summary>Gets or sets the progress bar state.</summary>
     /// <remarks>
-    /// When <see cref="Mode"/> is <see cref="ProgressBarMode.Marquee"/>, the progress bar will always take the appearance of
-    /// <see cref="ProgressBarState.Normal"/>, as abnormal states are not supported by dialog marquee progress bars.
+    /// When <see cref="Mode"/> is <see cref="ProgressBarMode.Marquee"/>, the progress bar will always take
+    /// the appearance of <see cref="ProgressBarState.Normal"/>, as abnormal states are not supported by
+    /// dialog marquee progress bars.
     /// </remarks>
-    /// <value>The current state of the progress bar. Default value is <see cref="ProgressBarState.Normal"/>.</value>
+    /// <value>
+    /// The current state of the progress bar. Default value is <see cref="ProgressBarState.Normal"/>.
+    /// </value>
     public ProgressBarState State
     {
         get => _state;
@@ -112,15 +132,27 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
     }
 
     /// <summary>Gets or sets the current progress bar value.</summary>
-    /// <remarks>When set, the value is clamped between <see cref="Minimum"/> and <see cref="Maximum"/> (inclusive).</remarks>
+    /// <remarks>
+    /// When set, the value must be between <see cref="Minimum"/> and <see cref="Maximum"/> (inclusive).
+    /// </remarks>
     /// <value>
-    /// The position of the progress bar when <see cref="Mode"/> is <see cref="ProgressBarMode.Normal"/>. Default value is 0.
+    /// The position of the progress bar when <see cref="Mode"/> is <see cref="ProgressBarMode.Normal"/>.
+    /// Default value is 0.
     /// </value>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The provided value does not fall withing the range from <see cref="Minimum"/> to <see
+    /// cref="Maximum"/> (inclusive).
+    /// </exception>
     public int Value
     {
         get => _value;
         set
         {
+            if (value < Minimum || value > Maximum)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    $"The value is less than {nameof(Minimum)} ({Minimum}) or greater than {nameof(Maximum)} ({Maximum}).");
+            }
             _value = Math.Clamp(value, Minimum, Maximum);
             RequestUpdate(UpdateValue);
         }
@@ -132,7 +164,8 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
     }
 
-    private protected override void InitializeState() => RequestUpdate(info =>
+    /// <inheritdoc/>
+    protected override void InitializeState() => RequestUpdate(info =>
     {
         UpdateMode(info);
         UpdateRange(info);
@@ -140,6 +173,16 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         UpdateState(info);
         UpdateValue(info);
     });
+
+    private static ushort CheckAndConvertToUInt16(int value)
+    {
+        if (value is < ushort.MinValue or > ushort.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), value,
+                $"The value is less than {ushort.MinValue} or greater than {ushort.MaxValue}.");
+        }
+        return (ushort)value;
+    }
 
     private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state);
 

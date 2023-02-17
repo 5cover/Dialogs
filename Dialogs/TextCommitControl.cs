@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+
 using Vanara.InteropServices;
 
 namespace Scover.Dialogs;
@@ -10,7 +11,8 @@ public abstract class TextCommitControl : CommitControl, IEquatable<TextCommitCo
 {
     private readonly SafeLPWSTR _nativeText = SafeLPWSTR.Null;
 
-    private protected TextCommitControl(string text) => _nativeText = new(text);
+    /// <param name="text">The text of this commit control.</param>
+    protected TextCommitControl(string text) => _nativeText = new(text);
 
     StrPtrUni ITextControl.NativeText => _nativeText;
 

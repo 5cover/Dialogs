@@ -16,14 +16,17 @@
     <PackageIcon>icon.png</PackageIcon>
     <Copyright>(c) Scover 2022</Copyright>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
-    <PackageTags>ui;taskdialog;dialog</PackageTags>
-    <PackageReleaseNotes>Removed debug prints
-simplified Dialog.Show()
-Slightly improved documentation</PackageReleaseNotes>
-    <Version>1.0.6</Version>
+    <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
+    <PackageReleaseNotes>Remove Dialog static property UseActivationContext
+Added more documentation
+Abolished lax validation policy in ProgressBar by throwing ArgumentOutOfRange exceptions.
+Formatted code
+Added WPF Test project</PackageReleaseNotes>
+    <Version>1.1.0</Version>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

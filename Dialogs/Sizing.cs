@@ -1,4 +1,5 @@
 ﻿using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -16,7 +17,10 @@ public sealed class Sizing : DialogControl<PageUpdateInfo>
     /// <summary>The size of the window will be computed automatically.</summary>
     public static Sizing Automatic { get; } = new(false, 0);
 
-    /// <summary>The size of the window will be computed based on the content area, similar to the message box sizing behavior.</summary>
+    /// <summary>
+    /// The size of the window will be computed based on the content area, similar to the message box sizing
+    /// behavior.
+    /// </summary>
     public static Sizing Content { get; } = new(true, 0);
 
     /// <summary>Creates a new <see cref="Sizing"/> object with the specified width.</summary>

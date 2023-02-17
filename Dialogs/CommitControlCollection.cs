@@ -1,4 +1,5 @@
 ﻿using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -17,11 +18,15 @@ public enum CommitControlStyle
 }
 
 /// <summary>A collection of <see cref="CommitControl"/> objects.</summary>
-/// <remarks>This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its items.</remarks>
+/// <remarks>
+/// This class implements <see cref="IDisposable"/> and calls <see cref="IDisposable.Dispose"/> on its
+/// items.
+/// </remarks>
 public sealed class CommitControlCollection : IdControlCollection<CommitControl>
 {
     /// <param name="defaultItem">
-    /// The default button. If <see langword="null"/>, the default button will be the first item of the collection.
+    /// The default button. If <see langword="null"/>, the default button will be the first item of the
+    /// collection.
     /// </param>
     /// <param name="style">The commit control style to use.</param>
     /// <param name="items">The items already in the collection.</param>
@@ -30,7 +35,8 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
     /// <summary>Gets or sets the commit control style to use for this collection.</summary>
     public CommitControlStyle Style { get; set; }
 
-    private protected override TASKDIALOG_FLAGS Flags => Style switch
+    ///<inheritdoc/>
+    protected override TASKDIALOG_FLAGS Flags => Style switch
     {
         CommitControlStyle.PushButtons => default,
         CommitControlStyle.CommandLinks => TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS,
@@ -58,8 +64,8 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
     /// </item>
     /// </remarks>
     /// <returns>
-    /// The notification is forwarded to all items. <see langword="null"/> if none of the items had a meaningful value to
-    /// return, the notification-specific return value otherwise.
+    /// The notification is forwarded to all items. <see langword="null"/> if none of the items had a
+    /// meaningful value to return, the notification-specific return value otherwise.
     /// </returns>
     /// <inheritdoc/>
     internal override HRESULT? HandleNotification(Notification notif)
@@ -72,10 +78,13 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
         return this.ForwardNotification(notif);
     }
 
-    private protected override int GetId(int index) => base.GetId(index) + CommonButton.MaxId;
+    /// <inheritdoc/>
+    protected override int GetId(int index) => base.GetId(index) + CommonButton.MaxId;
 
-    private protected override int GetIndex(int id) => base.GetIndex(id) - CommonButton.MaxId;
+    /// <inheritdoc/>
+    protected override int GetIndex(int id) => base.GetIndex(id) - CommonButton.MaxId;
 
-    private protected override void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)
+    /// <inheritdoc/>
+    protected override void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)
         => (config.pButtons, config.cButtons, config.nDefaultButton) = (nativeButtonArrayHandle, nativeButtonArrayCount, defaultItemId);
 }

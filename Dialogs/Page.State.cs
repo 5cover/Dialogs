@@ -2,13 +2,13 @@
 
 namespace Scover.Dialogs;
 
-// States properties can be set at anytime. Disposable state properties are not disposed because they are not considered to be
-// owned by the page.
+// States properties can be set at anytime. Disposable state properties are not disposed because they are
+// not considered to be owned by the page.
 
 // State is { get; set; }
 
-// Non-nullable reference types are used for element texts because SET_ELEMENT_TEXT and UPDATE_ELEMENT_TEXT do not work on null
-// string pointers.
+// Non-nullable reference types are used for element texts because SET_ELEMENT_TEXT and UPDATE_ELEMENT_TEXT
+// do not work on null string pointers.
 
 public partial class Page
 {
@@ -16,7 +16,9 @@ public partial class Page
     private DialogIcon _icon = DialogIcon.None;
 
     /// <summary>Gets or sets the content.</summary>
-    /// <remarks>If the value is <see cref="string.Empty"/>, no text will be show in the content area.</remarks>
+    /// <remarks>
+    /// If the value is <see cref="string.Empty"/>, no text will be show in the content area.
+    /// </remarks>
     /// <value>The text shown in the content area. Default value is <see cref="string.Empty"/>.</value>
     public string Content
     {
@@ -29,7 +31,10 @@ public partial class Page
     }
 
     /// <summary>Gets or sets the footer icon.</summary>
-    /// <value>The handle of the icon to show in the footer area of the page. Default value is <see cref="DialogIcon.None"/>.</value>
+    /// <value>
+    /// The handle of the icon to show in the footer area of the page. Default value is <see
+    /// cref="DialogIcon.None"/>.
+    /// </value>
     public DialogIcon FooterIcon
     {
         get => _footerIcon;
@@ -44,7 +49,9 @@ public partial class Page
     }
 
     /// <summary>Gets or sets the footer text.</summary>
-    /// <remarks>If the value is <see cref="string.Empty"/>, no text will be shown in the footer area.</remarks>
+    /// <remarks>
+    /// If the value is <see cref="string.Empty"/>, no text will be shown in the footer area.
+    /// </remarks>
     /// <value>The text to show in the footer area. Default value is <see cref="string.Empty"/>.</value>
     public string FooterText
     {
@@ -57,7 +64,10 @@ public partial class Page
     }
 
     /// <summary>Gets or sets the icon.</summary>
-    /// <value>The handle of the icon to show in the content area of the page. Default value is <see cref="DialogIcon.None"/>.</value>
+    /// <value>
+    /// The handle of the icon to show in the content area of the page. Default value is <see
+    /// cref="DialogIcon.None"/>.
+    /// </value>
     public DialogIcon Icon
     {
         get => _icon;

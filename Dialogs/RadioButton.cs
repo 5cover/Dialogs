@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+
 using Vanara.InteropServices;
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -69,7 +71,8 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
         return base.HandleNotification(notif);
     }
 
-    private protected override void InitializeState() => RequestUpdate(UpdateIsEnabled);
+    /// <inheritdoc/>
+    protected override void InitializeState() => RequestUpdate(UpdateIsEnabled);
 
     private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, info.ControlId, _isEnabled);
 }

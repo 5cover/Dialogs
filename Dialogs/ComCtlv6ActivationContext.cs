@@ -1,13 +1,14 @@
-﻿// Adapted from https://github.com/ookii-dialogs/ookii-dialogs-wpf/blob/master/src/Ookii.Dialogs.Wpf/ComCtlv6ActivationContext.cs
+﻿// Adapted from
+// https://github.com/ookii-dialogs/ookii-dialogs-wpf/blob/master/src/Ookii.Dialogs.Wpf/ComCtlv6ActivationContext.cs
 
-// Licensed under the BSD 3-Clause License (the "License"); you may not use this file except in compliance with the License. You
-// may obtain a copy of the License at
+// Licensed under the BSD 3-Clause License (the "License"); you may not use this file except in compliance
+// with the License. You may obtain a copy of the License at
 //
 // https://opensource.org/licenses/BSD-3-Clause
 //
-// Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS
-// IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language
-// governing permissions and limitations under the License.
+// Unless required by applicable law or agreed to in writing, software distributed under the License is
+// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
 
 // Changes:
 // - Simplified a few selection statements.
@@ -19,7 +20,9 @@
 // - Divided EnsureActivateContextCreated in 2 methods
 
 using System.Diagnostics;
+
 using Vanara.InteropServices;
+
 using static Vanara.PInvoke.Kernel32;
 
 namespace Scover.Dialogs;
@@ -82,7 +85,8 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
                 // It's a temp file, it's fine.
             }
 
-            // If we return false, we'll try again on the next call into EnsureActivateContextCreated(), which is fine.
+            // If we return false, we'll try again on the next call into EnsureActivateContextCreated(),
+            // which is fine.
             return contextCreationSucceeded;
         }
     }

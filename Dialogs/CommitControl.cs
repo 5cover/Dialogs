@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
+
 using Vanara.PInvoke;
+
 using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
@@ -13,8 +15,8 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
 
     /// <summary>Event raised when this commit control is clicked.</summary>
     /// <remarks>
-    /// Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to <see langword="true"/> to prevent the
-    /// commit control from closing its containing page.
+    /// Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to <see
+    /// langword="true"/> to prevent the commit control from closing its containing page.
     /// </remarks>
     public event EventHandler<CancelEventArgs>? Clicked;
 
@@ -30,7 +32,9 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
         }
     }
 
-    /// <summary>Gets or sets whether an User Account Control (UAC) shield icon is displayed near the commit control.</summary>
+    /// <summary>
+    /// Gets or sets whether an User Account Control (UAC) shield icon is displayed near the commit control.
+    /// </summary>
     /// <remarks>Default value is <see langword="false"/>.</remarks>
     public bool RequiresElevation
     {
@@ -50,7 +54,9 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
     /// <item>
     /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="Clicked"/></term>
-    /// <term><see cref="HRESULT.S_FALSE"/> if <see cref="CancelEventArgs.Cancel"/> was <see langword="true"/></term>
+    /// <term>
+    /// <see cref="HRESULT.S_FALSE"/> if <see cref="CancelEventArgs.Cancel"/> was <see langword="true"/>
+    /// </term>
     /// </item>
     /// </remarks>
     /// <inheritdoc/>
@@ -69,7 +75,8 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
         return null;
     }
 
-    private protected override void InitializeState() => RequestUpdate(info =>
+    /// <inheritdoc/>
+    protected override void InitializeState() => RequestUpdate(info =>
     {
         UpdateElevation(info);
         UpdateIsEnabled(info);

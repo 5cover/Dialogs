@@ -20,7 +20,9 @@ public sealed class Button : TextCommitControl
     public static CommonButton Continue { get; } = new(1 << 19, MB_RESULT.IDCONTINUE);
 
     /// <summary>Gets the <i>Help</i> button.</summary>
-    /// <remarks>This button is non-committing and raises the <see cref="Page.HelpRequested"/> event when clicked.</remarks>
+    /// <remarks>
+    /// This button is non-committing and raises the <see cref="Page.HelpRequested"/> event when clicked.
+    /// </remarks>
     public static CommonButton Help { get; } = new(1 << 20, 9);
 
     /// <summary>Gets the <i>Ignore</i> button.</summary>

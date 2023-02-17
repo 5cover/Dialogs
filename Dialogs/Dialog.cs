@@ -1,11 +1,13 @@
 ﻿using Vanara.PInvoke;
+
 using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
 /// <summary>
-/// A dialog box that displays information and receives simple input from the user. Like a message box, it is formatted by the
-/// operating system according to parameters you set. However, a dialog has many more features than a message box.
+/// A dialog box that displays information and receives simple input from the user. Like a message box, it
+/// is formatted by the operating system according to parameters you set. However, a dialog has many more
+/// features than a message box.
 /// </summary>
 public class Dialog
 {
@@ -14,28 +16,28 @@ public class Dialog
 
     private readonly Page _firstPage;
 
+    static Dialog() => _ = new ComCtlV6ActivationContext(true);
+
     /// <param name="page">The page of the dialog.</param>
     public Dialog(Page page) => _firstPage = page;
 
-    /// <summary>Gets or sets whether to use an activation context for calling <c>TaskDialogIndirect</c>.</summary>
-    /// <remarks>
-    /// If this is <see langword="false"/> and the calling project doesn't have a reference to ComCtl32 V6 in its manifest, <see
-    /// cref="Show(nint?)"/> will throw <see cref="EntryPointNotFoundException"/>. Default value is <see langword="true"/>.
-    /// </remarks>
-    public static bool UseActivationContext { get; set; } = true;
-
-    /// <summary>Gets the window handle of the dialog, or 0 if the dialog is currently not being shown.</summary>
+    /// <summary>
+    /// Gets the window handle of the dialog, or 0 if the dialog is currently not being shown.
+    /// </summary>
     public nint Handle { get; private protected set; }
 
     /// <summary>Gets or sets the window startup location.</summary>
-    /// <value>The location of the dialog window when it is first shown. Default value is <see cref="WindowLocation.CenterScreen"/>.</value>
+    /// <value>
+    /// The location of the dialog window when it is first shown. Default value is <see
+    /// cref="WindowLocation.CenterScreen"/>.
+    /// </value>
     public WindowLocation StartupLocation { get; set; }
 
     /// <summary>Shows the dialog.</summary>
     /// <param name="owner">The owner window handle.</param>
     /// <returns>
-    /// The <see cref="CommitControl"/> that was clicked or <see langword="null"/> if the dialog was closed using Alt-F4,
-    /// Escape, or the title bar's close button.
+    /// The <see cref="CommitControl"/> that was clicked or <see langword="null"/> if the dialog was closed
+    /// using Alt-F4, Escape, or the title bar's close button.
     /// </returns>
     /// <exception cref="PlatformNotSupportedException">
     /// Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.
@@ -49,7 +51,6 @@ public class Dialog
         _firstPage.UpdateRequested += PerformUpdate;
         try
         {
-            using ComCtlV6ActivationContext? activationContext = new(UseActivationContext);
             return _firstPage.Show(owner ?? GetActiveWindow(), StartupLocation);
         }
         catch (EntryPointNotFoundException e) when (Environment.OSVersion.Platform != PlatformID.Win32NT || Environment.OSVersion.Version < new Version(6, 0, 6000))
@@ -65,5 +66,6 @@ public class Dialog
         void SetHandle(object? sender, HWND handle) => Handle = handle.DangerousGetHandle();
     }
 
-    private protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
+    /// <summary>Performs an update using <see cref="Handle"/>.</summary>
+    protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
 }
