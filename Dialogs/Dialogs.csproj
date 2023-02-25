@@ -1,45 +1,51 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AssemblyName>Scover.Dialogs</AssemblyName>
-    <RootNamespace>Scover.Dialogs</RootNamespace>
-    <Company>$(Authors)</Company>
-    <Authors>Scover</Authors>
-    <Product>Dialogs</Product>
-    <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Title>Dialogs</Title>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <PackageIcon>icon.png</PackageIcon>
-    <Copyright>(c) Scover 2022</Copyright>
-    <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
-    <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
-    <PackageReleaseNotes>**1.2.0**
----
-
-# Breaking changes
-Changed type of Dialog.MnemonicPrefix to ``char``
-Removed ``Page.IsCancelable`` because it's the same as having ``Button.Cancel`` in ``Page.Buttons``
-Renamed ``Page.Close()`` to ``Page.Exit()``
-Renamed ``ClosingEventArgs`` to ``ExitEventArgs``
-
-# Non-breaking changes
-Improved documentation
-Added ``Button.Cancel``
-Added ``Dialog.Close()``
-
-# Bugfixes
-Fixed a bug with navigation preventing state initialization
-Fixed a bug with default values for parts in ``Page`` not requesting updates
-Fixed a bug with ``Dialog.Handle`` not being updated when a dialog is shown twice</PackageReleaseNotes>
-    <Version>1.2.0</Version>
-    <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Authors>Scover</Authors>
+    <Company>$(Authors)</Company>
+    <Copyright>(c) Scover 2022</Copyright>
+    <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <FileVersion>$(Version)</FileVersion>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IncludeSymbols>True</IncludeSymbols>
+    <Nullable>enable</Nullable>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+      **1.2.0**
+      ---
+
+      # Breaking changes
+      Changed type of Dialog.MnemonicPrefix to ``char``
+      Removed ``Page.IsCancelable`` because it's the same as having ``Button.Cancel`` in ``Page.Buttons``
+      Renamed ``Page.Close()`` to ``Page.Exit()``
+      Renamed ``ClosingEventArgs`` to ``ExitEventArgs``
+
+      # Non-breaking changes
+      Improved documentation
+      Added ``Button.Cancel``
+      Added ``Dialog.Close()``
+
+      # Bugfixes
+      Fixed a bug with navigation preventing state initialization
+      Fixed a bug with default values for parts in ``Page`` not requesting updates
+      Fixed a bug with ``Dialog.Handle`` not being updated when a dialog is shown twice
+    </PackageReleaseNotes>
+    <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
+    <Product>Dialogs</Product>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
+    <RootNamespace>Scover.Dialogs</RootNamespace>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Title>Dialogs</Title>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
