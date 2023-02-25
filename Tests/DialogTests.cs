@@ -2,6 +2,8 @@ using NUnit.Framework;
 
 using Scover.Dialogs;
 
+using Vanara.PInvoke;
+
 namespace Tests;
 
 [TestFixture]
@@ -14,7 +16,6 @@ public sealed class DialogTests
         using Page page = new()
         {
             AllowHyperlinks = true,
-            IsCancelable = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
             Buttons = new(defaultItem: button2)
@@ -36,7 +37,7 @@ public sealed class DialogTests
             FooterIcon = DialogIcon.Information,
             Header = DialogHeader.Yellow,
             Icon = DialogIcon.ErrorShield,
-            ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 83 },
+            ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 85 },
             RadioButtons =
             {
                 "Radio #1",
@@ -44,7 +45,7 @@ public sealed class DialogTests
                 new RadioButton("Radio #3 (disabled)") { IsEnabled = false }
             },
             Sizing = Sizing.FromWidth(500, DistanceUnit.Pixel),
-            Content = $"{nameof(page.Content)} with <A>hyperlink</A>. Assert that the page is displayed properly.",
+            Content = $"{nameof(page.Content)} with <A>hyperlink</A>. The progress bar should be half-filled.",
             FooterText = nameof(page.FooterText),
             MainInstruction = nameof(page.MainInstruction),
             Verification = new(nameof(page.Verification)) { IsChecked = true },
@@ -83,7 +84,7 @@ public sealed class DialogTests
     public void TestCustomIcon()
     {
         ushort index = 0;
-        using var hIcon = Vanara.PInvoke.Shell32.ExtractAssociatedIcon(default, new(@"C:\Windows\System32\rstrui.exe"), ref index);
+        using var hIcon = Win32Error.ThrowLastErrorIfInvalid(Shell32.ExtractAssociatedIcon(default, new(@"%SystemRoot%\System32\rstrui.exe"), ref index));
         DialogIcon customIcon = DialogIcon.FromHandle(hIcon.DangerousGetHandle());
         using Page page = new()
         {
@@ -133,8 +134,7 @@ public sealed class DialogTests
     {
         using Page page1 = new()
         {
-            MainInstruction = "Page 1",
-            Buttons = { Button.Yes, Button.No },
+            Buttons = { Button.Yes, Button.No, Button.Cancel },
             Content = "First page with expander. Press F1 to navigate to Page 2.",
             Expander = new("Expanded information")
             {
@@ -142,37 +142,47 @@ public sealed class DialogTests
                 CollapseButtonText = "Custom collapse",
                 IsExpanded = true,
             },
-            IsCancelable = true,
+            MainInstruction = "Page 1",
+        };
+        var radio2 = new RadioButton("Radio #2 (default && disabled)")
+        {
+            IsEnabled = false
         };
         using Page page2 = new()
         {
-            MainInstruction = "Page 2",
+            Buttons = { Button.Cancel },
             Content = "Second page with radio buttons. Press F1 to navigate to Page 3",
-            RadioButtons = new(defaultItem: DefaultRadioButton.None)
+            MainInstruction = "Page 2",
+            RadioButtons = new(defaultItem: radio2)
             {
                 "Radio #1",
-                "Radio #2"
+                radio2
             },
-            IsCancelable = true,
         };
         using Page page3 = new()
         {
+            Buttons = { Button.Cancel },
+            Content = "Third page with progress bar. It should be half-filled. Press F1 to go back to page 1.",
             MainInstruction = "Page 3",
-            Content = "Third page with nothing at all. Press F1 to navigate to Page 1.",
-            IsCancelable = true,
+            ProgressBar = new()
+            {
+                Value = 5,
+                Maximum = 10,
+            },
         };
         MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>
         {
-            [page1] = _ => page2,
-            [page2] = _ => page3,
-            [page3] = _ => page1,
+            [page1] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page2 : null,
+            [page2] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page3 : null,
+            [page3] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page1 : null,
         });
+
         page1.HelpRequested += Navigate;
         page2.HelpRequested += Navigate;
         page3.HelpRequested += Navigate;
-        _ = dlg.Show();
-
         void Navigate(object? sender, EventArgs e) => dlg.Navigate();
+
+        _ = dlg.Show();
     }
 
     [Test]
@@ -203,11 +213,11 @@ public sealed class DialogTests
                 toggleMode,
                 cycleState,
                 intervalPlus1,
-                intervalMinus1
+                intervalMinus1,
+                Button.Cancel,
             },
             Sizing = Sizing.FromWidth(200),
             Expander = new() { IsExpanded = true },
-            IsCancelable = true,
             IsMinimizable = true,
             ProgressBar = new(),
             WindowTitle = nameof(TestProgressBar),
@@ -297,37 +307,15 @@ public sealed class DialogTests
     }
 
     [Test]
-    public void TestProgressBarNavigation()
-    {
-        using Page page1 = new()
-        {
-            Content = "This is the first page.",
-            WindowTitle = nameof(TestProgressBarNavigation)
-        };
-        using Page page2 = new()
-        {
-            Content = "This is the second page. Assert that the progress bar is shown properly. The bar should be half-filled.",
-            ProgressBar = new()
-            {
-                Value = 5,
-                Maximum = 10,
-            },
-            WindowTitle = nameof(TestProgressBarNavigation)
-        };
-        _ = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>() { [page1] = _ => page2 }).Show();
-    }
-
-    [Test]
     public void TestRadioButtons()
     {
-        RadioButton radio2 = new("Radio #2 (default)");
         using Page page = new()
         {
             Content = "Assert that the radio buttons are displayed properly.",
-            RadioButtons = new(defaultItem: radio2)
+            RadioButtons = new(DefaultRadioButton.First)
             {
-                "Radio #1",
-                radio2,
+                "Radio #1 (default)",
+                "Radio #2",
                 new RadioButton("Radio #3 (disabled)") { IsEnabled = false },
             },
             WindowTitle = nameof(TestRadioButtons),

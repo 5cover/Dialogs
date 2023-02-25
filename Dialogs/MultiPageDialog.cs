@@ -1,21 +1,32 @@
 ﻿using System.Runtime.InteropServices;
 
+using Vanara.Extensions;
+using Vanara.InteropServices;
 using Vanara.PInvoke;
-
-using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>
+/// A delegate that selects the next page to navigate to after a page closing or an explicit navigation
+/// request.
+/// </summary>
+/// <param name="navigationRequest">
+/// The navigation request. It contains the commit control that was clicked, as well as the type of the
+/// request.
+/// </param>
+/// <returns>The next page to navigate to, or <see langword="null"/> to end the navigation.</returns>
+public delegate Page? NextPageSelector(NavigationRequest navigationRequest);
+
 /// <summary>A dialog with multiple pages and support for navigation.</summary>
 /// <remarks>
-/// Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="CurrentPage"/> is
-/// committed. Navigation doesn't occur when the dialog window is closed.
+/// Navigation occurs when <see cref="Navigate()"/> is called or when <see cref="Dialog.CurrentPage"/>
+/// exits.
 /// </remarks>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification = $"{nameof(_navigatedPagePtr)} is disposed at exit.")]
 public class MultiPageDialog : Dialog
 {
     private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
-
-    private SafeHandle? _navigatedPagePtr;
+    private SafeHGlobalHandle? _navigatedPagePtr;
 
     /// <param name="firstPage">The first page of the dialog.</param>
     /// <param name="nextPageSelectors">
@@ -23,41 +34,51 @@ public class MultiPageDialog : Dialog
     /// </param>
     public MultiPageDialog(Page firstPage, IDictionary<Page, NextPageSelector> nextPageSelectors) : base(firstPage)
     {
-        (CurrentPage, _nextPageSelectors) = (firstPage, nextPageSelectors);
-        firstPage.Closing += Navigate;
+        _nextPageSelectors = nextPageSelectors;
+        CurrentPage.Exiting += Navigate;
     }
 
-    /// <summary>Gets the current page.</summary>
-    /// <value>
-    /// If <see cref="Dialog.Show(nint?)"/> has not been called yet, the first page of the dialog, otherwise
-    /// the page that is currently being displayed in the dialog.
-    /// </value>
-    public Page CurrentPage { get; private set; }
+    /// <inheritdoc/>
+    public override void Close()
+    {
+        CurrentPage.Exiting -= Navigate;
+        base.Close();
+        _navigatedPagePtr?.Dispose();
+    }
 
     /// <summary>Sends an explicit navigation request to the dialog.</summary>
     /// <returns>
     /// <see langword="true"/> if a navigation target page was found and successfully navigated to,
     /// otherwise <see langword="false"/>.
     /// </returns>
-    public bool Navigate() => Navigate(null);
+    public bool Navigate() => Navigate(new(null, NavigationRequestKind.Explicit));
 
-    private void Navigate(object? sender, ClosingEventArgs e) => e.Cancel = e.ClickedControl is not null && Navigate(e.ClickedControl);
+    private static NavigationRequest MakeRequest(CommitControl? clickedControl)
+        => new(clickedControl, clickedControl is null
+                                   ? NavigationRequestKind.Exit
+                                   : clickedControl.Equals(Button.Cancel)
+                                       ? NavigationRequestKind.Cancel
+                                       : NavigationRequestKind.Commit);
 
-    private bool Navigate(CommitControl? clickedControl)
+    private void Navigate(object? sender, ExitEventArgs e) => e.Cancel = Navigate(MakeRequest(e.ClickedControl));
+
+    private bool Navigate(NavigationRequest navigationRequest)
     {
         _navigatedPagePtr?.Dispose();
         if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser)
-          && nextPageChooser(clickedControl) is { } nextPage)
+          && nextPageChooser(navigationRequest) is { } nextPage)
         {
-            CurrentPage.Closing -= Navigate;
+            CurrentPage.Exiting -= Navigate;
             CurrentPage.UpdateRequested -= PerformUpdate;
-            nextPage.Closing += Navigate;
-            nextPage.UpdateRequested += PerformUpdate;
+            CurrentPage.Showing = false;
 
-            _navigatedPagePtr = nextPage.CreateConfigPtr();
-            _ = ((HWND)Handle).SendMessage(TaskDialogMessage.TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
+            nextPage.Exiting += Navigate;
+            nextPage.UpdateRequested += PerformUpdate;
+            nextPage.Showing = true;
 
             CurrentPage = nextPage;
+            _navigatedPagePtr = new(nextPage.SetupConfig(Callback).MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated), bytesAllocated);
+            _ = ((HWND)Handle).SendMessage(TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
             return true;
         }
         return false;

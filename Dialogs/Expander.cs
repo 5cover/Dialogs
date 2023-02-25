@@ -73,34 +73,36 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     public void Dispose() => _nativeText.Dispose();
 
     /// <remarks>
-    /// <inheritdoc path="/remarks"/>
+    /// <list type="table">
+    /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
-    /// <term><see cref="TaskDialogNotification.TDN_EXPANDO_BUTTON_CLICKED"/></term>
+    /// <term><see cref="TDN_EXPANDO_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="ExpandedChanged"/></term>
-    /// <term><see langword="null"/></term>
     /// </item>
+    /// </list>
     /// </remarks>
     /// <inheritdoc/>
-    internal override HRESULT? HandleNotification(Notification notif)
+    internal override HRESULT HandleNotification(Notification notif)
     {
-        if (notif.Id is TaskDialogNotification.TDN_EXPANDO_BUTTON_CLICKED)
+        _ = base.HandleNotification(notif);
+        if (notif.Id is TDN_EXPANDO_BUTTON_CLICKED)
         {
             IsExpanded = Convert.ToBoolean(notif.WParam);
             ExpandedChanged.Raise(this);
         }
-        return base.HandleNotification(notif);
+        return default;
     }
 
     internal override void SetIn(in TASKDIALOGCONFIG container)
     {
         (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _nativeText);
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPANDED_BY_DEFAULT, IsExpanded);
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
+        container.dwFlags.SetFlag(TDF_EXPANDED_BY_DEFAULT, IsExpanded);
+        container.dwFlags.SetFlag(TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }
 
     /// <inheritdoc/>
     protected override void InitializeState() => RequestUpdate(UpdateExpandedInformation);
 
     private void UpdateExpandedInformation(PageUpdateInfo info)
-        => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, TASKDIALOG_ELEMENTS.TDE_EXPANDED_INFORMATION, _nativeText.DangerousGetHandle());
+        => info.Dialog.SendMessage(TDM_SET_ELEMENT_TEXT, TDE_EXPANDED_INFORMATION, _nativeText.DangerousGetHandle());
 }

@@ -24,8 +24,8 @@ internal static class Extensions
     /// <see langword="null"/> if none of the handlers had a meaningful value to return, the
     /// notification-specific return value of the first handler that did otherwise.
     /// </returns>
-    public static HRESULT? ForwardNotification<T>(this IEnumerable<DialogControl<T>> handlers, Notification notif)
-        => handlers.Select(h => h.HandleNotification(notif)).FirstOrDefault(h => h is not null);
+    public static HRESULT ForwardNotification<T>(this IEnumerable<DialogControl<T>> handlers, Notification notif)
+        => handlers.Select(h => h.HandleNotification(notif)).FirstOrDefault(r => r != default);
 
     [StackTraceHidden]
     public static InvalidEnumArgumentException InvalidEnumArgumentException<TEnum>(this TEnum value, [CallerArgumentExpression(nameof(value))] string argumentName = "") where TEnum : struct, Enum, IConvertible

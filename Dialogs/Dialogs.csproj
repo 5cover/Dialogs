@@ -17,12 +17,25 @@
     <Copyright>(c) Scover 2022</Copyright>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
-    <PackageReleaseNotes>Remove Dialog static property UseActivationContext
-Added more documentation
-Abolished lax validation policy in ProgressBar by throwing ArgumentOutOfRange exceptions.
-Formatted code
-Added WPF Test project</PackageReleaseNotes>
-    <Version>1.1.0</Version>
+    <PackageReleaseNotes>**1.2.0**
+---
+
+# Breaking changes
+Changed type of Dialog.MnemonicPrefix to ``char``
+Removed ``Page.IsCancelable`` because it's the same as having ``Button.Cancel`` in ``Page.Buttons``
+Renamed ``Page.Close()`` to ``Page.Exit()``
+Renamed ``ClosingEventArgs`` to ``ExitEventArgs``
+
+# Non-breaking changes
+Improved documentation
+Added ``Button.Cancel``
+Added ``Dialog.Close()``
+
+# Bugfixes
+Fixed a bug with navigation preventing state initialization
+Fixed a bug with default values for parts in ``Page`` not requesting updates
+Fixed a bug with ``Dialog.Handle`` not being updated when a dialog is shown twice</PackageReleaseNotes>
+    <Version>1.2.0</Version>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -62,5 +75,29 @@ Added WPF Test project</PackageReleaseNotes>
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Vanara.PInvoke.ComCtl32.TaskDialogIcon">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TaskDialogMessage">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TaskDialogNotification">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TASKDIALOG_COMMON_BUTTON_FLAGS">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TASKDIALOG_ELEMENTS">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TASKDIALOG_FLAGS">
+      <Static>True</Static>
+    </Using>
+    <Using Include="Vanara.PInvoke.ComCtl32.TASKDIALOG_ICON_ELEMENTS">
+      <Static>True</Static>
+    </Using>
   </ItemGroup>
 </Project>

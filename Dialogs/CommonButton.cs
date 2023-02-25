@@ -19,6 +19,7 @@ public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
     private static readonly CommonButton[] _values =
     {
         Button.Abort,
+        Button.Cancel,
         Button.Close,
         Button.Continue,
         Button.Help,

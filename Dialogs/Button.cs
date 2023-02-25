@@ -1,5 +1,4 @@
-﻿using static Vanara.PInvoke.ComCtl32;
-using static Vanara.PInvoke.User32;
+﻿using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
@@ -13,8 +12,15 @@ public sealed class Button : TextCommitControl
     /// <summary>Gets the <i>Abort</i> button.</summary>
     public static CommonButton Abort { get; } = new(1 << 16, MB_RESULT.IDABORT);
 
+    /// <summary>Gets the <i>Cancel</i> button.</summary>
+    /// <remarks>
+    /// This button makes its containing window respond to typical cancel actions (Alt-F4 and Escape) and
+    /// adds a close button to its title bar.
+    /// </remarks>
+    public static CommonButton Cancel { get; } = new(TDCBF_CANCEL_BUTTON, MB_RESULT.IDCANCEL);
+
     /// <summary>Gets the <i>Close</i> button.</summary>
-    public static CommonButton Close { get; } = new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CLOSE_BUTTON, 8);
+    public static CommonButton Close { get; } = new(TDCBF_CLOSE_BUTTON, 8);
 
     /// <summary>Gets the <i>Continue</i> button.</summary>
     public static CommonButton Continue { get; } = new(1 << 19, MB_RESULT.IDCONTINUE);
@@ -29,19 +35,19 @@ public sealed class Button : TextCommitControl
     public static CommonButton Ignore { get; } = new(1 << 17, MB_RESULT.IDIGNORE);
 
     /// <summary>Gets the <i>No</i> button.</summary>
-    public static CommonButton No { get; } = new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_NO_BUTTON, MB_RESULT.IDNO);
+    public static CommonButton No { get; } = new(TDCBF_NO_BUTTON, MB_RESULT.IDNO);
 
     /// <summary>Gets the <i>OK</i> button.</summary>
-    public static CommonButton OK { get; } = new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_OK_BUTTON, MB_RESULT.IDOK);
+    public static CommonButton OK { get; } = new(TDCBF_OK_BUTTON, MB_RESULT.IDOK);
 
     /// <summary>Gets the <i>Retry</i> button.</summary>
-    public static CommonButton Retry { get; } = new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_RETRY_BUTTON, MB_RESULT.IDRETRY);
+    public static CommonButton Retry { get; } = new(TDCBF_RETRY_BUTTON, MB_RESULT.IDRETRY);
 
     /// <summary>Gets the <i>Try Again</i> button.</summary>
     public static CommonButton TryAgain { get; } = new(1 << 18, MB_RESULT.IDTRYAGAIN);
 
     /// <summary>Gets the <i>Yes</i> button.</summary>
-    public static CommonButton Yes { get; } = new(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_YES_BUTTON, MB_RESULT.IDYES);
+    public static CommonButton Yes { get; } = new(TDCBF_YES_BUTTON, MB_RESULT.IDYES);
 
     /// <summary>Gets the text of this push button.</summary>
     public string Text { get; }

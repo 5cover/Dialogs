@@ -2,8 +2,6 @@
 
 using Vanara.PInvoke;
 
-using static Vanara.PInvoke.ComCtl32;
-
 namespace Scover.Dialogs;
 
 /// <summary>A dialog control that induces commitment.</summary>
@@ -47,23 +45,25 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
     }
 
     /// <summary>Simulates a click on this button.</summary>
-    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_BUTTON, info.ControlId));
+    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, info.ControlId));
 
     /// <remarks>
-    /// <inheritdoc path="/remarks"/>
+    /// <list type="table">
+    /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
-    /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
+    /// <term><see cref="TDN_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="Clicked"/></term>
     /// <term>
     /// <see cref="HRESULT.S_FALSE"/> if <see cref="CancelEventArgs.Cancel"/> was <see langword="true"/>
     /// </term>
     /// </item>
+    /// </list>
     /// </remarks>
     /// <inheritdoc/>
-    internal override HRESULT? HandleNotification(Notification notif)
+    internal override HRESULT HandleNotification(Notification notif)
     {
         _ = base.HandleNotification(notif);
-        if (notif.Id == TaskDialogNotification.TDN_BUTTON_CLICKED)
+        if (notif.Id is TDN_BUTTON_CLICKED)
         {
             CancelEventArgs e = new();
             Clicked?.Invoke(this, e);
@@ -72,7 +72,7 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
                 return HRESULT.S_FALSE;
             }
         }
-        return null;
+        return default;
     }
 
     /// <inheritdoc/>
@@ -82,7 +82,7 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
         UpdateIsEnabled(info);
     });
 
-    private void UpdateElevation(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, info.ControlId, _requiresElevation);
+    private void UpdateElevation(IdControlUpdateInfo info) => info.Dialog.SendMessage(TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE, info.ControlId, _requiresElevation);
 
-    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_BUTTON, info.ControlId, _isEnabled);
+    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TDM_ENABLE_BUTTON, info.ControlId, _isEnabled);
 }

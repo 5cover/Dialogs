@@ -43,7 +43,7 @@ public sealed class Sizing : DialogControl<PageUpdateInfo>
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SIZE_TO_CONTENT, _sizeToContent);
+        config.dwFlags.SetFlag(TDF_SIZE_TO_CONTENT, _sizeToContent);
         config.cxWidth = _width;
     }
 }

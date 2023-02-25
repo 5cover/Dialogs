@@ -2,11 +2,9 @@
 using System.Runtime.InteropServices;
 
 using Vanara.Extensions;
-using Vanara.InteropServices;
 using Vanara.PInvoke;
 
 using static Vanara.PInvoke.ComCtl32;
-using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
@@ -18,39 +16,21 @@ namespace Scover.Dialogs;
 /// </remarks>
 public partial class Page : IDisposable
 {
-    private readonly TASKDIALOGCONFIG _config = new();
     private readonly PartCollection _parts = new();
-    private readonly Queue<Action<PageUpdateInfo>> _queuedUpdates = new();
-    private bool _disposedValue;
-    private bool _handleSent;
-    private bool _ignoreButtonClicked;
-    private int _inCallback;
+    private readonly TASKDIALOGCONFIG _config = new();
+    private bool _disposed;
+    private bool _exitCalled;
 
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
     {
-        _config.pfCallbackProc = Callback;
+        _parts.PartAdded += (s, part) => part.UpdateRequested += OnUpdateRequested;
+        _parts.PartRemoved += (s, part) => part.UpdateRequested -= OnUpdateRequested;
 
-        _parts.SetDefaultValue(Sizing.Automatic);
-        _parts.SetDefaultValue(DialogHeader.None);
-        _parts.SetDefaultValue(new RadioButtonCollection());
-        _parts.SetDefaultValue(new CommitControlCollection());
-
-        _parts.PartAdded += (s, part) => part.UpdateRequested += Update;
-        _parts.PartRemoved += (s, part) => part.UpdateRequested -= Update;
-
-        void Update(object? sender, Action<PageUpdateInfo> update)
-        {
-            // Enqueue the update if we're in the TaskDialog callback.
-            if (_inCallback == 0)
-            {
-                OnUpdateRequested(update);
-            }
-            else
-            {
-                _queuedUpdates.Enqueue(update);
-            }
-        }
+        _parts.RegisterDefaultValue(Sizing.Automatic);
+        _parts.RegisterDefaultValue(DialogHeader.None);
+        _parts.RegisterDefaultValue(new RadioButtonCollection());
+        _parts.RegisterDefaultValue(new CommitControlCollection());
     }
 
     /// <inheritdoc/>
@@ -58,66 +38,102 @@ public partial class Page : IDisposable
 
     /// <summary>
     /// Event raised when the page is about to be closed, either because a commit control was clicked, or
-    /// the dialog window was closed using Alt-F4, Escape, or the title bar's close button. Set the <see
-    /// cref="CancelEventArgs.Cancel"/> property of the event arguments to <see langword="true"/> to prevent
-    /// the page from closing.
+    /// the dialog window was closed. Set the <see cref="CancelEventArgs.Cancel"/> property of the event
+    /// arguments to <see langword="true"/> to prevent the page from closing.
     /// </summary>
-    public event EventHandler<ClosingEventArgs>? Closing;
-
+    public event EventHandler<ExitEventArgs>? Exiting;
     /// <summary>Event raised when this page is created or navigated to.</summary>
     public event EventHandler? Created;
-
     /// <summary>Event raised when this page is destroyed.</summary>
     public event EventHandler? Destroyed;
-
     /// <summary>
     /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
     /// clicked, or the F1 key was pressed.
     /// </summary>
     public event EventHandler? HelpRequested;
-
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
-
-    internal event EventHandler<HWND>? HandleRecieved;
-
     internal event EventHandler<Action<PageUpdateInfo>>? UpdateRequested;
+    internal bool Showing { get; set; }
 
-    /// <summary>Closes the page.</summary>
-    public void Close()
+    /// <summary>
+    /// Exits the page. This may cause the dialog to close or a new page may be navigated to.
+    /// </summary>
+    /// <remarks>
+    /// When this method is called, the return value of <see cref="Dialog.Show(nint?)"/> and the value of
+    /// the <see cref="NavigationRequest.ClickedControl"/> property of the object passed into the <see
+    /// cref="NextPageSelector"/> delegate provided to <see cref="MultiPageDialog"/> for navigation will be
+    /// <see langword="null"/>.
+    /// </remarks>
+    public void Exit()
     {
-        _ignoreButtonClicked = true;
-        OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_BUTTON, MB_RESULT.IDCANCEL));
-        _ignoreButtonClicked = false;
+        _exitCalled = true;
+        OnUpdateRequested(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, Button.Cancel.Id));
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
         Dispose(disposing: true);
-        System.GC.SuppressFinalize(this);
+        GC.SuppressFinalize(this);
     }
 
-    internal SafeHGlobalHandle CreateConfigPtr()
+    internal HRESULT HandleNotification(Notification notif)
     {
-        _parts.SetPartsIn(_config);
-        var ptr = _config.MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated);
-        return new(ptr, bytesAllocated);
+        switch (notif.Id)
+        {
+            case TDN_CREATED:
+                Created.Raise(this);
+                break;
+
+            // Also sent when the dialog window was closed.
+            case TDN_BUTTON_CLICKED:
+                return HandleClickNotification(notif);
+
+            case TDN_HYPERLINK_CLICKED:
+                HyperlinkClicked?.Invoke(this, new(Marshal.PtrToStringUni(notif.LParam)));
+                break;
+
+            case TDN_DESTROYED:
+                Destroyed.Raise(this);
+                break;
+
+            // Sent before TDN_CREATED. TDN_CREATED is not sent after navigation.
+            case TDN_DIALOG_CONSTRUCTED:
+                _exitCalled = false;
+                // Needed for having an icon after the header was set.
+                OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
+                break;
+
+            // For Help button, sent after TDN_BUTTON_CLICKED, unless S_FALSE was returned.
+            case TDN_HELP:
+                HelpRequested.Raise(this);
+                break;
+        }
+        return _parts.ForwardNotification(notif);
     }
 
-    internal CommitControl? Show(HWND parent, WindowLocation startupLocation)
+    internal TASKDIALOGCONFIG SetupConfig(TaskDialogCallbackProc callback)
     {
+        _config.pfCallbackProc = callback;
         _parts.SetPartsIn(_config);
+        return _config;
+    }
+
+    internal TASKDIALOGCONFIG SetupConfig(TaskDialogCallbackProc callback, HWND parent, WindowLocation startupLocation)
+    {
+        _ = SetupConfig(callback);
         _config.hwndParent = parent;
-        _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
-        TaskDialogIndirect(_config, out int pnButton, out _, out _).ThrowIfFailed();
-        return GetClicked(pnButton);
+        _config.dwFlags.SetFlag(TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
+        return _config;
     }
+
+    internal CommitControl? GetClickedButton(int pnButton) => _exitCalled ? null : Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposedValue)
+        if (_disposed)
         {
             return;
         }
@@ -127,97 +143,57 @@ public partial class Page : IDisposable
             Expander?.Dispose();
             RadioButtons.Dispose();
         }
-        StringHelper.FreeString(_config.pszWindowTitle, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszMainInstruction, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszContent, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszVerificationText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszExpandedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszCollapsedControlText, CharSet.Unicode);
-        StringHelper.FreeString(_config.pszFooter, CharSet.Unicode);
-        _disposedValue = true;
+        foreach (var p in new nint[]
+        {
+            _config.pszFooter,
+            _config.pszContent,
+            _config.pszWindowTitle,
+            _config.pszMainInstruction,
+            _config.pszVerificationText,
+            _config.pszExpandedControlText,
+            _config.pszCollapsedControlText,
+        })
+        {
+            StringHelper.FreeString(p, CharSet.Unicode);
+        }
+        _disposed = true;
     }
 
-    private HRESULT Callback(HWND hwnd, TaskDialogNotification id, nint wParam, nint lParam, nint refData)
+    private HRESULT HandleClickNotification(Notification notif)
     {
-        ++_inCallback;
-        try
+        if (_exitCalled)
         {
-            if (!_handleSent)
-            {
-                HandleRecieved?.Invoke(this, hwnd);
-                _handleSent = true;
-            }
-            switch (id)
-            {
-                // Sent after TDN_DIALOG_CONSTRUCTED
-                case TaskDialogNotification.TDN_CREATED:
-                    Created.Raise(this);
-                    break;
-
-                case TaskDialogNotification.TDN_NAVIGATED:
-                    Created.Raise(this);
-                    break;
-
-                // Also sent when the dialog window was closed.
-                case TaskDialogNotification.TDN_BUTTON_CLICKED:
-                    if (_ignoreButtonClicked)
-                    {
-                        // stop handling now
-                        return default;
-                    }
-                    var control = GetClicked((int)wParam);
-
-                    // The Help button is non-committing and natively doesn't close the dialog, so it
-                    // doesn't raise Closing. If S_FALSE is returned for the Help button, TDN_HELP will not
-                    // be sent.
-                    if (control is null || !control.Equals(Button.Help))
-                    {
-                        ClosingEventArgs e = new(control);
-                        Closing?.Invoke(this, e);
-                        if (e.Cancel)
-                        {
-                            return HRESULT.S_FALSE;
-                        }
-                    }
-                    break;
-
-                case TaskDialogNotification.TDN_HYPERLINK_CLICKED:
-                    HyperlinkClicked?.Invoke(this, new(Marshal.PtrToStringUni(lParam)));
-                    break;
-
-                case TaskDialogNotification.TDN_DESTROYED:
-                    Destroyed.Raise(this);
-                    break;
-
-                case TaskDialogNotification.TDN_DIALOG_CONSTRUCTED:
-                    // Needed for having an icon after the header was set.
-                    OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
-                    break;
-
-                // For Help button, sent after TDN_BUTTON_CLICKED
-                case TaskDialogNotification.TDN_HELP:
-                    HelpRequested.Raise(this);
-                    break;
-            }
-            return _parts.Where(part => part is not null).Cast<DialogControl<PageUpdateInfo>>().ForwardNotification(new(id, wParam, lParam)) ?? default;
+            return default;
         }
-        finally
+
+        HRESULT buttonsResult = Buttons.HandleNotification(notif);
+        if (buttonsResult != default)
         {
-            --_inCallback;
-            if (_inCallback == 0)
+            return buttonsResult;
+        }
+
+        var button = GetClickedButton((int)notif.WParam);
+        // Do not raise Closing for a non-committing button.
+        if (IsCommitting(button))
+        {
+            ExitEventArgs e = new(button);
+            Exiting?.Invoke(this, e);
+            if (e.Cancel)
             {
-                while (_queuedUpdates.Any())
-                {
-                    OnUpdateRequested(_queuedUpdates.Dequeue());
-                }
+                return HRESULT.S_FALSE;
             }
         }
+
+        return default;
+
+        // The Help button is non-committing as it doesn't close the dialog.
+        static bool IsCommitting(CommitControl? button) => !Button.Help.Equals(button);
     }
 
-    private CommitControl? GetClicked(int pnButton) => pnButton == (int)MB_RESULT.IDCANCEL ? null : Buttons.Any() ? Buttons.GetControlFromId(pnButton).AssertNotNull() : Button.OK;
+    private void OnUpdateRequested(object? sender, Action<PageUpdateInfo> update) => OnUpdateRequested(update);
 
     private void OnUpdateRequested(Action<PageUpdateInfo> update) => UpdateRequested?.Invoke(this, update);
 
     private void SetElementText(TASKDIALOG_ELEMENTS element, nint pszText)
-        => OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_ELEMENT_TEXT, element, pszText));
+        => OnUpdateRequested(info => info.Dialog.SendMessage(TDM_SET_ELEMENT_TEXT, element, pszText));
 }

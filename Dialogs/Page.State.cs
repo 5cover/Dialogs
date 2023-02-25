@@ -1,6 +1,4 @@
-﻿using static Vanara.PInvoke.ComCtl32;
-
-namespace Scover.Dialogs;
+﻿namespace Scover.Dialogs;
 
 // States properties can be set at anytime. Disposable state properties are not disposed because they are
 // not considered to be owned by the page.
@@ -26,7 +24,7 @@ public partial class Page
         set
         {
             _config.Content = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_CONTENT, _config.pszContent);
+            SetElementText(TDE_CONTENT, _config.pszContent);
         }
     }
 
@@ -43,8 +41,8 @@ public partial class Page
             DenyHIconIDTransition(_footerIcon, value);
             _footerIcon = value;
             _config.footerIcon = value.Handle;
-            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_FOOTER, value.IsHIcon);
-            OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_FOOTER, value.Handle));
+            _config.dwFlags.SetFlag(TDF_USE_HICON_FOOTER, value.IsHIcon);
+            OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_FOOTER, value.Handle));
         }
     }
 
@@ -59,7 +57,7 @@ public partial class Page
         set
         {
             _config.Footer = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_FOOTER, _config.pszFooter);
+            SetElementText(TDE_FOOTER, _config.pszFooter);
         }
     }
 
@@ -76,8 +74,8 @@ public partial class Page
             DenyHIconIDTransition(_icon, value);
             _icon = value;
             _config.mainIcon = Icon.Handle;
-            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN, Icon.IsHIcon);
-            OnUpdateRequested(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_UPDATE_ICON, TASKDIALOG_ICON_ELEMENTS.TDIE_ICON_MAIN, Icon.Handle));
+            _config.dwFlags.SetFlag(TDF_USE_HICON_MAIN, Icon.IsHIcon);
+            OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
         }
     }
 
@@ -90,13 +88,13 @@ public partial class Page
         set
         {
             _config.MainInstruction = value;
-            SetElementText(TASKDIALOG_ELEMENTS.TDE_MAIN_INSTRUCTION, _config.pszMainInstruction);
+            SetElementText(TDE_MAIN_INSTRUCTION, _config.pszMainInstruction);
         }
     }
 
     private void DenyHIconIDTransition(DialogIcon current, DialogIcon value)
     {
-        if (_handleSent && current.IsHIcon != value.IsHIcon)
+        if (Showing && current.IsHIcon != value.IsHIcon)
         {
             throw new ArgumentException("Cannot transition between HIcon and ID while the dialog is shown.");
         }

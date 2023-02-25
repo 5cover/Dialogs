@@ -29,8 +29,8 @@ using Page page1 = new()
     MainInstruction = "Page #1",
     Buttons =
     {
-      { "Label", "Supplental instruction" },
-      Button.Cancel
+        { "Label", "Supplemental instruction" },
+        Button.Cancel
     }
 };
 using Page page2 = new()
@@ -41,7 +41,7 @@ using Page page2 = new()
 
 var clickedButton = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>
 {
-    [page1] = _ => page2,
+    [page1] = request => result.Closed ? null : page2,
 }).Show();
 ```
 

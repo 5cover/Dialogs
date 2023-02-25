@@ -11,13 +11,13 @@ public sealed class DialogHeader : DialogControl<PageUpdateInfo>
     private DialogHeader(TaskDialogIcon id) => _id = id;
 
     /// <summary>Gets the blue header.</summary>
-    public static DialogHeader Blue { get; } = new(TaskDialogIcon.TD_SHIELDBLUE_ICON);
+    public static DialogHeader Blue { get; } = new(TD_SHIELDBLUE_ICON);
 
     /// <summary>Gets the gray header.</summary>
-    public static DialogHeader Gray { get; } = new(TaskDialogIcon.TD_SHIELDGRAY_ICON);
+    public static DialogHeader Gray { get; } = new(TD_SHIELDGRAY_ICON);
 
     /// <summary>Gets the green header.</summary>
-    public static DialogHeader Green { get; } = new(TaskDialogIcon.TD_SECURITYSUCCESS_ICON);
+    public static DialogHeader Green { get; } = new(TD_SECURITYSUCCESS_ICON);
 
     /// <summary>
     /// Gets the <see cref="DialogHeader"/> instance that represents the absence of a header.
@@ -25,14 +25,14 @@ public sealed class DialogHeader : DialogControl<PageUpdateInfo>
     public static DialogHeader None { get; } = new(default);
 
     /// <summary>Gets the red header.</summary>
-    public static DialogHeader Red { get; } = new(TaskDialogIcon.TD_SECURITYERROR_ICON);
+    public static DialogHeader Red { get; } = new(TD_SECURITYERROR_ICON);
 
     /// <summary>Gets the yellow header.</summary>
-    public static DialogHeader Yellow { get; } = new(TaskDialogIcon.TD_SECURITYWARNING_ICON);
+    public static DialogHeader Yellow { get; } = new(TD_SECURITYWARNING_ICON);
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        if (!config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN))
+        if (!config.dwFlags.HasFlag(TDF_USE_HICON_MAIN))
         {
             config.mainIcon = (nint)_id;
         }

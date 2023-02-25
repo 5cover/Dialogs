@@ -3,8 +3,6 @@
 using Vanara.InteropServices;
 using Vanara.PInvoke;
 
-using static Vanara.PInvoke.ComCtl32;
-
 namespace Scover.Dialogs;
 
 /// <summary>A dialog radio button control.</summary>
@@ -39,7 +37,7 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
     StrPtrUni ITextControl.NativeText => _nativeText;
 
     /// <summary>Simulates a click on this radio button.</summary>
-    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_RADIO_BUTTON, info.ControlId));
+    public void Click() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_RADIO_BUTTON, info.ControlId));
 
     /// <inheritdoc/>
     public void Dispose() => _nativeText.Dispose();
@@ -54,25 +52,27 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
     public override int GetHashCode() => Text.GetHashCode();
 
     /// <remarks>
-    /// <inheritdoc path="/remarks"/>
+    /// <list type="table">
+    /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
-    /// <term><see cref="TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED"/></term>
+    /// <term><see cref="TDN_RADIO_BUTTON_CLICKED"/></term>
     /// <term>Raises <see cref="Clicked"/></term>
-    /// <term><see langword="null"/></term>
     /// </item>
+    /// </list>
     /// </remarks>
     /// <inheritdoc/>
-    internal override HRESULT? HandleNotification(Notification notif)
+    internal override HRESULT HandleNotification(Notification notif)
     {
-        if (notif.Id is TaskDialogNotification.TDN_RADIO_BUTTON_CLICKED)
+        _ = base.HandleNotification(notif);
+        if (notif.Id is TDN_RADIO_BUTTON_CLICKED)
         {
             Clicked?.Invoke(this, EventArgs.Empty);
         }
-        return base.HandleNotification(notif);
+        return default;
     }
 
     /// <inheritdoc/>
     protected override void InitializeState() => RequestUpdate(UpdateIsEnabled);
 
-    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_ENABLE_RADIO_BUTTON, info.ControlId, _isEnabled);
+    private void UpdateIsEnabled(IdControlUpdateInfo info) => info.Dialog.SendMessage(TDM_ENABLE_RADIO_BUTTON, info.ControlId, _isEnabled);
 }

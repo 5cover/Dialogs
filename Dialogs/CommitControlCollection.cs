@@ -39,14 +39,16 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
     protected override TASKDIALOG_FLAGS Flags => Style switch
     {
         CommitControlStyle.PushButtons => default,
-        CommitControlStyle.CommandLinks => TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS,
-        CommitControlStyle.CommandLinksNoIcon => TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS_NO_ICON,
+        CommitControlStyle.CommandLinks => TDF_USE_COMMAND_LINKS,
+        CommitControlStyle.CommandLinksNoIcon => TDF_USE_COMMAND_LINKS_NO_ICON,
         _ => throw Style.InvalidEnumArgumentException()
     };
 
-    /// <summary>Adds a new commit control to the collection.</summary>
+    /// <summary>Adds a new push button or command link to the collection.</summary>
     /// <param name="text">The push button text or the command link label.</param>
     /// <param name="note">The command link supplemental instruction.</param>
+    // We're instantiating a CommandLink object, but it could be displayed as a button. It all depends on
+    // the Style. We're just using CommandLink for its knowledge of how to format text and note.
     public void Add(string text, string? note = null) => Add(new CommandLink(text, note));
 
     /// <summary>Adds a new push button to the collection.</summary>
@@ -56,26 +58,29 @@ public sealed class CommitControlCollection : IdControlCollection<CommitControl>
     internal override CommitControl? GetControlFromId(int id) => this.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
 
     /// <remarks>
-    /// <inheritdoc path="/remarks"/>
+    /// <list type="table">
+    /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
-    /// <term><see cref="TaskDialogNotification.TDN_BUTTON_CLICKED"/></term>
+    /// <term><see cref="TDN_BUTTON_CLICKED"/></term>
     /// <term>Forwards the notification to the clicked commit control.</term>
     /// <term><see cref="CommitControl.HandleNotification(Notification)"/></term>
     /// </item>
+    /// <item>
+    /// <term>Anything else</term>
+    /// <term>Forwards the notification to all items.</term>
+    /// </item>
+    /// </list>
     /// </remarks>
-    /// <returns>
-    /// The notification is forwarded to all items. <see langword="null"/> if none of the items had a
-    /// meaningful value to return, the notification-specific return value otherwise.
-    /// </returns>
     /// <inheritdoc/>
-    internal override HRESULT? HandleNotification(Notification notif)
+    internal override HRESULT HandleNotification(Notification notif)
     {
         _ = base.HandleNotification(notif);
-        if (notif.Id is TaskDialogNotification.TDN_BUTTON_CLICKED)
+        if (notif.Id is TDN_BUTTON_CLICKED && GetControlFromId((int)notif.WParam) is { } commitControl)
         {
-            return GetControlFromId((int)notif.WParam)?.HandleNotification(notif);
+            return commitControl.HandleNotification(notif);
         }
-        return this.ForwardNotification(notif);
+        _ = this.ForwardNotification(notif);
+        return default;
     }
 
     /// <inheritdoc/>

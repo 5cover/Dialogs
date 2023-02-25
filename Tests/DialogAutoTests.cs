@@ -29,7 +29,7 @@ public sealed class DialogAutoTests
                 clickedControl = cc;
                 cc.Click();
             }
-            page.Close();
+            page.Exit();
         };
         foreach (var cc in page.Buttons)
         {
@@ -39,15 +39,14 @@ public sealed class DialogAutoTests
                 e.Cancel = true;
             };
         }
-        clickedControl = new Dialog(page).Show();
-        Assert.That(clickedControl, Is.Null);
+        Assert.That(new Dialog(page).Show(), Is.Null);
     }
 
     [Test]
     public void TestCloseImmediately()
     {
         using Page page = new();
-        page.Created += (s, e) => page.Close();
+        page.Created += (s, e) => page.Exit();
         _ = new Dialog(page).Show();
     }
 
@@ -74,7 +73,7 @@ public sealed class DialogAutoTests
         };
         page.Created += async (s, e) =>
         {
-            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(500));
+            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(750));
             int tickCount = 0;
             while (await timer.WaitForNextTickAsync() && tickCount < 5)
             {
@@ -86,7 +85,7 @@ public sealed class DialogAutoTests
                 page.FooterIcon = GetRandomIcon();
                 ++tickCount;
             }
-            page.Close();
+            page.Exit();
         };
         _ = new Dialog(page).Show();
 

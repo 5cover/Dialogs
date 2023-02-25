@@ -1,6 +1,4 @@
-﻿using static Vanara.PInvoke.ComCtl32;
-
-namespace Scover.Dialogs;
+﻿namespace Scover.Dialogs;
 
 // Layout properties can only be set during initialization using the object initializer syntax. However,
 // they still follow the state of the dialog at showtime. Another page must be navigated to in the
@@ -31,8 +29,8 @@ public partial class Page
     /// </value>
     public bool AllowHyperlinks
     {
-        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS);
-        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ENABLE_HYPERLINKS, value);
+        get => _config.dwFlags.HasFlag(TDF_ENABLE_HYPERLINKS);
+        init => _config.dwFlags.SetFlag(TDF_ENABLE_HYPERLINKS, value);
     }
 
     /// <summary>Gets the commit control collection.</summary>
@@ -70,22 +68,6 @@ public partial class Page
         init => _parts.Set(value);
     }
 
-    /// <summary>Gets whether to allow cancelation.</summary>
-    /// <value>
-    /// <see langword="true"/> if the owner dialog window should be able to be closed using Alt-F4, Escape
-    /// or the title bar's close button and a <i>Cancel</i> button should be visible, <see
-    /// langword="false"/> otherwise. Default value is <see langword="false"/>.
-    /// </value>
-    public bool IsCancelable
-    {
-        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION);
-        init
-        {
-            _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION, value);
-            _config.dwCommonButtons.SetFlag(TASKDIALOG_COMMON_BUTTON_FLAGS.TDCBF_CANCEL_BUTTON, value);
-        }
-    }
-
     /// <summary>Gets whether to allow minimization.</summary>
     /// <value>
     /// Whether the owner dialog window has a minimize box on its title bar when it is shown modeless.
@@ -93,8 +75,8 @@ public partial class Page
     /// </value>
     public bool IsMinimizable
     {
-        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED);
-        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_CAN_BE_MINIMIZED, value);
+        get => _config.dwFlags.HasFlag(TDF_CAN_BE_MINIMIZED);
+        init => _config.dwFlags.SetFlag(TDF_CAN_BE_MINIMIZED, value);
     }
 
     /// <summary>Gets whether text is displayed right to left.</summary>
@@ -104,8 +86,8 @@ public partial class Page
     /// </value>
     public bool IsRightToLeftLayout
     {
-        get => _config.dwFlags.HasFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT);
-        init => _config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_RTL_LAYOUT, value);
+        get => _config.dwFlags.HasFlag(TDF_RTL_LAYOUT);
+        init => _config.dwFlags.SetFlag(TDF_RTL_LAYOUT, value);
     }
 
     /// <summary>Gets the progress bar.</summary>

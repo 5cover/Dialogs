@@ -43,33 +43,34 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     public string Text { get; } = "";
 
     /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
-    public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, IsChecked, true));
+    public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, IsChecked, true));
 
     /// <remarks>
-    /// <inheritdoc path="/remarks"/>
+    /// <list type="table">
+    /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
-    /// <term><see cref="TaskDialogNotification.TDN_VERIFICATION_CLICKED"/></term>
+    /// <term><see cref="TDN_VERIFICATION_CLICKED"/></term>
     /// <term>Raises <see cref="Checked"/></term>
-    /// <term><see langword="null"/></term>
     /// </item>
+    /// </list>
     /// </remarks>
     /// <inheritdoc/>
-    internal override HRESULT? HandleNotification(Notification notif)
+    internal override HRESULT HandleNotification(Notification notif)
     {
         _ = base.HandleNotification(notif);
-        if (notif.Id is TaskDialogNotification.TDN_VERIFICATION_CLICKED)
+        if (notif.Id is TDN_VERIFICATION_CLICKED)
         {
             _isChecked = Convert.ToBoolean(notif.WParam);
             Checked.Raise(this);
         }
-        return null;
+        return default;
     }
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        config.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_VERIFICATION_FLAG_CHECKED, IsChecked);
+        config.dwFlags.SetFlag(TDF_VERIFICATION_FLAG_CHECKED, IsChecked);
         config.VerificationText = Text;
     }
 
-    private void UpdateIsChecked(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_CLICK_VERIFICATION, _isChecked, false);
+    private void UpdateIsChecked(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, _isChecked, false);
 }

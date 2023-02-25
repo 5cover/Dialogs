@@ -19,8 +19,6 @@
 // - Merge if statements
 // - Divided EnsureActivateContextCreated in 2 methods
 
-using System.Diagnostics;
-
 using Vanara.InteropServices;
 
 using static Vanara.PInvoke.Kernel32;
@@ -30,8 +28,11 @@ namespace Scover.Dialogs;
 internal sealed class ComCtlV6ActivationContext : IDisposable
 {
     private static readonly object contextCreationLock = new();
+
     private static SafeHACTCTX? activationContext;
+
     private static bool contextCreationSucceeded;
+
     private readonly GenericSafeHandle? _cookie;
 
     public ComCtlV6ActivationContext(bool enable)
@@ -53,8 +54,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 
     private static string CreateTempManifestFile()
     {
-        using var manifestStream = typeof(ComCtlV6ActivationContext).Assembly.GetManifestResourceStream($"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest");
-        Debug.Assert(manifestStream is not null);
+        using var manifestStream = typeof(ComCtlV6ActivationContext).Assembly.GetManifestResourceStream($"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest").AssertNotNull();
         string tmpFile = Path.GetRandomFileName();
         using FileStream tempFileStream = new(tmpFile, FileMode.CreateNew, System.IO.FileAccess.ReadWrite, FileShare.Delete | FileShare.ReadWrite);
         manifestStream.CopyTo(tempFileStream);
@@ -80,7 +80,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
             {
                 File.Delete(manifestTempFilePath);
             }
-            catch (Exception e) when (e is UnauthorizedAccessException or IOException)
+            catch (Exception e) when (e is DirectoryNotFoundException or UnauthorizedAccessException or IOException)
             {
                 // It's a temp file, it's fine.
             }

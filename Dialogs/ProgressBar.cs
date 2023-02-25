@@ -29,10 +29,6 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         get => _marqueeInterval;
         set
         {
-            if (value <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Value is less than or equal to zero.");
-            }
             _marqueeInterval = value;
             RequestUpdate(UpdateInterval);
         }
@@ -41,7 +37,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
     /// <summary>Gets or sets the maximum progress bar value.</summary>
     /// <remarks>Default value is 100. The value must be greater than 0 and less than 65535.</remarks>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// The value is less than 0 or greater than 65535 -- OR -- the value is less than <see cref="Value"/>.
+    /// The value is less than 0 or greater than 65535.
     /// </exception>
     /// <value>The maximum of the <see cref="Value"/> property.</value>
     public int Maximum
@@ -49,10 +45,6 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         get => _maximum;
         set
         {
-            if (value < Value)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, $"The value is less than {nameof(Value)} ({Value}).");
-            }
             _maximum = CheckAndConvertToUInt16(value);
             RequestUpdate(UpdateRange);
         }
@@ -61,20 +53,14 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
     /// <summary>Gets or sets the minimum progress bar value.</summary>
     /// <remarks>Default value is 0. The value must be greater than 0 and less than 65535.</remarks>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// The value is less than 0 or greater than 65535 -- OR -- the value greater than than <see
-    /// cref="Value"/>.
+    /// The value is less than 0 or greater than 65535.
     /// </exception>
     /// <value>The minimum of the <see cref="Value"/> property.</value>
     public int Minimum
     {
         get => _minimum;
         set
-
         {
-            if (value > Value)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, $"The value is greater than {nameof(Value)} ({Value}).");
-            }
             _minimum = CheckAndConvertToUInt16(value);
             RequestUpdate(info =>
             {
@@ -139,29 +125,20 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
     /// The position of the progress bar when <see cref="Mode"/> is <see cref="ProgressBarMode.Normal"/>.
     /// Default value is 0.
     /// </value>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The provided value does not fall withing the range from <see cref="Minimum"/> to <see
-    /// cref="Maximum"/> (inclusive).
-    /// </exception>
     public int Value
     {
         get => _value;
         set
         {
-            if (value < Minimum || value > Maximum)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value,
-                    $"The value is less than {nameof(Minimum)} ({Minimum}) or greater than {nameof(Maximum)} ({Maximum}).");
-            }
-            _value = Math.Clamp(value, Minimum, Maximum);
+            _value = value;
             RequestUpdate(UpdateValue);
         }
     }
 
     internal override void SetIn(in TASKDIALOGCONFIG container)
     {
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_PROGRESS_BAR, _mode is ProgressBarMode.Normal);
-        container.dwFlags.SetFlag(TASKDIALOG_FLAGS.TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
+        container.dwFlags.SetFlag(TDF_SHOW_PROGRESS_BAR, _mode is ProgressBarMode.Normal);
+        container.dwFlags.SetFlag(TDF_SHOW_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
     }
 
     /// <inheritdoc/>
@@ -184,15 +161,15 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         return (ushort)value;
     }
 
-    private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_STATE, state);
+    private static void UpdateState(PageUpdateInfo info, ProgressBarState state) => info.Dialog.SendMessage(TDM_SET_PROGRESS_BAR_STATE, state);
 
-    private void UpdateInterval(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeInterval);
+    private void UpdateInterval(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_SET_PROGRESS_BAR_MARQUEE, true, (uint)_marqueeInterval);
 
-    private void UpdateMode(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
+    private void UpdateMode(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_SET_MARQUEE_PROGRESS_BAR, _mode is ProgressBarMode.Marquee);
 
-    private void UpdateRange(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_RANGE, 0, Macros.MAKELONG(_minimum, _maximum));
+    private void UpdateRange(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_SET_PROGRESS_BAR_RANGE, 0, Macros.MAKELONG(_minimum, _maximum));
 
     private void UpdateState(PageUpdateInfo info) => UpdateState(info, _state);
 
-    private void UpdateValue(PageUpdateInfo info) => info.Dialog.SendMessage(TaskDialogMessage.TDM_SET_PROGRESS_BAR_POS, _value);
+    private void UpdateValue(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_SET_PROGRESS_BAR_POS, _value);
 }

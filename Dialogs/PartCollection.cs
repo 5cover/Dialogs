@@ -41,7 +41,11 @@ internal sealed class PartCollection : IEnumerable<Part>
         OnPartAdded(value);
     }
 
-    public void SetDefaultValue<T>(T defaultValue) where T : Part => _parts.Add(typeof(T), new(defaultValue, defaultValue));
+    public void RegisterDefaultValue<T>(T defaultValue) where T : Part
+    {
+        Set(defaultValue);
+        _parts[typeof(T)] = _parts[typeof(T)] with { DefaultValue = defaultValue };
+    }
 
     public void SetPartsIn(in ComCtl32.TASKDIALOGCONFIG config)
     {

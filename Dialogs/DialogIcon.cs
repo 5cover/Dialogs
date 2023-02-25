@@ -13,13 +13,13 @@ public sealed class DialogIcon
     private DialogIcon(TaskDialogIcon icon) => (Handle, IsHIcon) = ((nint)icon, false);
 
     /// <summary>Gets the icon consisting of a white X in a circle with a red background.</summary>
-    public static DialogIcon Error { get; } = new(TaskDialogIcon.TD_ERROR_ICON);
+    public static DialogIcon Error { get; } = new(TD_ERROR_ICON);
 
     /// <summary>Gets the icon consisting of a white X in a red shield.</summary>
-    public static DialogIcon ErrorShield { get; } = new(TaskDialogIcon.TD_SECURITYERROR_ICON);
+    public static DialogIcon ErrorShield { get; } = new(TD_SECURITYERROR_ICON);
 
     /// <summary>Gets the icon consisting of a lowercase letter i in a circle.</summary>
-    public static DialogIcon Information { get; } = new(TaskDialogIcon.TD_INFORMATION_ICON);
+    public static DialogIcon Information { get; } = new(TD_INFORMATION_ICON);
 
     /// <summary>
     /// Gets a special <see cref="DialogIcon"/> instance that represents the absence of an icon.
@@ -27,16 +27,16 @@ public sealed class DialogIcon
     public static DialogIcon None { get; } = new(default, false);
 
     /// <summary>Gets the icon consisting of an user account control (UAC) shield.</summary>
-    public static DialogIcon Shield { get; } = new(TaskDialogIcon.TD_SHIELD_ICON);
+    public static DialogIcon Shield { get; } = new(TD_SHIELD_ICON);
 
     /// <summary>Gets the icon consisting of a white tick in a green shield.</summary>
-    public static DialogIcon SuccessShield { get; } = new(TaskDialogIcon.TD_SECURITYSUCCESS_ICON);
+    public static DialogIcon SuccessShield { get; } = new(TD_SECURITYSUCCESS_ICON);
 
     /// <summary>Gets the icon consisting of an exclamation point in a triangle.</summary>
-    public static DialogIcon Warning { get; } = new(TaskDialogIcon.TD_WARNING_ICON);
+    public static DialogIcon Warning { get; } = new(TD_WARNING_ICON);
 
     /// <summary>Gets the icon consisting of an exclamation point in a yellow shield.</summary>
-    public static DialogIcon WarningShield { get; } = new(TaskDialogIcon.TD_SECURITYWARNING_ICON);
+    public static DialogIcon WarningShield { get; } = new(TD_SECURITYWARNING_ICON);
 
     internal nint Handle { get; }
     internal bool IsHIcon { get; }
