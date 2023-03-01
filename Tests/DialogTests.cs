@@ -22,6 +22,7 @@ public sealed class DialogTests
             {
                 "Button #1",
                 button2,
+                Button.Cancel,
                 new Button("Button #3 (Admin)") { RequiresElevation = true },
                 new Button("Button #4 (Disabled)") { IsEnabled = false },
                 new Button("Button #5 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
@@ -58,18 +59,18 @@ public sealed class DialogTests
     [Test]
     public void TestCommandLinks()
     {
-        CommandLink commandLink2 = new("Command link #2 (default)", "This is the default command link.");
+        Button commandLink2 = new("Command link #2 (default)", "This is the default command link.");
         using Page page = new()
         {
             Content = "Assert that the command links are displayed properly.",
-            Buttons = new(defaultItem: commandLink2, style: CommitControlStyle.CommandLinks)
+            Buttons = new(ButtonStyle.CommandLinks, commandLink2)
             {
                 "Command link #1",
                 commandLink2,
                 { "Command link #3", "Supplemental explanation" },
-                new CommandLink("Command link #4 (disabled)") { IsEnabled = false },
-                new CommandLink("Command link #5 (admin)") { RequiresElevation = true },
-                new CommandLink("Command link #6 (admin && disabled)") { IsEnabled = false, RequiresElevation = true },
+                new Button("Command link #4 (disabled)") { IsEnabled = false },
+                new Button("Command link #5 (admin)") { RequiresElevation = true },
+                new Button("Command link #6 (admin && disabled)") { IsEnabled = false, RequiresElevation = true },
 
                 // Common buttons are also supported.
                 Button.Abort,
@@ -321,5 +322,72 @@ public sealed class DialogTests
             WindowTitle = nameof(TestRadioButtons),
         };
         _ = new Dialog(page).Show();
+    }
+
+    [Test]
+    public void TestAsyncProgress()
+    {
+        using Page page = new()
+        {
+            WindowTitle = nameof(TestAsyncProgress),
+            IsMinimizable = true,
+            MainInstruction = "Asynchronous operation in progress",
+            Content = "The progress bar should increase by 10% every second and this windows should close just before it fills up completely.",
+            ProgressBar = new() { Maximum = 10 },
+        };
+
+        page.Created += async (_, _) =>
+        {
+            while (page.ProgressBar.Value < 10)
+            {
+                await Task.Delay(1000);
+                ++page.ProgressBar.Value;
+            }
+            page.Exit();
+        };
+
+        Assert.That(new Dialog(page).Show(), Is.Null);
+    }
+
+    [Test]
+    public void TestAsyncProgressNavigation()
+    {
+        Button startNow = new("Start now", "The dialog will navigate to the second page and the operation will start");
+        using Page page1 = new()
+        {
+            MainInstruction = "Start the operation?",
+            Buttons = new(ButtonStyle.CommandLinks)
+            {
+                startNow,
+                { "Abort", "The test will be aborted and nothing will happen (same as Cancel)" },
+                Button.Cancel,
+            }
+        };
+        using Page page2 = new()
+        {
+            WindowTitle = nameof(TestAsyncProgress),
+            IsMinimizable = true,
+            MainInstruction = "Asynchronous operation in progress",
+            Content = "The progress bar should increase by 10% every second and this windows should close just before it fills up completely.",
+            ProgressBar = new() { Maximum = 10 },
+        };
+        page2.Created += async (_, _) =>
+        {
+            while (page2.ProgressBar.Value < 10)
+            {
+                await Task.Delay(1000);
+                ++page2.ProgressBar.Value;
+            }
+            page2.Exit();
+        };
+        Assert.That(new MultiPageDialog(page1, new()
+        {
+            [page1] = request => startNow.Equals(request.ClickedButton) ? page2 : null,
+            [page2] = request =>
+            {
+                Assert.That(request.Kind, Is.EqualTo(NavigationRequestKind.Exit));
+                return null;
+            }
+        }).Show(), Is.Null);
     }
 }

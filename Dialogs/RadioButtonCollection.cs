@@ -5,10 +5,7 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs;
 
 /// <summary>A collection of dialog radio button controls.</summary>
-/// <remarks>
-/// This class cannot be inherited and implements <see cref="IDisposable"/> and calls <see
-/// cref="IDisposable.Dispose"/> on its items.
-/// </remarks>
+/// <inheritdoc path="//remarks"/>
 public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
 {
     private readonly DefaultRadioButton? _defaultItemStrategy;
@@ -47,7 +44,7 @@ public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
     /// <inheritdoc path="//remarks//listheader"/><inheritdoc path="//remarks//item"/>
     /// <item>
     /// <term><see cref="TDN_RADIO_BUTTON_CLICKED"/></term>
-    /// <term>Forwards the notification to the clicked commit control.</term>
+    /// <term>Forwards the notification to the clicked button.</term>
     /// <term><see cref="RadioButton.HandleNotification(Notification)"/></term>
     /// </item>
     /// <item>

@@ -15,7 +15,7 @@ namespace Scover.Dialogs;
 public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, ICollection<T>, IDisposable where T : notnull, DialogControl<IdControlUpdateInfo>
 {
     private readonly IList<T> _items;
-    private SafeNativeArray<TASKDIALOG_BUTTON>? _nativeArray;
+    private readonly Dictionary<TASKDIALOGCONFIG, SafeNativeArray<TASKDIALOG_BUTTON>> _nativeArrays = new();
 
     /// <param name="items">The initial items.</param>
     /// <param name="defaultItem">The default item.</param>
@@ -57,7 +57,10 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <inheritdoc/>
     public virtual void Dispose()
     {
-        _nativeArray?.Dispose();
+        foreach (var nativeArray in _nativeArrays.Values)
+        {
+            nativeArray.Dispose();
+        }
         foreach (var disposable in _items.OfType<IDisposable>())
         {
             disposable.Dispose();
@@ -94,17 +97,18 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
             part.SetIn(config);
         }
 
-        _nativeArray?.Dispose();
-        _nativeArray = new(_items.OfType<ITextControl>().Select((item, index) => new TASKDIALOG_BUTTON
+        SafeNativeArray<TASKDIALOG_BUTTON> nativeArray = new(_items.OfType<ITextControl>().Select((item, index) => new TASKDIALOG_BUTTON
         {
             pszButtonText = (nint)item.NativeText,
             nButtonID = GetId(index)
         }).ToArray());
 
-        config.dwFlags |= Flags;
+        _nativeArrays.GetValueOrDefault(config)?.Dispose();
+        _nativeArrays[config] = nativeArray;
 
+        config.dwFlags |= Flags;
         int defaultItemIndex = DefaultItem is null ? -1 : _items.IndexOf(DefaultItem);
-        SetConfigProperties(config, _nativeArray, (uint)_nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
+        SetConfigProperties(config, nativeArray, (uint)nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
     }
 
     /// <summary>Gets the corresponding ID for a given index.</summary>
@@ -116,7 +120,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     protected virtual int GetIndex(int id) => id - 1;
 
     /// <summary>
-    /// Sets the appropriates fields and properties in <paramref name="config"/> for the given arguments.
+    /// Sets the appropriate fields and properties in <paramref name="config"/> for the given arguments.
     /// </summary>
     /// <param name="config">The object to configure.</param>
     /// <param name="nativeButtonArrayHandle">The handle to the array containing the native buttons.</param>

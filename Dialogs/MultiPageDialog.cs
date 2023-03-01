@@ -11,11 +11,31 @@ namespace Scover.Dialogs;
 /// request.
 /// </summary>
 /// <param name="navigationRequest">
-/// The navigation request. It contains the commit control that was clicked, as well as the type of the
-/// request.
+/// The navigation request. It contains the button that was clicked, as well as the type of the request.
 /// </param>
 /// <returns>The next page to navigate to, or <see langword="null"/> to end the navigation.</returns>
 public delegate Page? NextPageSelector(NavigationRequest navigationRequest);
+
+/// <summary>The kind of a navigation request.</summary>
+public enum NavigationRequestKind
+{
+    /// <summary>
+    /// Navigation was explicitly requested by calling <see cref="MultiPageDialog.Navigate()"/>
+    /// </summary>
+    Explicit,
+
+    /// <summary>
+    /// Navigation was requested since the dialog window was closed or <see cref="Button.Cancel"/> button
+    /// was clicked.
+    /// </summary>
+    Cancel,
+
+    /// <summary>Navigation was requested since <see cref="Page.Exit()"/> was called.</summary>
+    Exit,
+
+    /// <summary>Navigation was requested since a button was clicked.</summary>
+    Commit,
+}
 
 /// <summary>A dialog with multiple pages and support for navigation.</summary>
 /// <remarks>
@@ -38,6 +58,11 @@ public class MultiPageDialog : Dialog
         CurrentPage.Exiting += Navigate;
     }
 
+    /// <inheritdoc cref="MultiPageDialog(Page, IDictionary{Page, NextPageSelector})"/>
+    // required for compact new syntax
+    public MultiPageDialog(Page firstPage, Dictionary<Page, NextPageSelector> nextPageSelectors)
+        : this(firstPage, (IDictionary<Page, NextPageSelector>)nextPageSelectors) { }
+
     /// <inheritdoc/>
     public override void Close()
     {
@@ -53,14 +78,14 @@ public class MultiPageDialog : Dialog
     /// </returns>
     public bool Navigate() => Navigate(new(null, NavigationRequestKind.Explicit));
 
-    private static NavigationRequest MakeRequest(CommitControl? clickedControl)
-        => new(clickedControl, clickedControl is null
+    private static NavigationRequest MakeRequest(ButtonBase? clickedButton)
+        => new(clickedButton, clickedButton is null
                                    ? NavigationRequestKind.Exit
-                                   : clickedControl.Equals(Button.Cancel)
+                                   : clickedButton.Equals(Button.Cancel)
                                        ? NavigationRequestKind.Cancel
                                        : NavigationRequestKind.Commit);
 
-    private void Navigate(object? sender, ExitEventArgs e) => e.Cancel = Navigate(MakeRequest(e.ClickedControl));
+    private void Navigate(object? sender, ExitEventArgs e) => e.Cancel = Navigate(MakeRequest(e.ClickedButton));
 
     private bool Navigate(NavigationRequest navigationRequest)
     {

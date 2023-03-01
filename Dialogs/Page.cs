@@ -8,6 +8,19 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>Determines the position of a dialog window.</summary>
+public enum WindowLocation
+{
+    /// <summary>The dialog window is placed at the center of the screen.</summary>
+    CenterScreen,
+
+    /// <summary>
+    /// The dialog window is placed at the center of the parent window, or a the center of the screen if no
+    /// parent window is specified.
+    /// </summary>
+    CenterParent
+}
+
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
@@ -30,21 +43,21 @@ public partial class Page : IDisposable
         _parts.RegisterDefaultValue(Sizing.Automatic);
         _parts.RegisterDefaultValue(DialogHeader.None);
         _parts.RegisterDefaultValue(new RadioButtonCollection());
-        _parts.RegisterDefaultValue(new CommitControlCollection());
+        _parts.RegisterDefaultValue(new ButtonCollection());
     }
 
     /// <inheritdoc/>
     ~Page() => Dispose(disposing: false);
 
     /// <summary>
-    /// Event raised when the page is about to be closed, either because a commit control was clicked, or
-    /// the dialog window was closed. Set the <see cref="CancelEventArgs.Cancel"/> property of the event
-    /// arguments to <see langword="true"/> to prevent the page from closing.
+    /// Event raised when the page is about to be closed, either because a button was clicked, or the dialog
+    /// window was closed. Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to
+    /// <see langword="true"/> to prevent the page from closing.
     /// </summary>
     public event EventHandler<ExitEventArgs>? Exiting;
-    /// <summary>Event raised when this page is created or navigated to.</summary>
+    /// <summary>Event raised after the page has been created and before it is displayed.</summary>
     public event EventHandler? Created;
-    /// <summary>Event raised when this page is destroyed.</summary>
+    /// <summary>Event raised when the dialog window is destroyed.</summary>
     public event EventHandler? Destroyed;
     /// <summary>
     /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
@@ -61,7 +74,7 @@ public partial class Page : IDisposable
     /// </summary>
     /// <remarks>
     /// When this method is called, the return value of <see cref="Dialog.Show(nint?)"/> and the value of
-    /// the <see cref="NavigationRequest.ClickedControl"/> property of the object passed into the <see
+    /// the <see cref="NavigationRequest.ClickedButton"/> property of the object passed into the <see
     /// cref="NextPageSelector"/> delegate provided to <see cref="MultiPageDialog"/> for navigation will be
     /// <see langword="null"/>.
     /// </remarks>
@@ -82,10 +95,6 @@ public partial class Page : IDisposable
     {
         switch (notif.Id)
         {
-            case TDN_CREATED:
-                Created.Raise(this);
-                break;
-
             // Also sent when the dialog window was closed.
             case TDN_BUTTON_CLICKED:
                 return HandleClickNotification(notif);
@@ -103,6 +112,7 @@ public partial class Page : IDisposable
                 _exitCalled = false;
                 // Needed for having an icon after the header was set.
                 OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
+                Created.Raise(this);
                 break;
 
             // For Help button, sent after TDN_BUTTON_CLICKED, unless S_FALSE was returned.
@@ -128,7 +138,7 @@ public partial class Page : IDisposable
         return _config;
     }
 
-    internal CommitControl? GetClickedButton(int pnButton) => _exitCalled ? null : Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
+    internal ButtonBase? GetClickedButton(int pnButton) => _exitCalled ? null : Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     protected virtual void Dispose(bool disposing)
@@ -187,7 +197,7 @@ public partial class Page : IDisposable
         return default;
 
         // The Help button is non-committing as it doesn't close the dialog.
-        static bool IsCommitting(CommitControl? button) => !Button.Help.Equals(button);
+        static bool IsCommitting(ButtonBase? button) => !Button.Help.Equals(button);
     }
 
     private void OnUpdateRequested(object? sender, Action<PageUpdateInfo> update) => OnUpdateRequested(update);

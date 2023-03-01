@@ -17,26 +17,16 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>
-      **1.2.0**
-      ---
+    <PackageReleaseNotes>Breaking changes ahead
 
-      # Breaking changes
-      Changed type of Dialog.MnemonicPrefix to ``char``
-      Removed ``Page.IsCancelable`` because it's the same as having ``Button.Cancel`` in ``Page.Buttons``
-      Renamed ``Page.Close()`` to ``Page.Exit()``
-      Renamed ``ClosingEventArgs`` to ``ExitEventArgs``
-
-      # Non-breaking changes
-      Improved documentation
-      Added ``Button.Cancel``
-      Added ``Dialog.Close()``
-
-      # Bugfixes
-      Fixed a bug with navigation preventing state initialization
-      Fixed a bug with default values for parts in ``Page`` not requesting updates
-      Fixed a bug with ``Dialog.Handle`` not being updated when a dialog is shown twice
-    </PackageReleaseNotes>
+Readded Page.IsCanceleable (turns out it doesn't add a cancel button)
+Added a contructor overload to MultiPageDialog so the compact new syntax can be used to instantiate the dictionary.
+Fixed Created event not triggering after navigation
+Added 2 tests with aysnc
+Fixed bug with IdControlCollection&lt;&gt;.SetIn() disposing of the last array
+Renamed and changed documentation to indicate that Button refers to PushButton and CommandLink. Got rid of the name of commit control. Too long and misleading. I mean, what the hell is a "commit control".
+Merged files with single enums to the file with the class where they are used the most
+Changed icon</PackageReleaseNotes>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -45,7 +35,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <TargetFramework>net6.0-windows</TargetFramework>
     <Title>Dialogs</Title>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

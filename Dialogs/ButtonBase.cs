@@ -4,21 +4,21 @@ using Vanara.PInvoke;
 
 namespace Scover.Dialogs;
 
-/// <summary>A dialog control that induces commitment.</summary>
-public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
+/// <summary>A dialog button control.</summary>
+public abstract class ButtonBase : DialogControl<IdControlUpdateInfo>
 {
     private bool _isEnabled = true;
 
     private bool _requiresElevation;
 
-    /// <summary>Event raised when this commit control is clicked.</summary>
+    /// <summary>Event raised when this button is clicked.</summary>
     /// <remarks>
     /// Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to <see
-    /// langword="true"/> to prevent the commit control from closing its containing page.
+    /// langword="true"/> to prevent the button from closing its containing page.
     /// </remarks>
     public event EventHandler<CancelEventArgs>? Clicked;
 
-    /// <summary>Gets or sets whether this commit control is enabled.</summary>
+    /// <summary>Gets or sets whether this button is enabled.</summary>
     /// <remarks>Default value is <see langword="true"/>.</remarks>
     public bool IsEnabled
     {
@@ -31,7 +31,7 @@ public abstract class CommitControl : DialogControl<IdControlUpdateInfo>
     }
 
     /// <summary>
-    /// Gets or sets whether an User Account Control (UAC) shield icon is displayed near the commit control.
+    /// Gets or sets whether an User Account Control (UAC) shield icon should be displayed near the button.
     /// </summary>
     /// <remarks>Default value is <see langword="false"/>.</remarks>
     public bool RequiresElevation

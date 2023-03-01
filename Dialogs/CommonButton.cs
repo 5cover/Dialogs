@@ -8,7 +8,7 @@ namespace Scover.Dialogs;
 /// <summary>A dialog button control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
 [DebuggerDisplay($"{{{nameof(_commonButton)}}}")]
-public sealed class CommonButton : CommitControl, IEquatable<CommonButton?>
+public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>
 {
     /// <summary>
     /// The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances.

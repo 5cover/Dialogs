@@ -10,12 +10,12 @@ public sealed class ExitEventArgs : CancelEventArgs
     /// Initializes a new instance of the <see cref="ExitEventArgs"/> class with the <see
     /// cref="CancelEventArgs.Cancel"/> property set to <see langword="false"/>.
     /// </summary>
-    /// <param name="clickedControl">The commit control that was clicked to exit the page.</param>
-    public ExitEventArgs(CommitControl? clickedControl) => ClickedControl = clickedControl;
+    /// <param name="clickedbutton">The button that was clicked to exit the page.</param>
+    public ExitEventArgs(ButtonBase? clickedbutton) => ClickedButton = clickedbutton;
 
     /// <summary>
-    /// Gets the commit control that was clicked to exit the page, or <see langword="null"/> if <see
+    /// Gets the button that was clicked to exit the page, or <see langword="null"/> if <see
     /// cref="Page.Exit"/> was called.
     /// </summary>
-    public CommitControl? ClickedControl { get; set; }
+    public ButtonBase? ClickedButton { get; set; }
 }

@@ -7,6 +7,16 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>The position of the expanded information relative to other elements of a dialog page.</summary>
+public enum ExpanderPosition
+{
+    /// <summary>Show the expanded information below the content area of the dialog.</summary>
+    BelowContent,
+
+    /// <summary>Show the expanded information below the footer area of the dialog.</summary>
+    BelowFooter
+}
+
 /// <summary>A dialog expander control.</summary>
 /// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
 [DebuggerDisplay($"{{{nameof(Text)}}}")]

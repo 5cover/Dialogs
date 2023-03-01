@@ -12,7 +12,7 @@ public sealed class DialogAutoTests
     [Test]
     public void TestClick()
     {
-        CommitControl? clickedControl = null;
+        ButtonBase? clickedButton = null;
         RadioButton? selectedRadioButton = new("Radio #1");
         using Page page = new()
         {
@@ -24,18 +24,18 @@ public sealed class DialogAutoTests
         page.Created += (s, e) =>
         {
             selectedRadioButton.Click();
-            foreach (CommitControl cc in page.Buttons)
+            foreach (ButtonBase b in page.Buttons)
             {
-                clickedControl = cc;
-                cc.Click();
+                clickedButton = b;
+                b.Click();
             }
             page.Exit();
         };
-        foreach (var cc in page.Buttons)
+        foreach (var b in page.Buttons)
         {
-            cc.Clicked += (s, e) =>
+            b.Clicked += (s, e) =>
             {
-                Assert.That(s, Is.EqualTo(clickedControl));
+                Assert.That(s, Is.EqualTo(clickedButton));
                 e.Cancel = true;
             };
         }

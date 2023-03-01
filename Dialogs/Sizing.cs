@@ -4,6 +4,16 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>A distance unit.</summary>
+public enum DistanceUnit
+{
+    /// <summary>Pixel.</summary>
+    Pixel,
+
+    /// <summary>Dialog unit.</summary>
+    DLU
+}
+
 /// <summary>The sizing strategy of a dialog window.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class Sizing : DialogControl<PageUpdateInfo>

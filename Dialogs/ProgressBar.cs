@@ -4,6 +4,34 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+/// <summary>The mode of a dialog progress bar.</summary>
+public enum ProgressBarMode
+{
+    /// <summary>
+    /// Normal mode. The progress bar is indicated with a continuous bar that fills in from left to right.
+    /// </summary>
+    Normal,
+
+    /// <summary>
+    /// Marquee mode. The progress is indicated with a block that scrolls across the progress bar in a
+    /// marquee fashion.
+    /// </summary>
+    Marquee
+}
+
+/// <summary>The state of a dialog progress bar control.</summary>
+public enum ProgressBarState
+{
+    /// <summary>In progress.</summary>
+    Normal = ProgressState.PBST_NORMAL,
+
+    /// <summary>Paused.</summary>
+    Paused = ProgressState.PBST_PAUSED,
+
+    /// <summary>Interrupted due to an error.</summary>
+    Error = ProgressState.PBST_ERROR
+}
+
 /// <summary>A dialog progress bar control.</summary>
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class ProgressBar : DialogControl<PageUpdateInfo>

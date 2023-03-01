@@ -9,6 +9,17 @@
 
 public partial class Page
 {
+    /// <summary>Gets or sets whether to allow cancelation.</summary>
+    /// <value>
+    /// Wether the dialog window should respond to typical cancel actions (Alt-F4 and Escape) and have a
+    /// close button on its title bar. Default value is <see langword="false"/>.
+    /// </value>
+    public bool IsCancelable
+    {
+        get => _config.dwFlags.HasFlag(TDF_ALLOW_DIALOG_CANCELLATION);
+        init => _config.dwFlags.SetFlag(TDF_ALLOW_DIALOG_CANCELLATION, value);
+    }
+
     /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
     /// <para>
@@ -33,18 +44,18 @@ public partial class Page
         init => _config.dwFlags.SetFlag(TDF_ENABLE_HYPERLINKS, value);
     }
 
-    /// <summary>Gets the commit control collection.</summary>
+    /// <summary>Gets the button collection.</summary>
     /// <remarks>
     /// If the value is <see langword="null"/>, the <see cref="Button.OK"/> button will be shown by default.
     /// The referenced object is disposed with the page.
     /// </remarks>
     /// <value>
-    /// The collection of all the commit controls, buttons or command links. Default value is <see
+    /// The collection of all the buttons, buttons or command links. Default value is <see
     /// langword="null"/>.
     /// </value>
-    public CommitControlCollection Buttons
+    public ButtonCollection Buttons
     {
-        get => _parts.Get<CommitControlCollection>().AssertNotNull();
+        get => _parts.Get<ButtonCollection>().AssertNotNull();
         init => _parts.Set(value);
     }
 
@@ -73,6 +84,7 @@ public partial class Page
     /// Whether the owner dialog window has a minimize box on its title bar when it is shown modeless.
     /// Default value is <see langword="false"/>.
     /// </value>
+    /// <remarks>Implies <see cref="IsCancelable"/>.</remarks>
     public bool IsMinimizable
     {
         get => _config.dwFlags.HasFlag(TDF_CAN_BE_MINIMIZED);

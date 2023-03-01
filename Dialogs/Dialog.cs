@@ -18,7 +18,7 @@ public class Dialog
     private readonly Queue<Action<PageUpdateInfo>> _queuedUpdates = new();
     private int _inCallback;
 
-    static Dialog() => _ = new ComCtlV6ActivationContext(true);
+    //static Dialog() => _ = new ComCtlV6ActivationContext(true);
 
     /// <param name="page">The page of the dialog.</param>
     public Dialog(Page page) => CurrentPage = page;
@@ -45,7 +45,7 @@ public class Dialog
     /// <summary>Shows the dialog.</summary>
     /// <param name="owner">The owner window handle.</param>
     /// <returns>
-    /// The <see cref="CommitControl"/> that was clicked, or <see langword="null"/> if <see
+    /// The <see cref="ButtonBase"/> that was clicked, or <see langword="null"/> if <see
     /// cref="Page.Exit()"/> was called.
     /// </returns>
     /// <exception cref="PlatformNotSupportedException">
@@ -57,7 +57,7 @@ public class Dialog
     /// <exception cref="System.ComponentModel.Win32Exception">
     /// An error occuered while displaying the dialog.
     /// </exception>
-    public CommitControl? Show(nint? owner = null)
+    public ButtonBase? Show(nint? owner = null)
     {
         CurrentPage.UpdateRequested += PerformUpdate;
         try
