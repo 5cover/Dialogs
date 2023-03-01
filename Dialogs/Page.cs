@@ -32,7 +32,6 @@ public partial class Page : IDisposable
     private readonly PartCollection _parts = new();
     private readonly TASKDIALOGCONFIG _config = new();
     private bool _disposed;
-    private bool _exitCalled;
 
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
@@ -78,11 +77,7 @@ public partial class Page : IDisposable
     /// cref="NextPageSelector"/> delegate provided to <see cref="MultiPageDialog"/> for navigation will be
     /// <see langword="null"/>.
     /// </remarks>
-    public void Exit()
-    {
-        _exitCalled = true;
-        OnUpdateRequested(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, Button.Cancel.Id));
-    }
+    public void Exit() => Exiting?.Invoke(this, new(null));
 
     /// <inheritdoc/>
     public void Dispose()
@@ -109,7 +104,6 @@ public partial class Page : IDisposable
 
             // Sent before TDN_CREATED. TDN_CREATED is not sent after navigation.
             case TDN_DIALOG_CONSTRUCTED:
-                _exitCalled = false;
                 // Needed for having an icon after the header was set.
                 OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
                 Created.Raise(this);
@@ -138,7 +132,7 @@ public partial class Page : IDisposable
         return _config;
     }
 
-    internal ButtonBase? GetClickedButton(int pnButton) => _exitCalled ? null : Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
+    internal ButtonBase? GetClickedButton(int pnButton) => Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     protected virtual void Dispose(bool disposing)
@@ -171,11 +165,6 @@ public partial class Page : IDisposable
 
     private HRESULT HandleClickNotification(Notification notif)
     {
-        if (_exitCalled)
-        {
-            return default;
-        }
-
         HRESULT buttonsResult = Buttons.HandleNotification(notif);
         if (buttonsResult != default)
         {

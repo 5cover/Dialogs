@@ -15,7 +15,8 @@ public sealed class Button : ButtonBase, IEquatable<Button?>, ITextControl, IDis
 
     /// <param name="text">The push button or command link text.</param>
     /// <param name="note">The command link supplemental instruction.</param>
-    public Button(string text, string? note = null) => _nativeText = new(note is null ? text : $"{text}\n{note}");
+    public Button(string text, string? note = null)
+        => (Text, Note, _nativeText) = (text, note, new(note is null ? text : $"{text}\n{note}"));
 
     /// <summary>Gets the <i>Abort</i> button.</summary>
     public static CommonButton Abort { get; } = new(1 << 16, IDABORT);
@@ -57,6 +58,16 @@ public sealed class Button : ButtonBase, IEquatable<Button?>, ITextControl, IDis
 
     /// <summary>Gets the <i>Yes</i> button.</summary>
     public static CommonButton Yes { get; } = new(TDCBF_YES_BUTTON, IDYES);
+
+    /// <summary>Gets the push button or command link text.</summary>
+    public string Text { get; }
+
+    /// <summary>Gets the command link supplemental instruction.</summary>
+    /// <value>
+    /// The supplemental instruction of this command link. If this button is not a command link or it
+    /// doesn't have a supplemental insruction, <see langword="null"/>.
+    /// </value>
+    public string? Note { get; }
 
     StrPtrUni ITextControl.NativeText => _nativeText;
 

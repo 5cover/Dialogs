@@ -4,6 +4,7 @@
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>Scover</Authors>
     <Company>$(Authors)</Company>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <Copyright>(c) Scover 2022</Copyright>
     <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -17,16 +18,8 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Breaking changes ahead
-
-Readded Page.IsCanceleable (turns out it doesn't add a cancel button)
-Added a contructor overload to MultiPageDialog so the compact new syntax can be used to instantiate the dictionary.
-Fixed Created event not triggering after navigation
-Added 2 tests with aysnc
-Fixed bug with IdControlCollection&lt;&gt;.SetIn() disposing of the last array
-Renamed and changed documentation to indicate that Button refers to PushButton and CommandLink. Got rid of the name of commit control. Too long and misleading. I mean, what the hell is a "commit control".
-Merged files with single enums to the file with the class where they are used the most
-Changed icon</PackageReleaseNotes>
+    <PackageReleaseNotes>Added Text and Note properties to the Button class
+Updated Readme</PackageReleaseNotes>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -35,7 +28,7 @@ Changed icon</PackageReleaseNotes>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <TargetFramework>net6.0-windows</TargetFramework>
     <Title>Dialogs</Title>
-    <Version>1.3.0</Version>
+    <Version>1.3.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -1,5 +1,6 @@
 # Dialogs
-[NuGet](https://www.nuget.org/packages/Scover.Dialogs)
+[![Code Climate](https://codeclimate.com/github/5cover/Dialogs.png)](https://codeclimate.com/github/5cover/Dialogs.png)
+[![CodeFactor](https://www.codefactor.io/repository/github/5cover/dialogs/badge)](https://www.codefactor.io/repository/github/5cover/dialogs)
 
 Managed Win32 [task dialog](https://learn.microsoft.com/en-us/windows/win32/controls/task-dialogs-overview) wrapper.
 Supports all native Task Dialog features.
@@ -30,7 +31,7 @@ using Page page1 = new()
     Buttons =
     {
         { "Label", "Supplemental instruction" },
-        Button.Cancel
+        Button.OK
     }
 };
 using Page page2 = new()

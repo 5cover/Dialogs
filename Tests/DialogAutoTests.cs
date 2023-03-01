@@ -88,34 +88,34 @@ public sealed class DialogAutoTests
             page.Exit();
         };
         _ = new Dialog(page).Show();
+    }
 
-        static DialogIcon GetRandomIcon()
+    private static DialogIcon GetRandomIcon()
+    {
+        int id = 199;
+        while (id
+            is > 198 and < 1001
+            or > 1043 and < 1301
+            or > 1306 and < 1400
+            or > 1405 and < 5100
+            or > 5102 and < 5201
+            or > 5206 and < 5210
+            or > 5210 and < 5301
+            or > 5412 and < 6400)
         {
-            int id = 199;
-            while (id
-                is > 198 and < 1001
-                or > 1043 and < 1301
-                or > 1306 and < 1400
-                or > 1405 and < 5100
-                or > 5102 and < 5201
-                or > 5206 and < 5210
-                or > 5210 and < 5301
-                or > 5412 and < 6400)
-            {
-                id = Random.Shared.Next(2, 6401);
-            }
-            return DialogIcon.FromId(id);
+            id = Random.Shared.Next(2, 6401);
         }
+        return DialogIcon.FromId(id);
+    }
 
-        static string GetRandomString(int maxLength = 200)
+    private static string GetRandomString(int maxLength = 200)
+    {
+        Random random = new();
+        var plainText = new StringBuilder();
+        for (var length = random.Next(10, maxLength); length > 0; --length)
         {
-            Random random = new();
-            var plainText = new StringBuilder();
-            for (var length = random.Next(10, maxLength); length > 0; --length)
-            {
-                _ = plainText.Append((char)random.Next(char.MinValue, '\u2E80'));
-            }
-            return plainText.ToString();
+            _ = plainText.Append((char)random.Next(char.MinValue, '\u2E80'));
         }
+        return plainText.ToString();
     }
 }

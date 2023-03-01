@@ -19,10 +19,10 @@ jobs:
           nuget-api-key: ${{ secrets.NUGET_API_KEY }}
           nuget-version: 'latest'
 
-      - name: Build and pack solution
+      - name: Pack project
         run: |
           cd Dialogs
-          dotnet pack -c Release -o out
+          dotnet pack -c Release -o out --include-symbols --include-source
 
-      - name: Push package to the NuGet registry
+      - name: Push package
         run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --no-symbols --skip-duplicate
