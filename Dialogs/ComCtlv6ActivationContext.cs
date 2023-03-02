@@ -43,8 +43,6 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
         }
     }
 
-    ~ComCtlV6ActivationContext() => Dispose();
-
     public void Dispose()
     {
         _cookie?.Dispose();

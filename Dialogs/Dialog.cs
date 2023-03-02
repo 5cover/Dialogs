@@ -10,18 +10,27 @@ namespace Scover.Dialogs;
 /// is formatted by the operating system according to parameters you set. However, a dialog has many more
 /// features than a message box.
 /// </summary>
-public class Dialog
+/// <remarks>This class implements <see cref="IDisposable"/>.</remarks>
+public class Dialog : IDisposable
 {
     /// <summary>The mnemonic (accelerator) prefix used by all dialog controls.</summary>
     public const char MnemonicPrefix = '&';
 
+    private static readonly ComCtlV6ActivationContext activationContext = new(true);
+    private static int instanceCount;
     private readonly Queue<Action<PageUpdateInfo>> _queuedUpdates = new();
+
     private int _inCallback;
 
-    //static Dialog() => _ = new ComCtlV6ActivationContext(true);
-
     /// <param name="page">The page of the dialog.</param>
-    public Dialog(Page page) => CurrentPage = page;
+    public Dialog(Page page)
+    {
+        Interlocked.Increment(ref instanceCount);
+        CurrentPage = page;
+    }
+
+    /// <inheritdoc/>
+    ~Dialog() => Dispose(false);
 
     /// <summary>Gets the current page.</summary>
     /// <value>
@@ -85,6 +94,13 @@ public class Dialog
     /// </remarks>
     public virtual void Close() => CurrentPage.Exit();
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        Dispose(true);
+        System.GC.SuppressFinalize(this);
+    }
+
     /// <summary>Performs an update using <see cref="Handle"/>.</summary>
     protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update)
     {
@@ -104,7 +120,7 @@ public class Dialog
     /// <inheritdoc cref="TaskDialogCallbackProc"/>
     protected HRESULT Callback(HWND hwnd, TaskDialogNotification msg, nint wParam, nint lParam, nint refData)
     {
-        ++_inCallback;
+        Interlocked.Increment(ref _inCallback);
         try
         {
             Handle = hwnd.DangerousGetHandle();
@@ -113,13 +129,22 @@ public class Dialog
         }
         finally
         {
-            if (--_inCallback == 0)
+            if (Interlocked.Decrement(ref _inCallback) == 0)
             {
                 while (_queuedUpdates.Any())
                 {
                     PerformUpdate(_queuedUpdates.Dequeue());
                 }
             }
+        }
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Interlocked.Decrement(ref instanceCount) == 0)
+        {
+            activationContext.Dispose();
         }
     }
 }

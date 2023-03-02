@@ -286,13 +286,13 @@ public sealed class DialogTests
         intervalPlus1.Clicked += (_, e) =>
         {
             e.Cancel = true;
-            pb.MarqueeInterval++;
+            ++pb.MarqueeInterval;
             UpdateExpandedInfo();
         };
         intervalMinus1.Clicked += (_, e) =>
         {
             e.Cancel = true;
-            pb.MarqueeInterval--;
+            --pb.MarqueeInterval;
             intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
             UpdateExpandedInfo();
         };

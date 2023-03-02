@@ -147,20 +147,22 @@ public partial class Page : IDisposable
             Expander?.Dispose();
             RadioButtons.Dispose();
         }
-        foreach (var p in new nint[]
-        {
-            _config.pszFooter,
-            _config.pszContent,
-            _config.pszWindowTitle,
-            _config.pszMainInstruction,
-            _config.pszVerificationText,
-            _config.pszExpandedControlText,
-            _config.pszCollapsedControlText,
-        })
-        {
-            StringHelper.FreeString(p, CharSet.Unicode);
-        }
+        FreeStrings(_config.pszFooter,
+                    _config.pszContent,
+                    _config.pszWindowTitle,
+                    _config.pszMainInstruction,
+                    _config.pszVerificationText,
+                    _config.pszExpandedControlText,
+                    _config.pszCollapsedControlText);
         _disposed = true;
+
+        static void FreeStrings(params nint[] lpwstrs)
+        {
+            foreach (var lpwstr in lpwstrs)
+            {
+                StringHelper.FreeString(lpwstr, CharSet.Unicode);
+            }
+        }
     }
 
     private HRESULT HandleClickNotification(Notification notif)
