@@ -25,4 +25,4 @@ jobs:
           dotnet pack -c Release -o out --include-symbols --include-source
 
       - name: Push package
-        run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --no-symbols --skip-duplicate
+        run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
