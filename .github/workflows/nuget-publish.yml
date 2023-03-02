@@ -22,7 +22,7 @@ jobs:
       - name: Pack project
         run: |
           cd Dialogs
-          dotnet pack -c Release -o out --include-symbols --include-source
+          dotnet pack -c Release -o out --include-symbols --include-source -p:ContinuousIntegrationBuild=true
 
       - name: Push package
         run: dotnet nuget push .\Dialogs\out\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

@@ -52,6 +52,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Vanara.Core" Version="3.4.13" />
     <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.13" />
     <PackageReference Include="Vanara.PInvoke.Shared" Version="3.4.13" />
