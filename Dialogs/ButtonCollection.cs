@@ -43,16 +43,13 @@ public sealed class ButtonCollection : IdControlCollection<ButtonBase>
         _ => throw Style.InvalidEnumArgumentException()
     };
 
+    /// <inheritdoc/>
+    protected override int StartId => CommonButton.MaxId + 1;
+
     /// <summary>Adds a new push button or command link to the collection.</summary>
     /// <param name="text">The push button or command link text.</param>
     /// <param name="note">The command link supwplemental instruction.</param>
     public void Add(string text, string? note = null) => Add(new Button(text, note));
-
-    /*/// <summary>Adds a new push button to the collection.</summary>
-    /// <param name="button">The button to add.</param>
-    public void Add(CommonButton button) => base.Add(button.CloneDeep());*/
-
-    internal override ButtonBase? GetControlFromId(int id) => this.OfType<CommonButton>().SingleOrDefault(cb => cb.Id == id) ?? base.GetControlFromId(id);
 
     /// <remarks>
     /// <list type="table">
@@ -72,19 +69,13 @@ public sealed class ButtonCollection : IdControlCollection<ButtonBase>
     internal override HRESULT HandleNotification(Notification notif)
     {
         _ = base.HandleNotification(notif);
-        if (notif.Id is TDN_BUTTON_CLICKED && GetControlFromId((int)notif.WParam) is { } button)
+        if (notif.Id is TDN_BUTTON_CLICKED)
         {
-            return button.HandleNotification(notif);
+            return GetItem((int)notif.WParam) is { } button ? button.HandleNotification(notif) : default;
         }
         _ = this.ForwardNotification(notif);
         return default;
     }
-
-    /// <inheritdoc/>
-    protected override int GetId(int index) => base.GetId(index) + CommonButton.MaxId;
-
-    /// <inheritdoc/>
-    protected override int GetIndex(int id) => base.GetIndex(id) - CommonButton.MaxId;
 
     /// <inheritdoc/>
     protected override void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId)

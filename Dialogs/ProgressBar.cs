@@ -90,11 +90,7 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _minimum = CheckAndConvertToUInt16(value);
-            RequestUpdate(info =>
-            {
-                UpdateRange(info);
-                UpdateValue(info); // Needed to keep minimum synced.
-            });
+            RequestUpdate(UpdateRange);
         }
     }
 
@@ -159,7 +155,15 @@ public sealed class ProgressBar : DialogControl<PageUpdateInfo>
         set
         {
             _value = value;
-            RequestUpdate(UpdateValue);
+            RequestUpdate(info =>
+            {
+                UpdateValue(info);
+                if (State is not ProgressBarState.Normal)
+                {
+                    // Abnormal states seem to be 1 update late.
+                    UpdateValue(info);
+                }
+            });
         }
     }
 

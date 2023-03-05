@@ -18,6 +18,28 @@ public sealed class DialogTests
             AllowHyperlinks = true,
             IsMinimizable = true,
             IsRightToLeftLayout = false,
+            Sizing = Sizing.FromWidth(500, DistanceUnit.DLU),
+            WindowTitle = nameof(MegaTest),
+            Header = DialogHeader.Yellow,
+            Icon = DialogIcon.ErrorShield,
+            MainInstruction = nameof(page.MainInstruction),
+            Content = $"{nameof(page.Content)} with <A>hyperlink</A>. The progress bar should be half-filled.",
+            ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 85 },
+            RadioButtons =
+            {
+                "Radio #1",
+                "Radio #2",
+                new RadioButton("Radio #3 (disabled)") { IsEnabled = false }
+            },
+            Expander = new Expander()
+            {
+                Text = nameof(Expander.Text),
+                CollapseButtonText = nameof(Expander.CollapseButtonText),
+                ExpandButtonText = nameof(Expander.ExpandButtonText),
+                ExpanderPosition = ExpanderPosition.BelowFooter,
+                IsExpanded = true
+            },
+            Verification = new(nameof(page.Verification)) { IsChecked = true },
             Buttons = new(defaultItem: button2)
             {
                 "Button #1",
@@ -27,33 +49,77 @@ public sealed class DialogTests
                 new Button("Button #4 (Disabled)") { IsEnabled = false },
                 new Button("Button #5 (Admin && Disabled)") { RequiresElevation = true, IsEnabled = false }
             },
-            Expander = new Expander()
-            {
-                Text = nameof(Expander.Text),
-                CollapseButtonText = nameof(Expander.CollapseButtonText),
-                ExpandButtonText = nameof(Expander.ExpandButtonText),
-                ExpanderPosition = ExpanderPosition.BelowContent,
-                IsExpanded = true
-            },
             FooterIcon = DialogIcon.Information,
-            Header = DialogHeader.Yellow,
-            Icon = DialogIcon.ErrorShield,
-            ProgressBar = new ProgressBar() { Maximum = 90, Minimum = 80, Value = 85 },
-            RadioButtons =
-            {
-                "Radio #1",
-                "Radio #2",
-                new RadioButton("Radio #3 (disabled)") { IsEnabled = false }
-            },
-            Sizing = Sizing.FromWidth(500, DistanceUnit.Pixel),
-            Content = $"{nameof(page.Content)} with <A>hyperlink</A>. The progress bar should be half-filled.",
             FooterText = nameof(page.FooterText),
-            MainInstruction = nameof(page.MainInstruction),
-            Verification = new(nameof(page.Verification)) { IsChecked = true },
-            WindowTitle = nameof(MegaTest),
         };
-        Dialog dlg = new(page);
-        _ = dlg.Show();
+        _ = new Dialog(page).Show();
+    }
+
+    [Test]
+    public void TestAsyncProgress()
+    {
+        using Page page = new()
+        {
+            IsMinimizable = true,
+            WindowTitle = nameof(TestAsyncProgress),
+            MainInstruction = "Asynchronous operation in progress",
+            Content = "The progress bar should increase and this window should close automatically.",
+            ProgressBar = new()
+        };
+
+        page.Created += async (_, _) =>
+        {
+            while (page.ProgressBar.Value++ < 100)
+            {
+                await Task.Delay(50);
+            }
+            await Task.Delay(1000);
+            page.Exit();
+        };
+
+        Assert.That(new Dialog(page).Show(), Is.Null);
+    }
+
+    [Test]
+    public void TestAsyncProgressNavigation()
+    {
+        Button startNow = new("Start now", "The dialog will navigate to the second page and the operation will start");
+        using Page page1 = new()
+        {
+            MainInstruction = "Start the operation?",
+            Buttons = new(ButtonStyle.CommandLinks)
+            {
+                startNow,
+                { "Abort", "The test will be aborted and nothing will happen (same as Cancel)" },
+                Button.Cancel,
+            }
+        };
+        using Page page2 = new()
+        {
+            IsMinimizable = true,
+            WindowTitle = nameof(TestAsyncProgress),
+            MainInstruction = "Asynchronous operation in progress",
+            Content = "The progress bar should increase and this window should close automatically.",
+            ProgressBar = new(),
+        };
+        page2.Created += async (_, _) =>
+        {
+            while (page2.ProgressBar.Value++ < 100)
+            {
+                await Task.Delay(50);
+            }
+            await Task.Delay(1000);
+            page2.Exit();
+        };
+        Assert.That(new MultiPageDialog(page1, new()
+        {
+            [page1] = request => startNow.Equals(request.ClickedButton) ? page2 : null,
+            [page2] = request =>
+            {
+                Assert.That(request.Kind, Is.EqualTo(NavigationRequestKind.Exit));
+                return null;
+            }
+        }).Show(), Is.Null);
     }
 
     [Test]
@@ -62,6 +128,7 @@ public sealed class DialogTests
         Button commandLink2 = new("Command link #2 (default)", "This is the default command link.");
         using Page page = new()
         {
+            WindowTitle = nameof(TestCommandLinks),
             Content = "Assert that the command links are displayed properly.",
             Buttons = new(ButtonStyle.CommandLinks, commandLink2)
             {
@@ -76,7 +143,6 @@ public sealed class DialogTests
                 Button.Abort,
                 Button.Help,
             },
-            WindowTitle = nameof(TestCommandLinks),
         };
         _ = new Dialog(page).Show();
     }
@@ -103,13 +169,13 @@ public sealed class DialogTests
         Button buttonNextIcon = new("Next icon");
         using Page page = new()
         {
-            Buttons = { buttonNextIcon, Button.Close, },
-            Content = GetContent("information"),
+            WindowTitle = nameof(TestIcon),
             Header = DialogHeader.Green,
             Icon = DialogIcon.Information,
             MainInstruction = "Main instruction",
+            Content = GetContent("information"),
             Verification = new("Main instruction"),
-            WindowTitle = nameof(TestIcon),
+            Buttons = { buttonNextIcon, Button.Close, },
         };
         page.Verification.IsChecked = true;
         page.Verification.Checked += (s, e) => page.MainInstruction = page.Verification.IsChecked ? "Main instruction" : "";
@@ -131,11 +197,37 @@ public sealed class DialogTests
     }
 
     [Test]
+    public void TestIsCancelable()
+    {
+        using Page page = new()
+        {
+            IsCancelable = true,
+            WindowTitle = nameof(TestIsCancelable),
+            Content = "Assert that this dialog can be closed.",
+        };
+        _ = new Dialog(page).Show();
+    }
+
+    [Test]
+    public void TestIsMinizable()
+    {
+        using Page page = new()
+        {
+            IsMinimizable = true,
+            WindowTitle = nameof(TestIsMinizable),
+            Content = "Assert that this dialog can be minimized.",
+        };
+        Dialog dialog = new(page);
+        _ = dialog.Show();
+    }
+
+    [Test]
     public void TestNavigation()
     {
         using Page page1 = new()
         {
-            Buttons = { Button.Yes, Button.No, Button.Cancel },
+            WindowTitle = nameof(TestNavigation),
+            MainInstruction = "Page 1",
             Content = "First page with expander. Press F1 to navigate to Page 2.",
             Expander = new("Expanded information")
             {
@@ -143,7 +235,7 @@ public sealed class DialogTests
                 CollapseButtonText = "Custom collapse",
                 IsExpanded = true,
             },
-            MainInstruction = "Page 1",
+            Buttons = { Button.Yes, Button.No, Button.Cancel },
         };
         var radio2 = new RadioButton("Radio #2 (default && disabled)")
         {
@@ -151,26 +243,29 @@ public sealed class DialogTests
         };
         using Page page2 = new()
         {
-            Buttons = { Button.Cancel },
-            Content = "Second page with radio buttons. Press F1 to navigate to Page 3",
+            WindowTitle = nameof(TestNavigation),
             MainInstruction = "Page 2",
+            Content = "Second page with radio buttons. Press F1 to navigate to Page 3",
             RadioButtons = new(defaultItem: radio2)
             {
                 "Radio #1",
                 radio2
             },
+            Buttons = { Button.Cancel },
         };
         using Page page3 = new()
         {
-            Buttons = { Button.Cancel },
-            Content = "Third page with progress bar. It should be half-filled. Press F1 to go back to page 1.",
+            WindowTitle = nameof(TestNavigation),
             MainInstruction = "Page 3",
+            Content = "Third page with progress bar. It should be half-filled. Press F1 to go back to page 1.",
             ProgressBar = new()
             {
                 Value = 5,
                 Maximum = 10,
             },
+            Buttons = { Button.Cancel },
         };
+
         MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>
         {
             [page1] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page2 : null,
@@ -181,9 +276,10 @@ public sealed class DialogTests
         page1.HelpRequested += Navigate;
         page2.HelpRequested += Navigate;
         page3.HelpRequested += Navigate;
-        void Navigate(object? sender, EventArgs e) => dlg.Navigate();
 
         _ = dlg.Show();
+
+        void Navigate(object? sender, EventArgs e) => dlg.Navigate();
     }
 
     [Test]
@@ -202,7 +298,12 @@ public sealed class DialogTests
             intervalMinus1 = new("Interval - 1");
         using Page page = new()
         {
+            IsCancelable = true,
+            Sizing = Sizing.FromWidth(200),
+            WindowTitle = nameof(TestProgressBar),
             Content = "Assert that the progress bar behaves properly.",
+            ProgressBar = new(),
+            Expander = new() { IsExpanded = true },
             Buttons =
             {
                 minPlus10,
@@ -215,13 +316,7 @@ public sealed class DialogTests
                 cycleState,
                 intervalPlus1,
                 intervalMinus1,
-                Button.Cancel,
             },
-            Sizing = Sizing.FromWidth(200),
-            Expander = new() { IsExpanded = true },
-            IsMinimizable = true,
-            ProgressBar = new(),
-            WindowTitle = nameof(TestProgressBar),
         };
         var pb = page.ProgressBar;
         UpdateExpandedInfo();
@@ -229,28 +324,24 @@ public sealed class DialogTests
         {
             e.Cancel = true;
             pb.Minimum += 10;
-            minPlus10.IsEnabled = pb.Minimum < ushort.MaxValue;
             UpdateExpandedInfo();
         };
         minMinus10.Clicked += (_, e) =>
         {
             e.Cancel = true;
             pb.Minimum -= 10;
-            minMinus10.IsEnabled = pb.Minimum > 0;
             UpdateExpandedInfo();
         };
         maxPlus10.Clicked += (_, e) =>
         {
             e.Cancel = true;
             pb.Maximum += 10;
-            maxPlus10.IsEnabled = pb.Maximum < ushort.MaxValue;
             UpdateExpandedInfo();
         };
         maxMinus10.Clicked += (_, e) =>
         {
             e.Cancel = true;
             pb.Maximum -= 10;
-            maxMinus10.IsEnabled = pb.Maximum > 0;
             UpdateExpandedInfo();
         };
         valuePlus10.Clicked += (_, e) =>
@@ -293,18 +384,29 @@ public sealed class DialogTests
         {
             e.Cancel = true;
             --pb.MarqueeInterval;
-            intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
             UpdateExpandedInfo();
         };
+
         _ = new Dialog(page).Show();
 
-        void UpdateExpandedInfo() => page.Expander.Text = $@"
+        void UpdateExpandedInfo()
+        {
+            var ushortMax = ushort.MaxValue - ushort.MaxValue % 10;
+
+            minPlus10.IsEnabled = pb.Minimum < ushortMax;
+            minMinus10.IsEnabled = pb.Minimum > 0;
+            maxPlus10.IsEnabled = pb.Maximum < ushortMax;
+            maxMinus10.IsEnabled = pb.Maximum > 0;
+            intervalMinus1.IsEnabled = pb.MarqueeInterval > 1;
+
+            page.Expander.Text = $@"
 {nameof(pb.Mode)} = {pb.Mode}
 {nameof(pb.State)} = {pb.State}
 {nameof(pb.Minimum)} = {pb.Minimum}
 {nameof(pb.Maximum)} = {pb.Maximum}
 {nameof(pb.Value)} = {pb.Value}
 {nameof(pb.MarqueeInterval)} = {pb.MarqueeInterval}";
+        }
     }
 
     [Test]
@@ -312,6 +414,7 @@ public sealed class DialogTests
     {
         using Page page = new()
         {
+            WindowTitle = nameof(TestRadioButtons),
             Content = "Assert that the radio buttons are displayed properly.",
             RadioButtons = new(DefaultRadioButton.First)
             {
@@ -319,75 +422,7 @@ public sealed class DialogTests
                 "Radio #2",
                 new RadioButton("Radio #3 (disabled)") { IsEnabled = false },
             },
-            WindowTitle = nameof(TestRadioButtons),
         };
         _ = new Dialog(page).Show();
-    }
-
-    [Test]
-    public void TestAsyncProgress()
-    {
-        using Page page = new()
-        {
-            WindowTitle = nameof(TestAsyncProgress),
-            IsMinimizable = true,
-            MainInstruction = "Asynchronous operation in progress",
-            Content = "The progress bar should increase by 10% every second and this windows should close just before it fills up completely.",
-            ProgressBar = new() { Maximum = 10 },
-        };
-
-        page.Created += async (_, _) =>
-        {
-            while (page.ProgressBar.Value < 10)
-            {
-                await Task.Delay(1000);
-                ++page.ProgressBar.Value;
-            }
-            page.Exit();
-        };
-
-        Assert.That(new Dialog(page).Show(), Is.Null);
-    }
-
-    [Test]
-    public void TestAsyncProgressNavigation()
-    {
-        Button startNow = new("Start now", "The dialog will navigate to the second page and the operation will start");
-        using Page page1 = new()
-        {
-            MainInstruction = "Start the operation?",
-            Buttons = new(ButtonStyle.CommandLinks)
-            {
-                startNow,
-                { "Abort", "The test will be aborted and nothing will happen (same as Cancel)" },
-                Button.Cancel,
-            }
-        };
-        using Page page2 = new()
-        {
-            WindowTitle = nameof(TestAsyncProgress),
-            IsMinimizable = true,
-            MainInstruction = "Asynchronous operation in progress",
-            Content = "The progress bar should increase by 10% every second and this windows should close just before it fills up completely.",
-            ProgressBar = new() { Maximum = 10 },
-        };
-        page2.Created += async (_, _) =>
-        {
-            while (page2.ProgressBar.Value < 10)
-            {
-                await Task.Delay(1000);
-                ++page2.ProgressBar.Value;
-            }
-            page2.Exit();
-        };
-        Assert.That(new MultiPageDialog(page1, new()
-        {
-            [page1] = request => startNow.Equals(request.ClickedButton) ? page2 : null,
-            [page2] = request =>
-            {
-                Assert.That(request.Kind, Is.EqualTo(NavigationRequestKind.Exit));
-                return null;
-            }
-        }).Show(), Is.Null);
     }
 }

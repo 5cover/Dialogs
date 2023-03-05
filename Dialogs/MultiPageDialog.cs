@@ -46,6 +46,7 @@ public enum NavigationRequestKind
 public class MultiPageDialog : Dialog
 {
     private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
+    private readonly Page _firstPage;
     private SafeHGlobalHandle? _navigatedPagePtr;
 
     /// <param name="firstPage">The first page of the dialog.</param>
@@ -54,6 +55,7 @@ public class MultiPageDialog : Dialog
     /// </param>
     public MultiPageDialog(Page firstPage, IDictionary<Page, NextPageSelector> nextPageSelectors) : base(firstPage)
     {
+        _firstPage = firstPage;
         _nextPageSelectors = nextPageSelectors;
         CurrentPage.Exiting += Navigate;
     }
@@ -90,22 +92,28 @@ public class MultiPageDialog : Dialog
     private bool Navigate(NavigationRequest navigationRequest)
     {
         _navigatedPagePtr?.Dispose();
-        if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser)
-          && nextPageChooser(navigationRequest) is { } nextPage)
+        if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser) && nextPageChooser(navigationRequest) is { } nextPage)
         {
+            _navigatedPagePtr = new(nextPage.SetupConfig(Callback).MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated), bytesAllocated);
+
             CurrentPage.Exiting -= Navigate;
             CurrentPage.UpdateRequested -= PerformUpdate;
-            CurrentPage.Showing = false;
+            nextPage.IsShown = true;
 
             nextPage.Exiting += Navigate;
             nextPage.UpdateRequested += PerformUpdate;
-            nextPage.Showing = true;
+            CurrentPage.IsShown = false;
 
+            // As CurrentPage is used to identify the Page on which to call HandleNotification in Callback,
+            // it must be set to the correct value before sending TDN_NAVIGATE_PAGE.
             CurrentPage = nextPage;
-            _navigatedPagePtr = new(nextPage.SetupConfig(Callback).MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated), bytesAllocated);
             _ = ((HWND)Handle).SendMessage(TDM_NAVIGATE_PAGE, 0, _navigatedPagePtr.DangerousGetHandle());
+
             return true;
         }
+
+        // Go back to first page in case the dialog is shown again.
+        CurrentPage = _firstPage;
         return false;
     }
 }

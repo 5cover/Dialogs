@@ -11,15 +11,16 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 // Changes:
-// - Simplified a few selection statements.
-// - Simplified a few comments.
-// - Adapted the constants.
 // - Adapted the code to use Vanara.
 // - Use default as NULL pointer constant
-// - Merge if statements
-// - Divided EnsureActivateContextCreated in 2 methods
+// - Simplified creation logic to not use a temp file.
+// - Used Lazy<T> to simplify logic
+// - Adapted to Vanara semantics (safe handles and Win32Error)
+
+using System.Reflection;
 
 using Vanara.InteropServices;
+using Vanara.PInvoke;
 
 using static Vanara.PInvoke.Kernel32;
 
@@ -29,63 +30,29 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 {
     private static readonly object contextCreationLock = new();
 
-    private static SafeHACTCTX? activationContext;
-
-    private static bool contextCreationSucceeded;
+    private static readonly Lazy<SafeHACTCTX> activationContext = new(CreateActivationContext);
 
     private readonly GenericSafeHandle? _cookie;
 
-    public ComCtlV6ActivationContext(bool enable)
+    public ComCtlV6ActivationContext()
     {
-        if (enable && EnsureActivateContextCreated() && !ActivateActCtx(activationContext, out nint cookie))
-        {
-            _cookie = new(cookie, static ptr => DeactivateActCtx(default, ptr));
-        }
+        _ = Win32Error.ThrowLastErrorIfFalse(ActivateActCtx(activationContext.Value, out nint cookie), "ComCtl32 V6 activation context activation failed.");
+        _cookie = new(cookie, static ptr => Win32Error.ThrowLastErrorIfFalse(DeactivateActCtx(default, ptr), "ComCtl32 V6 activation context deactivation failed."));
     }
 
     public void Dispose()
     {
         _cookie?.Dispose();
-        activationContext?.Dispose();
+        activationContext.Value?.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    private static string CreateTempManifestFile()
-    {
-        using var manifestStream = typeof(ComCtlV6ActivationContext).Assembly.GetManifestResourceStream($"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest").AssertNotNull();
-        string tmpFile = Path.GetRandomFileName();
-        using FileStream tempFileStream = new(tmpFile, FileMode.CreateNew, System.IO.FileAccess.ReadWrite, FileShare.Delete | FileShare.ReadWrite);
-        manifestStream.CopyTo(tempFileStream);
-        return tmpFile;
-    }
-
-    private static bool EnsureActivateContextCreated()
+    private static SafeHACTCTX CreateActivationContext()
     {
         lock (contextCreationLock)
         {
-            if (contextCreationSucceeded)
-            {
-                return true;
-            }
-
-            string manifestTempFilePath = CreateTempManifestFile();
-
-            // Note this will fail gracefully if file specified by manifestFilePath doesn't exist.
-            activationContext = CreateActCtx(new ACTCTX(manifestTempFilePath));
-            contextCreationSucceeded = !activationContext.IsInvalid;
-
-            try
-            {
-                File.Delete(manifestTempFilePath);
-            }
-            catch (Exception e) when (e is DirectoryNotFoundException or UnauthorizedAccessException or IOException)
-            {
-                // It's a temp file, it's fine.
-            }
-
-            // If we return false, we'll try again on the next call into EnsureActivateContextCreated(),
-            // which is fine.
-            return contextCreationSucceeded;
+            var manifestFilePath = Path.Join(Path.GetDirectoryName(typeof(ComCtlV6ActivationContext).Assembly.Location), "XPThemes.manifest");
+            return Win32Error.ThrowLastErrorIfInvalid(CreateActCtx(new ACTCTX(manifestFilePath)));
         }
     }
 }

@@ -8,9 +8,13 @@ namespace Scover.Dialogs;
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class DialogIcon
 {
-    private DialogIcon(nint handle, bool isHIcon) => (Handle, IsHIcon) = (handle, isHIcon);
+    private readonly bool _isHIcon;
 
-    private DialogIcon(TaskDialogIcon icon) => (Handle, IsHIcon) = ((nint)icon, false);
+    private readonly nint _handle;
+
+    private DialogIcon(nint handle, bool isHIcon) => (_handle, _isHIcon) = (handle, isHIcon);
+
+    private DialogIcon(TaskDialogIcon icon) => (_handle, _isHIcon) = ((nint)icon, false);
 
     /// <summary>Gets the icon consisting of a white X in a circle with a red background.</summary>
     public static DialogIcon Error { get; } = new(TD_ERROR_ICON);
@@ -38,9 +42,6 @@ public sealed class DialogIcon
     /// <summary>Gets the icon consisting of an exclamation point in a yellow shield.</summary>
     public static DialogIcon WarningShield { get; } = new(TD_SECURITYWARNING_ICON);
 
-    internal nint Handle { get; }
-    internal bool IsHIcon { get; }
-
     /// <summary>Creates a new <see cref="DialogIcon"/> from an icon handle.</summary>
     /// <param name="hIcon">
     /// The icon handle to use. The caller is responsible for freeing the icon resource.
@@ -52,4 +53,23 @@ public sealed class DialogIcon
     /// <param name="iconId">The ID of the icon in <c>imageres.dll</c>.</param>
     /// <returns>A new instance of the <see cref="DialogIcon"/> class.</returns>
     public static DialogIcon FromId(int iconId) => new(Macros.MAKEINTRESOURCE(iconId).id, false);
+
+    internal void SetIn(in TASKDIALOGCONFIG config, TASKDIALOG_ICON_ELEMENTS element)
+    {
+        if (element is TDIE_ICON_MAIN)
+        {
+            config.mainIcon = _handle;
+            config.dwFlags.SetFlag(TDF_USE_HICON_MAIN, _isHIcon);
+        }
+        else
+        {
+            config.footerIcon = _handle;
+            config.dwFlags.SetFlag(TDF_USE_HICON_FOOTER, _isHIcon);
+        }
+    }
+
+    internal bool IsHotChangeLegal(DialogIcon possibleNewValue) => _isHIcon == possibleNewValue._isHIcon;
+
+    /// <inheritdoc/>
+    internal Action<PageUpdateInfo> GetUpdate(TASKDIALOG_ICON_ELEMENTS element) => info => info.Dialog.SendMessage(TDM_UPDATE_ICON, element, _handle);
 }

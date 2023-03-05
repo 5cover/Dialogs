@@ -5,6 +5,10 @@
 Managed Win32 [task dialog](https://learn.microsoft.com/en-us/windows/win32/controls/task-dialogs-overview) wrapper.
 Supports all native Task Dialog features.
 
+# Information
+
+In order to use activation contexts, this package copies the [XPThemes.manifest](https://github.com/5cover/Dialogs/blob/master/Dialogs/XPThemes.manifest) file to the output directory.
+
 # Usage
 
 ### Simple

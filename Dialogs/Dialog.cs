@@ -1,7 +1,6 @@
 ﻿using Vanara.PInvoke;
 
 using static Vanara.PInvoke.ComCtl32;
-using static Vanara.PInvoke.User32;
 
 namespace Scover.Dialogs;
 
@@ -10,32 +9,19 @@ namespace Scover.Dialogs;
 /// is formatted by the operating system according to parameters you set. However, a dialog has many more
 /// features than a message box.
 /// </summary>
-/// <remarks>This class implements <see cref="IDisposable"/>.</remarks>
-public class Dialog : IDisposable
+public class Dialog
 {
     /// <summary>The mnemonic (accelerator) prefix used by all dialog controls.</summary>
     public const char MnemonicPrefix = '&';
 
-    private static readonly ComCtlV6ActivationContext activationContext = new(true);
-    private static int instanceCount;
-    private readonly Queue<Action<PageUpdateInfo>> _queuedUpdates = new();
-
-    private int _inCallback;
-
     /// <param name="page">The page of the dialog.</param>
     public Dialog(Page page)
-    {
-        Interlocked.Increment(ref instanceCount);
-        CurrentPage = page;
-    }
-
-    /// <inheritdoc/>
-    ~Dialog() => Dispose(false);
+        => CurrentPage = page;
 
     /// <summary>Gets the current page.</summary>
     /// <value>
-    /// If <see cref="Show(nint?)"/> has not been called yet, the first page of the dialog, otherwise the
-    /// page that is currently being displayed in the dialog.
+    /// If the dialog has not yet been shown, the first page of the dialog, otherwise the page that is
+    /// currently being displayed in the dialog.
     /// </value>
     public Page CurrentPage { get; protected set; }
 
@@ -51,31 +37,50 @@ public class Dialog : IDisposable
     /// </value>
     public WindowLocation StartupLocation { get; set; }
 
-    /// <summary>Shows the dialog.</summary>
-    /// <param name="owner">The owner window handle.</param>
-    /// <returns>
-    /// The <see cref="ButtonBase"/> that was clicked, or <see langword="null"/> if <see
-    /// cref="Page.Exit()"/> was called.
-    /// </returns>
+    /// <summary>Shows a modeless dialog.</summary>
+    /// <returns>The <see cref="ButtonBase"/> that was clicked.</returns>
     /// <exception cref="PlatformNotSupportedException">
-    /// Can't show the dialog becuase Windows Task Dialogs require Windows Vista or later.
+    /// Could not show the dialog because Windows Task Dialogs require Windows Vista or later.
     /// </exception>
     /// <exception cref="EntryPointNotFoundException">
     /// One or more required <see langword="extern"/> functions could not be found.
     /// </exception>
+    /// <exception cref="InvalidOperationException">The dialog is already being shown.</exception>
     /// <exception cref="System.ComponentModel.Win32Exception">
-    /// An error occuered while displaying the dialog.
+    /// An error occured while displaying the dialog.
     /// </exception>
-    public ButtonBase? Show(nint? owner = null)
+    public ButtonBase? Show() => Show(ParentWindow.Active);
+
+    /// <summary>Shows a dialog.</summary>
+    /// <param name="parent">The parent window to use.</param>
+    /// <inheritdoc cref="Show()"/>
+    public ButtonBase? Show(ParentWindow parent) => Show(parent.Hwnd);
+
+    /// <summary>
+    /// Shows a modal dialog with the active window attached to the calling thread's message queue as a
+    /// parent.
+    /// </summary>
+    /// <param name="hwnd">
+    /// The parent window handle. The dialog will be modal if the value differs from 0.
+    /// </param>
+    /// <inheritdoc cref="Show()"/>
+    public ButtonBase? Show(nint hwnd)
     {
+        if (CurrentPage.IsShown)
+        {
+            throw new InvalidOperationException("The dialog is already being shown.");
+        }
+
         CurrentPage.UpdateRequested += PerformUpdate;
+        var config = CurrentPage.SetupConfig(Callback, hwnd, StartupLocation);
+        CurrentPage.IsShown = true;
         try
         {
-            var config = CurrentPage.SetupConfig(Callback, owner ?? GetActiveWindow(), StartupLocation);
-            CurrentPage.Showing = true;
-            TaskDialogIndirect(config, out int pnButton, out _, out _).ThrowIfFailed();
-            CurrentPage.Showing = false;
-            return CurrentPage.GetClickedButton(pnButton);
+            using (new ComCtlV6ActivationContext())
+            {
+                TaskDialogIndirect(config, out int pnButton, out _, out _).ThrowIfFailed();
+                return CurrentPage.GetClickedButton(pnButton);
+            }
         }
         catch (EntryPointNotFoundException e) when (Environment.OSVersion.Platform != PlatformID.Win32NT || Environment.OSVersion.Version < new Version(6, 0, 6000))
         {
@@ -83,68 +88,25 @@ public class Dialog : IDisposable
         }
         finally
         {
+            CurrentPage.IsShown = false;
             CurrentPage.UpdateRequested -= PerformUpdate;
         }
     }
 
     /// <summary>Forcefully closes this dialog, ignoring navigation.</summary>
     /// <remarks>
-    /// When this method is called, the return value of <see cref="Show(nint?)"/> will be <see
-    /// cref="Button.Cancel"/>.
+    /// When this method is called, the returned button of show methods will be <see cref="Button.Cancel"/>.
     /// </remarks>
     public virtual void Close() => CurrentPage.Exit();
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        Dispose(true);
-        System.GC.SuppressFinalize(this);
-    }
-
     /// <summary>Performs an update using <see cref="Handle"/>.</summary>
-    protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update)
-    {
-        if (_inCallback > 0)
-        {
-            _queuedUpdates.Enqueue(update);
-        }
-        else
-        {
-            PerformUpdate(update);
-        }
-    }
-
-    /// <summary>Performs an update using <see cref="Handle"/>.</summary>
-    protected void PerformUpdate(Action<PageUpdateInfo> update) => update(new(Handle));
+    protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
 
     /// <inheritdoc cref="TaskDialogCallbackProc"/>
     protected HRESULT Callback(HWND hwnd, TaskDialogNotification msg, nint wParam, nint lParam, nint refData)
     {
-        Interlocked.Increment(ref _inCallback);
-        try
-        {
-            Handle = hwnd.DangerousGetHandle();
-            Notification notif = new(msg, wParam, lParam);
-            return CurrentPage.HandleNotification(notif);
-        }
-        finally
-        {
-            if (Interlocked.Decrement(ref _inCallback) == 0)
-            {
-                while (_queuedUpdates.Any())
-                {
-                    PerformUpdate(_queuedUpdates.Dequeue());
-                }
-            }
-        }
-    }
-
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (Interlocked.Decrement(ref instanceCount) == 0)
-        {
-            activationContext.Dispose();
-        }
+        Handle = hwnd.DangerousGetHandle();
+        Notification notif = new(msg, wParam, lParam);
+        return CurrentPage.HandleNotification(notif);
     }
 }

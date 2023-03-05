@@ -30,6 +30,8 @@ public abstract class DialogControl<TUpdateInfo>
     /// </returns>
     internal virtual HRESULT HandleNotification(Notification notif)
     {
+        // TDN_DIALOG_CONSTRUCTED cannot be used here, even though it is recieved before TDN_CREATED and
+        // TDN_NAVIGATED.
         if (notif.Id is TDN_CREATED or TDN_NAVIGATED)
         {
             InitializeState();

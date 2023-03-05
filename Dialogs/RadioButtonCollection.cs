@@ -57,9 +57,9 @@ public sealed class RadioButtonCollection : IdControlCollection<RadioButton>
     internal override HRESULT HandleNotification(Notification notif)
     {
         _ = base.HandleNotification(notif);
-        if (notif.Id is TDN_RADIO_BUTTON_CLICKED && GetControlFromId((int)notif.WParam) is { } radioButton)
+        if (notif.Id is TDN_RADIO_BUTTON_CLICKED)
         {
-            return radioButton.HandleNotification(notif);
+            return GetItem((int)notif.WParam) is { } radioButton ? radioButton.HandleNotification(notif) : default;
         }
         _ = this.ForwardNotification(notif);
         return default;

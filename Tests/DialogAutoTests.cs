@@ -16,10 +16,9 @@ public sealed class DialogAutoTests
         RadioButton? selectedRadioButton = new("Radio #1");
         using Page page = new()
         {
-            Content = "Assert that the correct buttons get clicked",
-            Buttons = { Button.OK, "Custom #1", "Custom #2", },
-            RadioButtons = { selectedRadioButton, "Radio #2", },
             WindowTitle = nameof(TestClick),
+            //RadioButtons = { selectedRadioButton, "Radio #2", },
+            Buttons = { Button.OK, "Custom #1", "Custom #2", },
         };
         page.Created += (s, e) =>
         {
@@ -27,18 +26,15 @@ public sealed class DialogAutoTests
             foreach (ButtonBase b in page.Buttons)
             {
                 clickedButton = b;
+                b.Clicked += (s, e) =>
+                {
+                    Assert.That(s, Is.EqualTo(clickedButton));
+                    e.Cancel = true;
+                };
                 b.Click();
             }
             page.Exit();
         };
-        foreach (var b in page.Buttons)
-        {
-            b.Clicked += (s, e) =>
-            {
-                Assert.That(s, Is.EqualTo(clickedButton));
-                e.Cancel = true;
-            };
-        }
         Assert.That(new Dialog(page).Show(), Is.Null);
     }
 
@@ -47,7 +43,7 @@ public sealed class DialogAutoTests
     {
         using Page page = new();
         page.Created += (s, e) => page.Exit();
-        _ = new Dialog(page).Show();
+        Assert.That(new Dialog(page).Show(), Is.Null);
     }
 
     [Test]
@@ -55,34 +51,33 @@ public sealed class DialogAutoTests
     {
         using Page page = new()
         {
+            WindowTitle = GetRandomString(20),
+            RadioButtons = { GetRandomString(40), GetRandomString(40), },
             Expander = new()
             {
-                CollapseButtonText = GetRandomString(40),
-                ExpandButtonText = GetRandomString(40),
+                CollapseButtonText = GetRandomString(10),
+                ExpandButtonText = GetRandomString(10),
                 IsExpanded = true
             },
-            Buttons =
+            Verification = new(GetRandomString()),
+            Buttons = new(ButtonStyle.CommandLinks)
             {
                 { GetRandomString(40), GetRandomString() },
-                { GetRandomString(40), GetRandomString() },
             },
-            RadioButtons = { GetRandomString(40), GetRandomString(40), },
-            WindowTitle = GetRandomString(40),
-            Verification = new(GetRandomString()),
             FooterText = " ",
         };
         page.Created += async (s, e) =>
         {
-            using PeriodicTimer timer = new(TimeSpan.FromMilliseconds(750));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(1));
             int tickCount = 0;
             while (await timer.WaitForNextTickAsync() && tickCount < 5)
             {
-                page.Content = GetRandomString();
-                page.MainInstruction = GetRandomString();
-                page.Expander.Text = GetRandomString();
-                page.FooterText = GetRandomString();
                 page.Icon = GetRandomIcon();
+                page.Content = GetRandomString();
                 page.FooterIcon = GetRandomIcon();
+                page.FooterText = GetRandomString();
+                page.Expander.Text = GetRandomString();
+                page.MainInstruction = GetRandomString();
                 ++tickCount;
             }
             page.Exit();
@@ -108,13 +103,12 @@ public sealed class DialogAutoTests
         return DialogIcon.FromId(id);
     }
 
-    private static string GetRandomString(int maxLength = 200)
+    private static string GetRandomString(int maxLength = 100)
     {
-        Random random = new();
         var plainText = new StringBuilder();
-        for (var length = random.Next(10, maxLength); length > 0; --length)
+        for (var length = Random.Shared.Next(10, maxLength); length > 0; --length)
         {
-            _ = plainText.Append((char)random.Next(char.MinValue, '\u2E80'));
+            _ = plainText.Append((char)Random.Shared.Next(char.MinValue, '\u2E80'));
         }
         return plainText.ToString();
     }

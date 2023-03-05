@@ -14,20 +14,32 @@ namespace Scover.Dialogs;
 /// </remarks>
 public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, ICollection<T>, IDisposable where T : notnull, DialogControl<IdControlUpdateInfo>
 {
-    private readonly IList<T> _items;
+    private readonly BidirectionalDictionary<T, int> _ids;
     private readonly Dictionary<TASKDIALOGCONFIG, SafeNativeArray<TASKDIALOG_BUTTON>> _nativeArrays = new();
+    private int _id;
 
     /// <param name="items">The initial items.</param>
     /// <param name="defaultItem">The default item.</param>
-    protected IdControlCollection(IList<T>? items, T? defaultItem) => (_items, DefaultItem) = (items ?? new List<T>(), defaultItem);
+    protected IdControlCollection(IList<T>? items, T? defaultItem)
+        => (_ids, _id, DefaultItem) = (items is null ? new() : new(items.ToDictionary(item => item, MakeNewId)), StartId, defaultItem);
 
     /// <inheritdoc/>
-    public int Count => _items.Count;
+    public int Count => _ids.Count;
 
     /// <summary>Gets or sets the default item of this collection.</summary>
+    /// <remarks>
+    /// Setting the value to an item that is not in the collection will not throw an exception.
+    /// </remarks>
     public T? DefaultItem { get; set; }
 
-    bool ICollection<T>.IsReadOnly => ((ICollection<T>)_items).IsReadOnly;
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <summary>The starting ID.</summary>
+    /// <remarks>
+    /// IDs are 1-based (0 means none). This value must be initialized appropriately to avoid collisions
+    /// between the IDs of the items that implement <see cref="IHasId"/> and those that don't.
+    /// </remarks>
+    protected virtual int StartId => 1;
 
     /// <summary>
     /// Flags to add to <see cref="TASKDIALOGCONFIG.dwFlags"/> in <see cref="SetIn(in TASKDIALOGCONFIG)"/>.
@@ -38,21 +50,21 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     public void Add(T item)
     {
         AddItem(item);
-        _items.Add(item);
+        _ids.Add(item, MakeNewId(item));
     }
 
     /// <inheritdoc/>
     public void Clear()
     {
-        foreach (var item in _items)
+        foreach (var item in _ids.Keys)
         {
             RemoveItem(item);
         }
-        _items.Clear();
+        _ids.Clear();
     }
 
     /// <inheritdoc/>
-    public bool Contains(T item) => _items.Contains(item);
+    public bool Contains(T item) => _ids.ContainsKey(item);
 
     /// <inheritdoc/>
     public virtual void Dispose()
@@ -61,7 +73,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
         {
             nativeArray.Dispose();
         }
-        foreach (var disposable in _items.OfType<IDisposable>())
+        foreach (var disposable in _ids.Keys.OfType<IDisposable>())
         {
             disposable.Dispose();
         }
@@ -70,54 +82,41 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     }
 
     /// <inheritdoc/>
-    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => _ids.Keys.GetEnumerator();
 
     /// <inheritdoc/>
     public bool Remove(T item)
     {
         RemoveItem(item);
-        return _items.Remove(item);
+        return _ids.Remove(item);
     }
 
     /// <inheritdoc/>
-    void ICollection<T>.CopyTo(T[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+    void ICollection<T>.CopyTo(T[] array, int arrayIndex) => _ids.Keys.CopyTo(array, arrayIndex);
 
-    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _ids.Keys.GetEnumerator();
 
-    internal virtual T? GetControlFromId(int id)
-    {
-        var index = GetIndex(id);
-        return index >= 0 && index < _items.Count ? _items[index] : null;
-    }
+    internal T? GetItem(int id) => _ids.Inverse.GetValueOrDefault(id);
 
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
-        foreach (var part in _items)
+        foreach (var part in _ids.Keys)
         {
             part.SetIn(config);
         }
 
-        SafeNativeArray<TASKDIALOG_BUTTON> nativeArray = new(_items.OfType<ITextControl>().Select((item, index) => new TASKDIALOG_BUTTON
+        SafeNativeArray<TASKDIALOG_BUTTON> nativeArray = new(_ids.Keys.Where(v => v is ITextControl).Select(item => new TASKDIALOG_BUTTON
         {
-            pszButtonText = (nint)item.NativeText,
-            nButtonID = GetId(index)
+            pszButtonText = (nint)((ITextControl)item).NativeText,
+            nButtonID = _ids[item]
         }).ToArray());
 
         _nativeArrays.GetValueOrDefault(config)?.Dispose();
         _nativeArrays[config] = nativeArray;
 
         config.dwFlags |= Flags;
-        int defaultItemIndex = DefaultItem is null ? -1 : _items.IndexOf(DefaultItem);
-        SetConfigProperties(config, nativeArray, (uint)nativeArray.Count, defaultItemIndex == -1 ? 0 : GetId(defaultItemIndex));
+        SetConfigProperties(config, nativeArray, (uint)nativeArray.Count, DefaultItem is null ? 0 : _ids[DefaultItem]);
     }
-
-    /// <summary>Gets the corresponding ID for a given index.</summary>
-    /// <returns>The ID of the item at the specified index.</returns>
-    protected virtual int GetId(int index) => index + 1;
-
-    /// <summary>Gets the corresponding index for a given ID.</summary>
-    /// <returns>The index of the item with the specified ID.</returns>
-    protected virtual int GetIndex(int id) => id - 1;
 
     /// <summary>
     /// Sets the appropriate fields and properties in <paramref name="config"/> for the given arguments.
@@ -127,6 +126,8 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <param name="nativeButtonArrayCount">The count of native buttons.</param>
     /// <param name="defaultItemId">The ID of the default item.</param>
     protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
+
+    private int MakeNewId(T item) => item is IHasId hasId ? hasId.Id : _id++;
 
     private void AddItem(T item)
     {
@@ -138,7 +139,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     }
 
     private void ItemUpdateRequested(object? sender, Action<IdControlUpdateInfo> e)
-        => RequestUpdate(info => e(new(info.Dialog, GetId(_items.IndexOf((T)sender.AssertNotNull())))));
+        => RequestUpdate(info => e(new(info.Dialog, _ids[(T)sender.AssertNotNull()])));
 
     private void RemoveItem(T item) => item.UpdateRequested -= ItemUpdateRequested;
 }

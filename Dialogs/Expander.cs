@@ -22,12 +22,14 @@ public enum ExpanderPosition
 [DebuggerDisplay($"{{{nameof(Text)}}}")]
 public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 {
+    private readonly SafeLPWSTR _expandButtonText = new((string?)null), _collapseButtonText = new((string?)null);
     private SafeLPWSTR _nativeText;
+    private string? _text;
 
     /// <param name="text">The expanded information of the footer.</param>
     // An non-empty initial value is needed for the expander to be visible when no text is set. Set it to
     // the Zero Width Space character.
-    public Expander(string? text = null) => _nativeText = new(text ?? "\u200B");
+    public Expander(string? text = null) => (_text, _nativeText) = (text ?? "", new(text ?? "\u200B"));
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
     public event EventHandler? ExpandedChanged;
@@ -39,7 +41,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     /// <value>
     /// The text to show near the collapse button of the expander. Default value is <see langword="null"/>.
     /// </value>
-    public string? CollapseButtonText { get; init; }
+    public string? CollapseButtonText { get => _collapseButtonText; init => value.SetAsValueOf(ref _collapseButtonText); }
 
     /// <summary>Gets the expander expand button text.</summary>
     /// <remarks>
@@ -48,7 +50,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     /// <value>
     /// The text to show near the expand button of the expander. Default value is <see langword="null"/>.
     /// </value>
-    public string? ExpandButtonText { get; init; }
+    public string? ExpandButtonText { get => _expandButtonText; init => value.SetAsValueOf(ref _expandButtonText); }
 
     /// <summary>Gets the position.</summary>
     /// <value>
@@ -66,21 +68,26 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     public bool IsExpanded { get; set; }
 
     /// <summary>Gets or sets the text.</summary>
-    /// <remarks>If the value is <see cref="string.Empty"/>, the expanded area will be empty.</remarks>
-    /// <value>The expanded information. Default value is <see cref="string.Empty"/>.</value>
-    public string Text
+    /// <remarks>If the value is <see langword="null"/>, the expanded area will be empty.</remarks>
+    /// <value>The expanded information. Default value is <see langword="null"/>.</value>
+    public string? Text
     {
-        get => (string?)_nativeText ?? "";
+        get => _text;
         set
         {
-            _nativeText.Dispose();
-            _nativeText = new(value);
+            _text = value;
+            value.SetAsValueOf(ref _nativeText);
             RequestUpdate(UpdateExpandedInformation);
         }
     }
 
     /// <inheritdoc/>
-    public void Dispose() => _nativeText.Dispose();
+    public void Dispose()
+    {
+        _nativeText.Dispose();
+        _expandButtonText.Dispose();
+        _collapseButtonText.Dispose();
+    }
 
     /// <remarks>
     /// <list type="table">
@@ -105,7 +112,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 
     internal override void SetIn(in TASKDIALOGCONFIG container)
     {
-        (container.CollapsedControlText, container.ExpandedControlText, container.pszExpandedInformation) = (ExpandButtonText, CollapseButtonText, _nativeText);
+        (container.pszCollapsedControlText, container.pszExpandedControlText, container.pszExpandedInformation) = (_expandButtonText, _collapseButtonText, _nativeText);
         container.dwFlags.SetFlag(TDF_EXPANDED_BY_DEFAULT, IsExpanded);
         container.dwFlags.SetFlag(TDF_EXPAND_FOOTER_AREA, ExpanderPosition is ExpanderPosition.BelowFooter);
     }

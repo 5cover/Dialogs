@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 
 using Vanara.Extensions;
+using Vanara.InteropServices;
 using Vanara.PInvoke;
 
 using static Vanara.PInvoke.ComCtl32;
@@ -29,9 +30,10 @@ public enum WindowLocation
 /// </remarks>
 public partial class Page : IDisposable
 {
+    internal bool IsShown;
     private readonly PartCollection _parts = new();
-    private readonly TASKDIALOGCONFIG _config = new();
-    private bool _disposed;
+    private readonly SafeLPWSTR _windowTitle = new((string?)null);
+    private SafeLPWSTR _footerText = new((string?)null), _content = new((string?)null), _mainInstruction = new((string?)null);
 
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
@@ -39,14 +41,11 @@ public partial class Page : IDisposable
         _parts.PartAdded += (s, part) => part.UpdateRequested += OnUpdateRequested;
         _parts.PartRemoved += (s, part) => part.UpdateRequested -= OnUpdateRequested;
 
-        _parts.RegisterDefaultValue(Sizing.Automatic);
-        _parts.RegisterDefaultValue(DialogHeader.None);
-        _parts.RegisterDefaultValue(new RadioButtonCollection());
-        _parts.RegisterDefaultValue(new ButtonCollection());
+        _parts.SetDefault(Sizing.Automatic, nameof(Sizing));
+        _parts.SetDefault(DialogHeader.None, nameof(Header));
+        _parts.SetDefault(new ButtonCollection(), nameof(Buttons));
+        _parts.SetDefault(new RadioButtonCollection(), nameof(RadioButtons));
     }
-
-    /// <inheritdoc/>
-    ~Page() => Dispose(disposing: false);
 
     /// <summary>
     /// Event raised when the page is about to be closed, either because a button was clicked, or the dialog
@@ -54,35 +53,40 @@ public partial class Page : IDisposable
     /// <see langword="true"/> to prevent the page from closing.
     /// </summary>
     public event EventHandler<ExitEventArgs>? Exiting;
-    /// <summary>Event raised after the page has been created and before it is displayed.</summary>
+
+    /// <summary>Event raised when the page is shown.</summary>
     public event EventHandler? Created;
-    /// <summary>Event raised when the dialog window is destroyed.</summary>
-    public event EventHandler? Destroyed;
+
     /// <summary>
     /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
     /// clicked, or the F1 key was pressed.
     /// </summary>
     public event EventHandler? HelpRequested;
+
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
+
     internal event EventHandler<Action<PageUpdateInfo>>? UpdateRequested;
-    internal bool Showing { get; set; }
 
     /// <summary>
     /// Exits the page. This may cause the dialog to close or a new page may be navigated to.
     /// </summary>
     /// <remarks>
-    /// When this method is called, the return value of <see cref="Dialog.Show(nint?)"/> and the value of
-    /// the <see cref="NavigationRequest.ClickedButton"/> property of the object passed into the <see
-    /// cref="NextPageSelector"/> delegate provided to <see cref="MultiPageDialog"/> for navigation will be
-    /// <see langword="null"/>.
+    /// When this method is called, the return value of show methods and <see
+    /// cref="NavigationRequest.ClickedButton"/> will be <see langword="null"/>.
     /// </remarks>
-    public void Exit() => Exiting?.Invoke(this, new(null));
+    public void Exit() => OnUpdateRequested(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, 0));
 
     /// <inheritdoc/>
     public void Dispose()
     {
-        Dispose(disposing: true);
+        Buttons.Dispose();
+        Expander?.Dispose();
+        RadioButtons.Dispose();
+        _content.Dispose();
+        _footerText.Dispose();
+        _windowTitle.Dispose();
+        _mainInstruction.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -90,6 +94,16 @@ public partial class Page : IDisposable
     {
         switch (notif.Id)
         {
+            // Recieved after TDN_DIALOG_CONSTRUCTED
+            case TDN_CREATED:
+                Created.Raise(this);
+                break;
+
+            // Recieved by the new page, after TDN_DIALOG_CONSTRUCTED
+            case TDN_NAVIGATED:
+                Created.Raise(this);
+                break;
+
             // Also sent when the dialog window was closed.
             case TDN_BUTTON_CLICKED:
                 return HandleClickNotification(notif);
@@ -98,18 +112,13 @@ public partial class Page : IDisposable
                 HyperlinkClicked?.Invoke(this, new(Marshal.PtrToStringUni(notif.LParam)));
                 break;
 
-            case TDN_DESTROYED:
-                Destroyed.Raise(this);
-                break;
-
             // Sent before TDN_CREATED. TDN_CREATED is not sent after navigation.
             case TDN_DIALOG_CONSTRUCTED:
                 // Needed for having an icon after the header was set.
-                OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
-                Created.Raise(this);
+                OnUpdateRequested(Icon.GetUpdate(TDIE_ICON_MAIN));
                 break;
 
-            // For Help button, sent after TDN_BUTTON_CLICKED, unless S_FALSE was returned.
+            // Sent after TDN_BUTTON_CLICKED on Help button click, unless S_FALSE was returned.
             case TDN_HELP:
                 HelpRequested.Raise(this);
                 break;
@@ -119,65 +128,52 @@ public partial class Page : IDisposable
 
     internal TASKDIALOGCONFIG SetupConfig(TaskDialogCallbackProc callback)
     {
-        _config.pfCallbackProc = callback;
-        _parts.SetPartsIn(_config);
-        return _config;
+        TASKDIALOGCONFIG config = new()
+        {
+            Content = Content,
+            dwFlags = CombineFlags((AllowHyperlinks, TDF_ENABLE_HYPERLINKS),
+                                   (IsCancelable, TDF_ALLOW_DIALOG_CANCELLATION),
+                                   (IsMinimizable, TDF_CAN_BE_MINIMIZED),
+                                   (IsRightToLeftLayout, TDF_RTL_LAYOUT)),
+            Footer = FooterText,
+            MainInstruction = MainInstruction,
+            pfCallbackProc = callback,
+            WindowTitle = WindowTitle
+        };
+        _icon.SetIn(config, TDIE_ICON_MAIN);
+        _footerIcon.SetIn(config, TDIE_ICON_FOOTER);
+        _parts.SetPartsIn(config);
+        return config;
+
+        static TASKDIALOG_FLAGS CombineFlags(params (bool isSet, TASKDIALOG_FLAGS value)[] flags)
+            => flags.Aggregate(default(TASKDIALOG_FLAGS), (intermediate, flag) => intermediate.SetFlags(flag.value, flag.isSet));
     }
 
     internal TASKDIALOGCONFIG SetupConfig(TaskDialogCallbackProc callback, HWND parent, WindowLocation startupLocation)
     {
-        _ = SetupConfig(callback);
-        _config.hwndParent = parent;
-        _config.dwFlags.SetFlag(TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
-        return _config;
+        var config = SetupConfig(callback);
+        config.hwndParent = parent;
+        config.dwFlags.SetFlag(TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
+        return config;
     }
 
-    internal ButtonBase? GetClickedButton(int pnButton) => Buttons.GetControlFromId(pnButton) ?? CommonButton.FromId(pnButton);
-
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-        if (disposing)
-        {
-            Buttons.Dispose();
-            Expander?.Dispose();
-            RadioButtons.Dispose();
-        }
-        FreeStrings(_config.pszFooter,
-                    _config.pszContent,
-                    _config.pszWindowTitle,
-                    _config.pszMainInstruction,
-                    _config.pszVerificationText,
-                    _config.pszExpandedControlText,
-                    _config.pszCollapsedControlText);
-        _disposed = true;
-
-        static void FreeStrings(params nint[] lpwstrs)
-        {
-            foreach (var lpwstr in lpwstrs)
-            {
-                StringHelper.FreeString(lpwstr, CharSet.Unicode);
-            }
-        }
-    }
+    internal ButtonBase? GetClickedButton(int pnButton) => pnButton == 0 ? null : Buttons.GetItem(pnButton) ?? CommonButton.FromId(pnButton);
 
     private HRESULT HandleClickNotification(Notification notif)
     {
-        HRESULT buttonsResult = Buttons.HandleNotification(notif);
-        if (buttonsResult != default)
+        // Raise the Click event for the appropriate button.
+        if (Buttons.HandleNotification(notif) == HRESULT.S_FALSE)
         {
-            return buttonsResult;
+            // Click event was canceled, do not raise exit and prevent the dialog from closing.
+            return HRESULT.S_FALSE;
         }
 
-        var button = GetClickedButton((int)notif.WParam);
-        // Do not raise Closing for a non-committing button.
-        if (IsCommitting(button))
+        var clickedButton = GetClickedButton((int)notif.WParam);
+
+        // Do not raise Exiting for a non-committing button.
+        if (IsCommitting(clickedButton))
         {
-            ExitEventArgs e = new(button);
+            ExitEventArgs e = new(clickedButton);
             Exiting?.Invoke(this, e);
             if (e.Cancel)
             {

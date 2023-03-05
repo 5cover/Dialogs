@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 
 using Vanara.Extensions;
+using Vanara.InteropServices;
 using Vanara.PInvoke;
 
 namespace Scover.Dialogs;
@@ -44,6 +45,12 @@ internal static class Extensions
 
     public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
             => EnumExtensions.SetFlags(ref value, flag, isSet);
+
+    public static void SetAsValueOf(this string? value, ref SafeLPWSTR str)
+    {
+        str.Dispose();
+        str = new(value);
+    }
 
     private static nint ToNint<T>(this T val) where T : IConvertible => (nint)val.ToInt64(CultureInfo.InvariantCulture);
 }

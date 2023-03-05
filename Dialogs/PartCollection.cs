@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.CompilerServices;
 
 using Vanara.PInvoke;
 
@@ -13,45 +14,41 @@ internal sealed class PartCollection : IEnumerable<Part>
         public Part? Value { get; set; } = Value;
     }
 
-    private readonly Dictionary<Type, PartRecord> _parts = new();
+    private readonly Dictionary<string, PartRecord> _parts = new();
 
     public event EventHandler<Part>? PartAdded;
 
     public event EventHandler<Part>? PartRemoved;
 
-    public T? Get<T>() where T : Part
+    public Part? Get([CallerMemberName] string name = "")
     {
-        var p = _parts.GetValueOrDefault(typeof(T));
-        return (T?)(p?.Value ?? p?.DefaultValue);
+        var part = _parts.GetValueOrDefault(name);
+        return part is null ? null : (part.Value ?? part.DefaultValue);
     }
 
-    public IEnumerator<Part> GetEnumerator() => _parts.Values.Select(p => p.Value ?? p.DefaultValue).Where(v => v is not null).GetEnumerator()!; // !: null was filtered out
-
-    public void Set<T>(T? value) where T : Part
+    public void Set(Part? value, Part? defaultValue = null, [CallerMemberName] string name = "")
     {
-        if (_parts.GetValueOrDefault(typeof(T)) is { } oldPart)
+        if (_parts.GetValueOrDefault(name) is { } oldPart)
         {
-            _parts[typeof(T)].Value = value;
+            _parts[name].Value = value;
             OnPartRemoved(oldPart.Value);
         }
         else
         {
-            _parts.Add(typeof(T), new(null, value));
+            _parts.Add(name, new(defaultValue, value));
         }
         OnPartAdded(value);
     }
 
-    public void RegisterDefaultValue<T>(T defaultValue) where T : Part
-    {
-        Set(defaultValue);
-        _parts[typeof(T)] = _parts[typeof(T)] with { DefaultValue = defaultValue };
-    }
+    public IEnumerator<Part> GetEnumerator() => _parts.Values.Select(p => p.Value ?? p.DefaultValue).Where(v => v is not null).GetEnumerator()!; // !: null was filtered out
+
+    public void SetDefault(Part defaultValue, string name) => Set(defaultValue, defaultValue, name);
 
     public void SetPartsIn(in ComCtl32.TASKDIALOGCONFIG config)
     {
-        foreach (var part in _parts.Values)
+        foreach (string partName in _parts.Keys)
         {
-            part.Value?.SetIn(config);
+            Get(partName)?.SetIn(config);
         }
     }
 

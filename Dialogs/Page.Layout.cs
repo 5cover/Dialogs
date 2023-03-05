@@ -14,11 +14,7 @@ public partial class Page
     /// Wether the dialog window should respond to typical cancel actions (Alt-F4 and Escape) and have a
     /// close button on its title bar. Default value is <see langword="false"/>.
     /// </value>
-    public bool IsCancelable
-    {
-        get => _config.dwFlags.HasFlag(TDF_ALLOW_DIALOG_CANCELLATION);
-        init => _config.dwFlags.SetFlag(TDF_ALLOW_DIALOG_CANCELLATION, value);
-    }
+    public bool IsCancelable { get; init; }
 
     /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
@@ -38,11 +34,7 @@ public partial class Page
     /// cref="Expander.Text"/> and <see cref="FooterText"/> properties; otherwise, <see langword="false"/>.
     /// Default value is <see langword="false"/>.
     /// </value>
-    public bool AllowHyperlinks
-    {
-        get => _config.dwFlags.HasFlag(TDF_ENABLE_HYPERLINKS);
-        init => _config.dwFlags.SetFlag(TDF_ENABLE_HYPERLINKS, value);
-    }
+    public bool AllowHyperlinks { get; init; }
 
     /// <summary>Gets the button collection.</summary>
     /// <remarks>
@@ -55,7 +47,7 @@ public partial class Page
     /// </value>
     public ButtonCollection Buttons
     {
-        get => _parts.Get<ButtonCollection>().AssertNotNull();
+        get => (ButtonCollection)_parts.Get().AssertNotNull();
         init => _parts.Set(value);
     }
 
@@ -66,7 +58,7 @@ public partial class Page
     /// </value>
     public Expander? Expander
     {
-        get => _parts.Get<Expander>();
+        get => (Expander?)_parts.Get();
         init => _parts.Set(value);
     }
 
@@ -75,39 +67,33 @@ public partial class Page
     /// <value>The header bar. Default value is <see cref="DialogHeader.None"/>.</value>
     public DialogHeader Header
     {
-        get => _parts.Get<DialogHeader>().AssertNotNull();
+        get => (DialogHeader)_parts.Get().AssertNotNull();
         init => _parts.Set(value);
     }
 
     /// <summary>Gets whether to allow minimization.</summary>
     /// <value>
-    /// Whether the owner dialog window has a minimize box on its title bar when it is shown modeless.
-    /// Default value is <see langword="false"/>.
+    /// Whether the dialog window can be minimized when modeless. Default value is <see langword="false"/>.
     /// </value>
-    /// <remarks>Implies <see cref="IsCancelable"/>.</remarks>
-    public bool IsMinimizable
-    {
-        get => _config.dwFlags.HasFlag(TDF_CAN_BE_MINIMIZED);
-        init => _config.dwFlags.SetFlag(TDF_CAN_BE_MINIMIZED, value);
-    }
+    /// <remarks>
+    /// If the dialog has no parent window, mimics <see cref="IsCancelable"/> but with the title bar
+    /// minimize box enabled. Otherwise, there is no visible difference on the dialog.
+    /// </remarks>
+    public bool IsMinimizable { get; init; }
 
     /// <summary>Gets whether text is displayed right to left.</summary>
     /// <value>
     /// <see langword="true"/> when the content of the dialog is displayed right to left; otherwise, <see
     /// langword="false"/>. The default value is <see langword="false"/>.
     /// </value>
-    public bool IsRightToLeftLayout
-    {
-        get => _config.dwFlags.HasFlag(TDF_RTL_LAYOUT);
-        init => _config.dwFlags.SetFlag(TDF_RTL_LAYOUT, value);
-    }
+    public bool IsRightToLeftLayout { get; init; }
 
     /// <summary>Gets the progress bar.</summary>
     /// <remarks>If the value is <see langword="null"/>, no progress bar will be shown.</remarks>
     /// <value>The progress bar of the page. Default value is <see langword="null"/>.</value>
     public ProgressBar? ProgressBar
     {
-        get => _parts.Get<ProgressBar>();
+        get => (ProgressBar?)_parts.Get();
         init => _parts.Set(value);
     }
 
@@ -119,18 +105,17 @@ public partial class Page
     /// <value>The list of all the radio buttons. Default value is <see langword="null"/>.</value>
     public RadioButtonCollection RadioButtons
     {
-        get => _parts.Get<RadioButtonCollection>().AssertNotNull();
+        get => (RadioButtonCollection)_parts.Get().AssertNotNull();
         init => _parts.Set(value);
     }
 
     /// <summary>Gets the sizing strategy.</summary>
     /// <value>
-    /// The sizing strategy to size the owner dialog window. Default value is <see
-    /// cref="Sizing.Automatic"/>.
+    /// The sizing strategy to size the dialog window. Default value is <see cref="Sizing.Automatic"/>.
     /// </value>
     public Sizing Sizing
     {
-        get => _parts.Get<Sizing>().AssertNotNull();
+        get => (Sizing)_parts.Get().AssertNotNull();
         init => _parts.Set(value);
     }
 
@@ -139,7 +124,7 @@ public partial class Page
     /// <value>The verification of the page. Default value is <see langword="null"/>.</value>
     public Verification? Verification
     {
-        get => _parts.Get<Verification>();
+        get => (Verification?)_parts.Get();
         init => _parts.Set(value);
     }
 
@@ -148,6 +133,6 @@ public partial class Page
     /// If the value is <see langword="null"/>, the window title will be the filename of the current
     /// executable.
     /// </remarks>
-    /// <value>The title of the owner dialog window. Default value is <see langword="null"/>.</value>
-    public string? WindowTitle { get => _config.WindowTitle; init => _config.WindowTitle = value; }
+    /// <value>The title of the dialog window. Default value is <see langword="null"/>.</value>
+    public string? WindowTitle { get => _windowTitle; init => value.SetAsValueOf(ref _windowTitle); }
 }

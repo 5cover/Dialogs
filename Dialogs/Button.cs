@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using Vanara.InteropServices;
-
-using static Vanara.PInvoke.User32.MB_RESULT;
 
 namespace Scover.Dialogs;
 
@@ -18,46 +17,46 @@ public sealed class Button : ButtonBase, IEquatable<Button?>, ITextControl, IDis
     public Button(string text, string? note = null)
         => (Text, Note, _nativeText) = (text, note, new(note is null ? text : $"{text}\n{note}"));
 
-    /// <summary>Gets the <i>Abort</i> button.</summary>
-    public static CommonButton Abort { get; } = new(1 << 16, IDABORT);
+    /// <summary>Gets a new <i>Abort</i> button.</summary>
+    public static CommonButton Abort => GetValue();
 
-    /// <summary>Gets the <i>Cancel</i> button.</summary>
+    /// <summary>Gets a new <i>Cancel</i> button.</summary>
     /// <remarks>
     /// Similarly to <see cref="Page.IsCancelable"/>, adding this button to <see cref="Page.Buttons"/>
     /// causes the dialog window to respond to typical cancel actions (Alt-F4 and Escape) and have a close
     /// button on its title bar.
     /// </remarks>
-    public static CommonButton Cancel { get; } = new(TDCBF_CANCEL_BUTTON, IDCANCEL);
+    public static CommonButton Cancel => GetValue();
 
-    /// <summary>Gets the <i>Close</i> button.</summary>
-    public static CommonButton Close { get; } = new(TDCBF_CLOSE_BUTTON, 8);
+    /// <summary>Gets a new <i>Close</i> button.</summary>
+    public static CommonButton Close => GetValue();
 
-    /// <summary>Gets the <i>Continue</i> button.</summary>
-    public static CommonButton Continue { get; } = new(1 << 19, IDCONTINUE);
+    /// <summary>Gets a new <i>Continue</i> button.</summary>
+    public static CommonButton Continue => GetValue();
 
-    /// <summary>Gets the <i>Help</i> button.</summary>
+    /// <summary>Gets a new <i>Help</i> button.</summary>
     /// <remarks>
     /// This button is non-committing and raises the <see cref="Page.HelpRequested"/> event when clicked.
     /// </remarks>
-    public static CommonButton Help { get; } = new(1 << 20, 9);
+    public static CommonButton Help => GetValue();
 
-    /// <summary>Gets the <i>Ignore</i> button.</summary>
-    public static CommonButton Ignore { get; } = new(1 << 17, IDIGNORE);
+    /// <summary>Gets a new <i>Ignore</i> button.</summary>
+    public static CommonButton Ignore => GetValue();
 
-    /// <summary>Gets the <i>No</i> button.</summary>
-    public static CommonButton No { get; } = new(TDCBF_NO_BUTTON, IDNO);
+    /// <summary>Gets a new <i>No</i> button.</summary>
+    public static CommonButton No => GetValue();
 
-    /// <summary>Gets the <i>OK</i> button.</summary>
-    public static CommonButton OK { get; } = new(TDCBF_OK_BUTTON, IDOK);
+    /// <summary>Gets a new <i>OK</i> button.</summary>
+    public static CommonButton OK => GetValue();
 
-    /// <summary>Gets the <i>Retry</i> button.</summary>
-    public static CommonButton Retry { get; } = new(TDCBF_RETRY_BUTTON, IDRETRY);
+    /// <summary>Gets a new <i>Retry</i> button.</summary>
+    public static CommonButton Retry => GetValue();
 
-    /// <summary>Gets the <i>Try Again</i> button.</summary>
-    public static CommonButton TryAgain { get; } = new(1 << 18, IDTRYAGAIN);
+    /// <summary>Gets a new <i>Try Again</i> button.</summary>
+    public static CommonButton TryAgain => GetValue();
 
-    /// <summary>Gets the <i>Yes</i> button.</summary>
-    public static CommonButton Yes { get; } = new(TDCBF_YES_BUTTON, IDYES);
+    /// <summary>Gets a new <i>Yes</i> button.</summary>
+    public static CommonButton Yes => GetValue();
 
     /// <summary>Gets the push button or command link text.</summary>
     public string Text { get; }
@@ -86,4 +85,6 @@ public sealed class Button : ButtonBase, IEquatable<Button?>, ITextControl, IDis
 
     /// <inheritdoc/>
     public override int GetHashCode() => _nativeText.GetHashCode();
+
+    private static CommonButton GetValue([CallerMemberName] string callerMemberName = "") => CommonButton.Values[callerMemberName].CloneDeep();
 }

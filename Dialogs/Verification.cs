@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 
+using Vanara.InteropServices;
 using Vanara.PInvoke;
 
 using static Vanara.PInvoke.ComCtl32;
@@ -7,14 +8,15 @@ using static Vanara.PInvoke.ComCtl32;
 namespace Scover.Dialogs;
 
 /// <summary>A dialog verification checkbox control.</summary>
-/// <remarks>This class cannot be inherited.</remarks>
-[DebuggerDisplay($"{{{nameof(Text)}}}")]
-public sealed class Verification : DialogControl<PageUpdateInfo>
+/// <remarks>This class cannot be inherited and implements <see cref="IDisposable"/>.</remarks>
+[DebuggerDisplay($"{{{nameof(_nativeText)}}}")]
+public sealed class Verification : DialogControl<PageUpdateInfo>, IDisposable
 {
+    private readonly SafeLPWSTR _nativeText;
     private bool _isChecked;
 
     /// <param name="text">The text to show near the verification checkbox.</param>
-    public Verification(string text) => Text = text;
+    public Verification(string text) => _nativeText = new(text);
 
     /// <summary>Event raise when the verification is checked.</summary>
     public event EventHandler? Checked;
@@ -34,16 +36,17 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     }
 
     /// <summary>Gets the verification text.</summary>
-    /// <remarks>
-    /// If the value is <see cref="string.Empty"/>, no verification checkbox will be shown.
-    /// </remarks>
+    /// <remarks>If the value is <see langword="null"/>, no verification checkbox will be shown.</remarks>
     /// <value>
-    /// The text shown next to the verification checkbox. Default value is <see cref="string.Empty"/>.
+    /// The text shown next to the verification checkbox. Default value is <see langword="null"/>.
     /// </value>
-    public string Text { get; } = "";
+    public string? Text { get => _nativeText; init => value.SetAsValueOf(ref _nativeText); }
 
     /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
     public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, IsChecked, true));
+
+    /// <inheritdoc/>
+    public void Dispose() => _nativeText.Dispose();
 
     /// <remarks>
     /// <list type="table">
@@ -69,7 +72,7 @@ public sealed class Verification : DialogControl<PageUpdateInfo>
     internal override void SetIn(in TASKDIALOGCONFIG config)
     {
         config.dwFlags.SetFlag(TDF_VERIFICATION_FLAG_CHECKED, IsChecked);
-        config.VerificationText = Text;
+        config.pszVerificationText = _nativeText;
     }
 
     private void UpdateIsChecked(PageUpdateInfo info) => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, _isChecked, false);

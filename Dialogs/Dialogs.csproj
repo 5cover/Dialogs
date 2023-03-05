@@ -18,16 +18,24 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Fixed Activaton Context</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed activation context bugs
+Common button instances are not reused anymore
+Simplified IdControlCollection and derived to use StartId instead of overriden methods
+Improved documentation
+Added Dialog.Show overloads (mostly non-breaking change)
+Removed Page.Destroyed (it was about the dialog window being destroyed, not the page)
+Fixed bug with exiting a multipage dialog not resetting the current page to the first page
+Fixed a few weird ProgressBars behaviors
+Fixed bug with TDN_BUTTON_CLICKED or TDN_RADIO_BUTTON_CLICKED on a item not in the collection causing the notification to be forwarded to all items.</PackageReleaseNotes>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
     <RootNamespace>Scover.Dialogs</RootNamespace>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows7.0</TargetFramework>
     <Title>Dialogs</Title>
-    <Version>1.3.2</Version>
+    <Version>1.4.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -41,17 +49,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="XPThemes.manifest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="BidirectionalDictionary" Version="1.1.1" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -63,7 +61,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="icon.png">
+    <None Include="icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <Content Include="$(MSBuildProjectName).targets"/>
+    <Content Include="XPThemes.manifest">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+    <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

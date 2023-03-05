@@ -10,21 +10,18 @@
 
 public partial class Page
 {
-    private DialogIcon _footerIcon = DialogIcon.None;
-    private DialogIcon _icon = DialogIcon.None;
+    private DialogIcon _icon = DialogIcon.None, _footerIcon = DialogIcon.None;
 
     /// <summary>Gets or sets the content.</summary>
-    /// <remarks>
-    /// If the value is <see cref="string.Empty"/>, no text will be show in the content area.
-    /// </remarks>
-    /// <value>The text shown in the content area. Default value is <see cref="string.Empty"/>.</value>
-    public string Content
+    /// <remarks>If the value is <see langword="null"/>, no text will be show in the content area.</remarks>
+    /// <value>The text shown in the content area. Default value is <see langword="null"/>.</value>
+    public string? Content
     {
-        get => _config.Content ?? "";
+        get => _content;
         set
         {
-            _config.Content = value;
-            SetElementText(TDE_CONTENT, _config.pszContent);
+            value.SetAsValueOf(ref _content);
+            SetElementText(TDE_CONTENT, _content);
         }
     }
 
@@ -38,26 +35,22 @@ public partial class Page
         get => _footerIcon;
         set
         {
-            DenyHIconIDTransition(_footerIcon, value);
+            DenyIllegalHotChange(_footerIcon, value);
+            OnUpdateRequested(value.GetUpdate(TDIE_ICON_FOOTER));
             _footerIcon = value;
-            _config.footerIcon = value.Handle;
-            _config.dwFlags.SetFlag(TDF_USE_HICON_FOOTER, value.IsHIcon);
-            OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_FOOTER, value.Handle));
         }
     }
 
     /// <summary>Gets or sets the footer text.</summary>
-    /// <remarks>
-    /// If the value is <see cref="string.Empty"/>, no text will be shown in the footer area.
-    /// </remarks>
-    /// <value>The text to show in the footer area. Default value is <see cref="string.Empty"/>.</value>
-    public string FooterText
+    /// <remarks>If the value is <see langword="null"/>, no text will be shown in the footer area.</remarks>
+    /// <value>The text to show in the footer area. Default value is <see langword="null"/>.</value>
+    public string? FooterText
     {
-        get => _config.Footer ?? "";
+        get => _footerText;
         set
         {
-            _config.Footer = value;
-            SetElementText(TDE_FOOTER, _config.pszFooter);
+            value.SetAsValueOf(ref _footerText);
+            SetElementText(TDE_FOOTER, _footerText);
         }
     }
 
@@ -71,32 +64,30 @@ public partial class Page
         get => _icon;
         set
         {
-            DenyHIconIDTransition(_icon, value);
+            DenyIllegalHotChange(_icon, value);
+            OnUpdateRequested(value.GetUpdate(TDIE_ICON_MAIN));
             _icon = value;
-            _config.mainIcon = Icon.Handle;
-            _config.dwFlags.SetFlag(TDF_USE_HICON_MAIN, Icon.IsHIcon);
-            OnUpdateRequested(info => info.Dialog.SendMessage(TDM_UPDATE_ICON, TDIE_ICON_MAIN, Icon.Handle));
         }
     }
 
     /// <summary>Gets or sets the main instruction.</summary>
-    /// <remarks>If the value is <see cref="string.Empty"/>, no main instruction will be shown.</remarks>
-    /// <value>The main instruction of the page. Default value is <see cref="string.Empty"/>.</value>
-    public string MainInstruction
+    /// <remarks>If the value is <see langword="null"/>, no main instruction will be shown.</remarks>
+    /// <value>The main instruction of the page. Default value is <see langword="null"/>.</value>
+    public string? MainInstruction
     {
-        get => _config.MainInstruction ?? "";
+        get => _mainInstruction;
         set
         {
-            _config.MainInstruction = value;
-            SetElementText(TDE_MAIN_INSTRUCTION, _config.pszMainInstruction);
+            value.SetAsValueOf(ref _mainInstruction);
+            SetElementText(TDE_MAIN_INSTRUCTION, _mainInstruction);
         }
     }
 
-    private void DenyHIconIDTransition(DialogIcon current, DialogIcon value)
+    private void DenyIllegalHotChange(DialogIcon current, DialogIcon value)
     {
-        if (Showing && current.IsHIcon != value.IsHIcon)
+        if (IsShown && !current.IsHotChangeLegal(value))
         {
-            throw new ArgumentException("Cannot transition between HIcon and ID while the dialog is shown.");
+            throw new InvalidOperationException("Cannot transition between HIcon and ID while the dialog is shown.");
         }
     }
 }
