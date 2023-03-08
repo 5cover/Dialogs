@@ -28,10 +28,8 @@ namespace Scover.Dialogs;
 
 internal sealed class ComCtlV6ActivationContext : IDisposable
 {
-    private static readonly object contextCreationLock = new();
-
     private static readonly Lazy<SafeHACTCTX> activationContext = new(CreateActivationContext);
-
+    private static readonly object contextCreationLock = new();
     private readonly GenericSafeHandle? _cookie;
 
     public ComCtlV6ActivationContext()
@@ -44,15 +42,22 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
     {
         _cookie?.Dispose();
         activationContext.Value?.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private static SafeHACTCTX CreateActivationContext()
     {
         lock (contextCreationLock)
         {
-            var manifestFilePath = Path.Join(Path.GetDirectoryName(typeof(ComCtlV6ActivationContext).Assembly.Location), "XPThemes.manifest");
+            using var xpThemes = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{nameof(Scover)}.{nameof(Scover.Dialogs)}.XPThemes.manifest").AssertNotNull();
+            var manifestFilePath = Path.Join(Path.GetDirectoryName(typeof(ComCtlV6ActivationContext).Assembly.Location), CreateTempFile(xpThemes));
             return Win32Error.ThrowLastErrorIfInvalid(CreateActCtx(new ACTCTX(manifestFilePath)));
         }
+    }
+
+    private static string CreateTempFile(Stream contents)
+    {
+        using FileStream file = new(Path.GetTempFileName(), FileMode.Open);
+        contents.CopyTo(file);
+        return file.Name;
     }
 }

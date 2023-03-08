@@ -18,15 +18,7 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Fixed activation context bugs
-Common button instances are not reused anymore
-Simplified IdControlCollection and derived to use StartId instead of overriden methods
-Improved documentation
-Added Dialog.Show overloads (mostly non-breaking change)
-Removed Page.Destroyed (it was about the dialog window being destroyed, not the page)
-Fixed bug with exiting a multipage dialog not resetting the current page to the first page
-Fixed a few weird ProgressBars behaviors
-Fixed bug with TDN_BUTTON_CLICKED or TDN_RADIO_BUTTON_CLICKED on a item not in the collection causing the notification to be forwarded to all items.</PackageReleaseNotes>
+    <PackageReleaseNotes>restored temp file (causing problems with single file builds)</PackageReleaseNotes>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -35,7 +27,7 @@ Fixed bug with TDN_BUTTON_CLICKED or TDN_RADIO_BUTTON_CLICKED on a item not in t
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <TargetFramework>net6.0-windows7.0</TargetFramework>
     <Title>Dialogs</Title>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -65,10 +57,7 @@ Fixed bug with TDN_BUTTON_CLICKED or TDN_RADIO_BUTTON_CLICKED on a item not in t
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <Content Include="$(MSBuildProjectName).targets"/>
-    <Content Include="XPThemes.manifest">
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
+    <EmbeddedResource Include="XPThemes.manifest"/>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
