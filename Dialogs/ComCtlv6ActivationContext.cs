@@ -48,8 +48,9 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
     {
         lock (contextCreationLock)
         {
-            using var xpThemes = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{nameof(Scover)}.{nameof(Scover.Dialogs)}.XPThemes.manifest").AssertNotNull();
-            var manifestFilePath = Path.Join(Path.GetDirectoryName(typeof(ComCtlV6ActivationContext).Assembly.Location), CreateTempFile(xpThemes));
+            var assembly = Assembly.GetExecutingAssembly();
+            using var xpThemes = assembly.GetManifestResourceStream($"{nameof(Scover)}.{nameof(Scover.Dialogs)}.XPThemes.manifest").AssertNotNull();
+            var manifestFilePath = Path.Join(Path.GetDirectoryName(assembly.Location), CreateTempFile(xpThemes));
             return Win32Error.ThrowLastErrorIfInvalid(CreateActCtx(new ACTCTX(manifestFilePath)));
         }
     }
