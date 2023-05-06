@@ -37,6 +37,12 @@ public class Dialog
     /// </value>
     public WindowLocation StartupLocation { get; set; }
 
+    /// <summary>Forcefully closes this dialog, ignoring navigation.</summary>
+    /// <remarks>
+    /// When this method is called, the returned button of show methods will be <see cref="Button.Cancel"/>.
+    /// </remarks>
+    public virtual void Close() => CurrentPage.Exit();
+
     /// <summary>Shows a modeless dialog.</summary>
     /// <returns>The <see cref="ButtonBase"/> that was clicked.</returns>
     /// <exception cref="PlatformNotSupportedException">
@@ -93,15 +99,6 @@ public class Dialog
         }
     }
 
-    /// <summary>Forcefully closes this dialog, ignoring navigation.</summary>
-    /// <remarks>
-    /// When this method is called, the returned button of show methods will be <see cref="Button.Cancel"/>.
-    /// </remarks>
-    public virtual void Close() => CurrentPage.Exit();
-
-    /// <summary>Performs an update using <see cref="Handle"/>.</summary>
-    protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
-
     /// <inheritdoc cref="TaskDialogCallbackProc"/>
     protected HRESULT Callback(HWND hwnd, TaskDialogNotification msg, nint wParam, nint lParam, nint refData)
     {
@@ -109,4 +106,7 @@ public class Dialog
         Notification notif = new(msg, wParam, lParam);
         return CurrentPage.HandleNotification(notif);
     }
+
+    /// <summary>Performs an update using <see cref="Handle"/>.</summary>
+    protected void PerformUpdate(object? sender, Action<PageUpdateInfo> update) => update(new(Handle));
 }

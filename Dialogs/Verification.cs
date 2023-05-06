@@ -42,11 +42,11 @@ public sealed class Verification : DialogControl<PageUpdateInfo>, IDisposable
     /// </value>
     public string? Text { get => _nativeText; init => value.SetAsValueOf(ref _nativeText); }
 
-    /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
-    public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, IsChecked, true));
-
     /// <inheritdoc/>
     public void Dispose() => _nativeText.Dispose();
+
+    /// <summary>Sets the keyboard focus to the verification checkbox of the dialog, if it exists.</summary>
+    public void Focus() => RequestUpdate(info => info.Dialog.SendMessage(TDM_CLICK_VERIFICATION, IsChecked, true));
 
     /// <remarks>
     /// <list type="table">

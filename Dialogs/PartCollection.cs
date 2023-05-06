@@ -26,6 +26,8 @@ internal sealed class PartCollection : IEnumerable<Part>
         return part is null ? null : (part.Value ?? part.DefaultValue);
     }
 
+    public IEnumerator<Part> GetEnumerator() => _parts.Values.Select(p => p.Value ?? p.DefaultValue).Where(v => v is not null).GetEnumerator()!; // !: null has been filtered out
+
     public void Set(Part? value, Part? defaultValue = null, [CallerMemberName] string name = "")
     {
         if (_parts.GetValueOrDefault(name) is { } oldPart)
@@ -39,8 +41,6 @@ internal sealed class PartCollection : IEnumerable<Part>
         }
         OnPartAdded(value);
     }
-
-    public IEnumerator<Part> GetEnumerator() => _parts.Values.Select(p => p.Value ?? p.DefaultValue).Where(v => v is not null).GetEnumerator()!; // !: null was filtered out
 
     public void SetDefault(Part defaultValue, string name) => Set(defaultValue, defaultValue, name);
 

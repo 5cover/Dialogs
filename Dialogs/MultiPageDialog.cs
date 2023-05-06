@@ -45,8 +45,8 @@ public enum NavigationRequestKind
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification = $"{nameof(_navigatedPagePtr)} is disposed at exit.")]
 public class MultiPageDialog : Dialog
 {
-    private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
     private readonly Page _firstPage;
+    private readonly IDictionary<Page, NextPageSelector> _nextPageSelectors;
     private SafeHGlobalHandle? _navigatedPagePtr;
 
     /// <param name="firstPage">The first page of the dialog.</param>
@@ -92,7 +92,7 @@ public class MultiPageDialog : Dialog
     private bool Navigate(NavigationRequest navigationRequest)
     {
         _navigatedPagePtr?.Dispose();
-        if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageChooser) && nextPageChooser(navigationRequest) is { } nextPage)
+        if (_nextPageSelectors.TryGetValue(CurrentPage, out var nextPageSelector) && nextPageSelector(navigationRequest) is { } nextPage)
         {
             _navigatedPagePtr = new(nextPage.SetupConfig(Callback).MarshalToPtr(Marshal.AllocHGlobal, out var bytesAllocated), bytesAllocated);
 

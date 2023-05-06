@@ -43,14 +43,14 @@ internal static class Extensions
     public static nint SendMessage<TMsg>(this HWND hwnd, TMsg msg, nint wParam, nint lParam) where TMsg : IConvertible
         => User32.SendMessage(hwnd, msg.ToUInt32(CultureInfo.InvariantCulture), wParam, lParam);
 
-    public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
-            => EnumExtensions.SetFlags(ref value, flag, isSet);
-
     public static void SetAsValueOf(this string? value, ref SafeLPWSTR str)
     {
         str.Dispose();
         str = new(value);
     }
+
+    public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
+                => EnumExtensions.SetFlags(ref value, flag, isSet);
 
     private static nint ToNint<T>(this T val) where T : IConvertible => (nint)val.ToInt64(CultureInfo.InvariantCulture);
 }

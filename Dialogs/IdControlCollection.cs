@@ -34,17 +34,17 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
 
     bool ICollection<T>.IsReadOnly => false;
 
+    /// <summary>
+    /// Flags to add to <see cref="TASKDIALOGCONFIG.dwFlags"/> in <see cref="SetIn(in TASKDIALOGCONFIG)"/>.
+    /// </summary>
+    protected virtual TASKDIALOG_FLAGS Flags { get; }
+
     /// <summary>The starting ID.</summary>
     /// <remarks>
     /// IDs are 1-based (0 means none). This value must be initialized appropriately to avoid collisions
     /// between the IDs of the items that implement <see cref="IHasId"/> and those that don't.
     /// </remarks>
     protected virtual int StartId => 1;
-
-    /// <summary>
-    /// Flags to add to <see cref="TASKDIALOGCONFIG.dwFlags"/> in <see cref="SetIn(in TASKDIALOGCONFIG)"/>.
-    /// </summary>
-    protected virtual TASKDIALOG_FLAGS Flags { get; }
 
     /// <inheritdoc/>
     public void Add(T item)
@@ -127,8 +127,6 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <param name="defaultItemId">The ID of the default item.</param>
     protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
 
-    private int MakeNewId(T item) => item is IHasId hasId ? hasId.Id : _id++;
-
     private void AddItem(T item)
     {
         if (Contains(item))
@@ -140,6 +138,8 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
 
     private void ItemUpdateRequested(object? sender, Action<IdControlUpdateInfo> e)
         => RequestUpdate(info => e(new(info.Dialog, _ids[(T)sender.AssertNotNull()])));
+
+    private int MakeNewId(T item) => item is IHasId hasId ? hasId.Id : _id++;
 
     private void RemoveItem(T item) => item.UpdateRequested -= ItemUpdateRequested;
 }

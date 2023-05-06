@@ -1,4 +1,4 @@
-﻿// Adapted from
+﻿// Original:
 // https://github.com/ookii-dialogs/ookii-dialogs-wpf/blob/master/src/Ookii.Dialogs.Wpf/ComCtlv6ActivationContext.cs
 
 // Licensed under the BSD 3-Clause License (the "License"); you may not use this file except in compliance
@@ -13,7 +13,6 @@
 // Changes:
 // - Adapted the code to use Vanara.
 // - Use default as NULL pointer constant
-// - Simplified creation logic to not use a temp file.
 // - Used Lazy<T> to simplify logic
 // - Adapted to Vanara semantics (safe handles and Win32Error)
 
@@ -28,9 +27,9 @@ namespace Scover.Dialogs;
 
 internal sealed class ComCtlV6ActivationContext : IDisposable
 {
-    private static readonly Lazy<SafeHACTCTX> activationContext = new(CreateActivationContext);
+    private static readonly Lazy<SafeHACTCTX> activationContext = new(CreateActivationContext, true);
     private static readonly object contextCreationLock = new();
-    private readonly GenericSafeHandle? _cookie;
+    private readonly GenericSafeHandle _cookie;
 
     public ComCtlV6ActivationContext()
     {
@@ -40,7 +39,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
 
     public void Dispose()
     {
-        _cookie?.Dispose();
+        _cookie.Dispose();
         activationContext.Value?.Dispose();
     }
 
@@ -48,7 +47,7 @@ internal sealed class ComCtlV6ActivationContext : IDisposable
     {
         lock (contextCreationLock)
         {
-            using var xpThemes = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{nameof(Scover)}.{nameof(Scover.Dialogs)}.XPThemes.manifest").AssertNotNull();
+            using var xpThemes = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{nameof(Scover)}.{nameof(Dialogs)}.XPThemes.manifest").AssertNotNull();
             return Win32Error.ThrowLastErrorIfInvalid(CreateActCtx(new ACTCTX(CreateTempFile(xpThemes))));
         }
     }

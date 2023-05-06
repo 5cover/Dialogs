@@ -47,16 +47,14 @@ public partial class Page : IDisposable
         _parts.SetDefault(new RadioButtonCollection(), nameof(RadioButtons));
     }
 
+    /// <summary>Event raised when the page is shown.</summary>
+    public event EventHandler? Created;
     /// <summary>
     /// Event raised when the page is about to be closed, either because a button was clicked, or the dialog
     /// window was closed. Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to
     /// <see langword="true"/> to prevent the page from closing.
     /// </summary>
     public event EventHandler<ExitEventArgs>? Exiting;
-
-    /// <summary>Event raised when the page is shown.</summary>
-    public event EventHandler? Created;
-
     /// <summary>
     /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
     /// clicked, or the F1 key was pressed.
@@ -67,15 +65,6 @@ public partial class Page : IDisposable
     public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
 
     internal event EventHandler<Action<PageUpdateInfo>>? UpdateRequested;
-
-    /// <summary>
-    /// Exits the page. This may cause the dialog to close or a new page may be navigated to.
-    /// </summary>
-    /// <remarks>
-    /// When this method is called, the return value of show methods and <see
-    /// cref="NavigationRequest.ClickedButton"/> will be <see langword="null"/>.
-    /// </remarks>
-    public void Exit() => OnUpdateRequested(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, 0));
 
     /// <inheritdoc/>
     public void Dispose()
@@ -89,6 +78,17 @@ public partial class Page : IDisposable
         _mainInstruction.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    /// <summary>
+    /// Exits the page. This may cause the dialog to close or a new page may be navigated to.
+    /// </summary>
+    /// <remarks>
+    /// When this method is called, the return value of show methods and <see
+    /// cref="NavigationRequest.ClickedButton"/> will be <see langword="null"/>.
+    /// </remarks>
+    public void Exit() => OnUpdateRequested(info => info.Dialog.SendMessage(TDM_CLICK_BUTTON, 0));
+
+    internal ButtonBase? GetClickedButton(int pnButton) => pnButton == 0 ? null : Buttons.GetItem(pnButton) ?? CommonButton.FromId(pnButton);
 
     internal HRESULT HandleNotification(Notification notif)
     {
@@ -156,8 +156,6 @@ public partial class Page : IDisposable
         config.dwFlags.SetFlag(TDF_POSITION_RELATIVE_TO_WINDOW, startupLocation is WindowLocation.CenterParent);
         return config;
     }
-
-    internal ButtonBase? GetClickedButton(int pnButton) => pnButton == 0 ? null : Buttons.GetItem(pnButton) ?? CommonButton.FromId(pnButton);
 
     private HRESULT HandleClickNotification(Notification notif)
     {

@@ -58,15 +58,15 @@ public sealed class Button : ButtonBase, IEquatable<Button?>, ITextControl, IDis
     /// <summary>Gets a new <i>Yes</i> button.</summary>
     public static CommonButton Yes => GetValue();
 
-    /// <summary>Gets the push button or command link text.</summary>
-    public string Text { get; }
-
     /// <summary>Gets the command link supplemental instruction.</summary>
     /// <value>
     /// The supplemental instruction of this command link. If this button is not a command link or it
     /// doesn't have a supplemental insruction, <see langword="null"/>.
     /// </value>
     public string? Note { get; }
+
+    /// <summary>Gets the push button or command link text.</summary>
+    public string Text { get; }
 
     StrPtrUni ITextControl.NativeText => _nativeText;
 

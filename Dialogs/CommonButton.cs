@@ -44,17 +44,17 @@ public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>, IHasId
 
     internal static IReadOnlyDictionary<string, CommonButton> Values { get; } = new Dictionary<string, CommonButton>()
     {
-        ["Abort"] = new(1 << 16, IDABORT),
-        ["Cancel"] = new(TDCBF_CANCEL_BUTTON, IDCANCEL),
-        ["Close"] = new(TDCBF_CLOSE_BUTTON, 8),
-        ["Continue"] = new(1 << 19, IDCONTINUE),
-        ["Help"] = new(1 << 20, 9),
-        ["Ignore"] = new(1 << 17, IDIGNORE),
-        ["No"] = new(TDCBF_NO_BUTTON, IDNO),
-        ["OK"] = new(TDCBF_OK_BUTTON, IDOK),
-        ["Retry"] = new(TDCBF_RETRY_BUTTON, IDRETRY),
-        ["TryAgain"] = new(1 << 18, IDTRYAGAIN),
-        ["Yes"] = new(TDCBF_YES_BUTTON, IDYES),
+        [nameof(Button.Abort)] = new(1 << 16, IDABORT),
+        [nameof(Button.Cancel)] = new(TDCBF_CANCEL_BUTTON, IDCANCEL),
+        [nameof(Button.Close)] = new(TDCBF_CLOSE_BUTTON, 8),
+        [nameof(Button.Continue)] = new(1 << 19, IDCONTINUE),
+        [nameof(Button.Help)] = new(1 << 20, 9),
+        [nameof(Button.Ignore)] = new(1 << 17, IDIGNORE),
+        [nameof(Button.No)] = new(TDCBF_NO_BUTTON, IDNO),
+        [nameof(Button.OK)] = new(TDCBF_OK_BUTTON, IDOK),
+        [nameof(Button.Retry)] = new(TDCBF_RETRY_BUTTON, IDRETRY),
+        [nameof(Button.TryAgain)] = new(1 << 18, IDTRYAGAIN),
+        [nameof(Button.Yes)] = new(TDCBF_YES_BUTTON, IDYES),
     };
 
     /// <inheritdoc/>
@@ -79,7 +79,7 @@ public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>, IHasId
         }
     }
 
-    internal override void SetIn(in TASKDIALOGCONFIG config) => config.dwCommonButtons.SetFlag(_commonButton, true);
-
     internal CommonButton CloneDeep() => new(_commonButton, _id);
+
+    internal override void SetIn(in TASKDIALOGCONFIG config) => config.dwCommonButtons.SetFlag(_commonButton, true);
 }

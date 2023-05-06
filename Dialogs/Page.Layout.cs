@@ -9,13 +9,6 @@
 
 public partial class Page
 {
-    /// <summary>Gets or sets whether to allow cancelation.</summary>
-    /// <value>
-    /// Wether the dialog window should respond to typical cancel actions (Alt-F4 and Escape) and have a
-    /// close button on its title bar. Default value is <see langword="false"/>.
-    /// </value>
-    public bool IsCancelable { get; init; }
-
     /// <summary>Gets whether to allow hyperlinks</summary>
     /// <remarks>
     /// <para>
@@ -70,6 +63,13 @@ public partial class Page
         get => (DialogHeader)_parts.Get().AssertNotNull();
         init => _parts.Set(value);
     }
+
+    /// <summary>Gets or sets whether to allow cancelation.</summary>
+    /// <value>
+    /// Wether the dialog window should respond to typical cancel actions (Alt-F4 and Escape) and have a
+    /// close button on its title bar. Default value is <see langword="false"/>.
+    /// </value>
+    public bool IsCancelable { get; init; }
 
     /// <summary>Gets whether to allow minimization.</summary>
     /// <value>

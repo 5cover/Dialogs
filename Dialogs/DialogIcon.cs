@@ -8,9 +8,8 @@ namespace Scover.Dialogs;
 /// <remarks>This class cannot be inherited.</remarks>
 public sealed class DialogIcon
 {
-    private readonly bool _isHIcon;
-
     private readonly nint _handle;
+    private readonly bool _isHIcon;
 
     private DialogIcon(nint handle, bool isHIcon) => (_handle, _isHIcon) = (handle, isHIcon);
 
@@ -54,6 +53,11 @@ public sealed class DialogIcon
     /// <returns>A new instance of the <see cref="DialogIcon"/> class.</returns>
     public static DialogIcon FromId(int iconId) => new(Macros.MAKEINTRESOURCE(iconId).id, false);
 
+    /// <inheritdoc/>
+    internal Action<PageUpdateInfo> GetUpdate(TASKDIALOG_ICON_ELEMENTS element) => info => info.Dialog.SendMessage(TDM_UPDATE_ICON, element, _handle);
+
+    internal bool IsHotChangeLegal(DialogIcon possibleNewValue) => _isHIcon == possibleNewValue._isHIcon;
+
     internal void SetIn(in TASKDIALOGCONFIG config, TASKDIALOG_ICON_ELEMENTS element)
     {
         if (element is TDIE_ICON_MAIN)
@@ -67,9 +71,4 @@ public sealed class DialogIcon
             config.dwFlags.SetFlag(TDF_USE_HICON_FOOTER, _isHIcon);
         }
     }
-
-    internal bool IsHotChangeLegal(DialogIcon possibleNewValue) => _isHIcon == possibleNewValue._isHIcon;
-
-    /// <inheritdoc/>
-    internal Action<PageUpdateInfo> GetUpdate(TASKDIALOG_ICON_ELEMENTS element) => info => info.Dialog.SendMessage(TDM_UPDATE_ICON, element, _handle);
 }
