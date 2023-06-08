@@ -17,6 +17,12 @@ public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>, IHasId
     /// </summary>
     internal const int MaxId = 11;
 
+    /// <summary>
+    /// The inclusive lower bound of the range of IDs reserved for <see cref="CommonButton"/> instances (it's the
+    /// minimum value of the <see cref="MB_RESULT"/> enumeration).
+    /// </summary>
+    internal const int MinId = 1;
+
     private readonly TASKDIALOG_COMMON_BUTTON_FLAGS _commonButton;
 
     private readonly int _id;
