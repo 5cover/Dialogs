@@ -25,15 +25,15 @@ public enum WindowLocation
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
-/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/> and <see
+/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/>, <see cref="Verification"/> and <see
 /// cref="RadioButtons"/>.
 /// </remarks>
 public partial class Page : IDisposable
 {
     internal bool IsShown;
     private readonly PartCollection _parts = new();
-    private readonly SafeLPWSTR _windowTitle = new((string?)null);
-    private SafeLPWSTR _footerText = new((string?)null), _content = new((string?)null), _mainInstruction = new((string?)null);
+    private readonly SafeLPWSTR _windowTitle = SafeLPWSTR.Null;
+    private SafeLPWSTR _footerText = SafeLPWSTR.Null, _content = SafeLPWSTR.Null, _mainInstruction = SafeLPWSTR.Null;
 
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
@@ -71,6 +71,7 @@ public partial class Page : IDisposable
     {
         Buttons.Dispose();
         Expander?.Dispose();
+        Verification?.Dispose();
         RadioButtons.Dispose();
         _content.Dispose();
         _footerText.Dispose();

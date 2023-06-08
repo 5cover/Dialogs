@@ -73,7 +73,7 @@ public sealed class DialogTests
             {
                 await Task.Delay(50);
             }
-            await Task.Delay(1000);
+            await Task.Delay(500);
             page.Exit();
         };
 
@@ -90,7 +90,7 @@ public sealed class DialogTests
             Buttons = new(ButtonStyle.CommandLinks)
             {
                 startNow,
-                { "Abort", "The test will be aborted and nothing will happen (same as Cancel)" },
+                { "Abort", "The nothing will happen and the test will fail (same as Cancel)" },
                 Button.Cancel,
             }
         };
@@ -108,7 +108,7 @@ public sealed class DialogTests
             {
                 await Task.Delay(50);
             }
-            await Task.Delay(1000);
+            await Task.Delay(500);
             page2.Exit();
         };
         Assert.That(new MultiPageDialog(page1, new()
@@ -231,8 +231,6 @@ public sealed class DialogTests
             Content = "First page with expander. Press F1 to navigate to Page 2.",
             Expander = new("Expanded information")
             {
-                ExpandButtonText = "Custom expand",
-                CollapseButtonText = "Custom collapse",
                 IsExpanded = true,
             },
             Buttons = { Button.Yes, Button.No, Button.Cancel },
@@ -266,7 +264,7 @@ public sealed class DialogTests
             Buttons = { Button.Cancel },
         };
 
-        MultiPageDialog dlg = new(page1, new Dictionary<Page, NextPageSelector>
+        MultiPageDialog dlg = new(page1, new()
         {
             [page1] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page2 : null,
             [page2] = req => req.Kind is NavigationRequestKind.Commit or NavigationRequestKind.Explicit ? page3 : null,

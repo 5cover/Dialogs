@@ -4,6 +4,8 @@ using static Vanara.PInvoke.ComCtl32;
 
 namespace Scover.Dialogs;
 
+internal record struct Notification(TaskDialogNotification Id, nint WParam, nint LParam);
+
 /// <summary>A dialog control.</summary>
 public abstract class DialogControl<TUpdateInfo>
 {

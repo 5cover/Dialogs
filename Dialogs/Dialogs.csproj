@@ -18,7 +18,7 @@
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>sorry about this dumb mistake</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated packages. Removed useless types ButtonClickedEventArgs and RadioButtonClickedEventArgs. Page now disposes of its Verification.</PackageReleaseNotes>
     <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -27,7 +27,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <TargetFramework>net6.0-windows7.0</TargetFramework>
     <Title>Dialogs</Title>
-    <Version>1.4.2</Version>
+    <Version>1.4.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -41,15 +41,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BidirectionalDictionary" Version="1.1.1" />
+    <PackageReference Include="BidirectionalDictionary" Version="1.2.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Vanara.Core" Version="3.4.13" />
-    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.13" />
-    <PackageReference Include="Vanara.PInvoke.Shared" Version="3.4.13" />
-    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.13" />
+    <PackageReference Include="Vanara.Core" Version="3.4.15" />
+    <PackageReference Include="Vanara.PInvoke.ComCtl32" Version="3.4.15" />
+    <PackageReference Include="Vanara.PInvoke.Shared" Version="3.4.15" />
+    <PackageReference Include="Vanara.PInvoke.User32" Version="3.4.15" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +57,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <EmbeddedResource Include="XPThemes.manifest"/>
+    <EmbeddedResource Include="XPThemes.manifest" />
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

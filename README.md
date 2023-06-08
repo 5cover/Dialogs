@@ -19,7 +19,7 @@ using Scover.Dialogs;
 using Page page = new()
 {
     Content = "Sample text",
-    Buttons = { Button.Yes, Button.No }
+    Buttons = { Button.Yes, Button.No, Button.Cancel }
 };
 
 var clickedButton = new Dialog(page).Show();
@@ -32,10 +32,10 @@ using Scover.Dialogs;
 using Page page1 = new()
 {
     MainInstruction = "Page #1",
-    Buttons =
+    Buttons = new(ButtonStyle.CommandLinks)
     {
         { "Label", "Supplemental instruction" },
-        Button.OK
+        Button.Cancel
     }
 };
 using Page page2 = new()
@@ -46,7 +46,7 @@ using Page page2 = new()
 
 var clickedButton = new MultiPageDialog(page1, new Dictionary<Page, NextPageSelector>
 {
-    [page1] = request => result.Closed ? null : page2,
+    [page1] = request => request.Kind is NavigationRequestKind.Cancel ? null : page2,
 }).Show();
 ```
 

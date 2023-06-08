@@ -12,31 +12,30 @@ namespace Scover.Dialogs;
 public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>, IHasId
 {
     /// <summary>
-    /// The upper bounds of the range of IDs reserved for <see cref="CommonButton"/> instances (it's the
+    /// The inclusive upper bound of the range of IDs reserved for <see cref="CommonButton"/> instances (it's the
     /// maximum value of the <see cref="MB_RESULT"/> enumeration).
     /// </summary>
-    /// <remarks>The range is 0 to <see cref="MaxId"/>, inclusive.</remarks>
     internal const int MaxId = 11;
 
     private readonly TASKDIALOG_COMMON_BUTTON_FLAGS _commonButton;
 
     private readonly int _id;
 
-    internal CommonButton(TASKDIALOG_COMMON_BUTTON_FLAGS commonButton, MB_RESULT id) : this(commonButton, (int)id)
+    private CommonButton(TASKDIALOG_COMMON_BUTTON_FLAGS commonButton, MB_RESULT id) : this(commonButton, (int)id)
     {
     }
 
-    internal CommonButton(TASKDIALOG_COMMON_BUTTON_FLAGS commonButton, int id)
+    private CommonButton(TASKDIALOG_COMMON_BUTTON_FLAGS commonButton, int id)
     {
-        Debug.Assert(id <= MaxId);
+        Debug.Assert(MinId <= id && id <= MaxId);
         (_commonButton, _id) = (commonButton, id);
     }
 
-    internal CommonButton(int commonButton, MB_RESULT id) : this((TASKDIALOG_COMMON_BUTTON_FLAGS)commonButton, (int)id)
+    private CommonButton(int commonButton, MB_RESULT id) : this((TASKDIALOG_COMMON_BUTTON_FLAGS)commonButton, (int)id)
     {
     }
 
-    internal CommonButton(int commonButton, int id) : this((TASKDIALOG_COMMON_BUTTON_FLAGS)commonButton, id)
+    private CommonButton(int commonButton, int id) : this((TASKDIALOG_COMMON_BUTTON_FLAGS)commonButton, id)
     {
     }
 

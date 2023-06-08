@@ -61,7 +61,7 @@ public class MultiPageDialog : Dialog
     }
 
     /// <inheritdoc cref="MultiPageDialog(Page, IDictionary{Page, NextPageSelector})"/>
-    // required for compact new syntax
+    // concrete dictionary argument required for compact new syntax
     public MultiPageDialog(Page firstPage, Dictionary<Page, NextPageSelector> nextPageSelectors)
         : this(firstPage, (IDictionary<Page, NextPageSelector>)nextPageSelectors) { }
 

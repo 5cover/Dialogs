@@ -44,7 +44,7 @@ public class Dialog
     public virtual void Close() => CurrentPage.Exit();
 
     /// <summary>Shows a modeless dialog.</summary>
-    /// <returns>The <see cref="ButtonBase"/> that was clicked.</returns>
+    /// <returns>The <see cref="ButtonBase"/> that was clicked, or <see langword="null"/> if the dialog was closed programmatically.</returns>
     /// <exception cref="PlatformNotSupportedException">
     /// Could not show the dialog because Windows Task Dialogs require Windows Vista or later.
     /// </exception>

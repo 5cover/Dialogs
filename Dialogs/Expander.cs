@@ -22,7 +22,7 @@ public enum ExpanderPosition
 [DebuggerDisplay($"{{{nameof(Text)}}}")]
 public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
 {
-    private readonly SafeLPWSTR _expandButtonText = new((string?)null), _collapseButtonText = new((string?)null);
+    private readonly SafeLPWSTR _expandButtonText = SafeLPWSTR.Null, _collapseButtonText = SafeLPWSTR.Null;
     private SafeLPWSTR _nativeText;
     private string? _text;
 

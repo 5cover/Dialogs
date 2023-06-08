@@ -35,7 +35,7 @@ internal static class Extensions
     public static void Raise(this EventHandler? @event, object sender) => @event?.Invoke(sender, EventArgs.Empty);
 
     public static nint SendMessage<TMsg, TWP, TLP>(this HWND hwnd, TMsg msg, TWP wParam, TLP lParam) where TMsg : IConvertible where TWP : IConvertible where TLP : IConvertible
-            => hwnd.SendMessage(msg, wParam.ToNint(), lParam.ToNint());
+           => hwnd.SendMessage(msg, wParam.ToNint(), lParam.ToNint());
 
     public static nint SendMessage<TMsg, TWP>(this HWND hwnd, TMsg msg, TWP wParam, nint lParam = default) where TMsg : IConvertible where TWP : IConvertible
         => hwnd.SendMessage(msg, wParam.ToNint(), lParam);
@@ -50,7 +50,7 @@ internal static class Extensions
     }
 
     public static void SetFlag<TEnum>(this ref TEnum value, TEnum flag, bool isSet) where TEnum : unmanaged, Enum
-                => EnumExtensions.SetFlags(ref value, flag, isSet);
+               => EnumExtensions.SetFlags(ref value, flag, isSet);
 
     private static nint ToNint<T>(this T val) where T : IConvertible => (nint)val.ToInt64(CultureInfo.InvariantCulture);
 }
