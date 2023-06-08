@@ -1,5 +1,5 @@
 # Dialogs
-[![Code Climate](https://codeclimate.com/github/5cover/Dialogs.png)](https://codeclimate.com/github/5cover/Dialogs.png)
+[![CodeClimate](https://api.codeclimate.com/v1/badges/5a3f3d75ae442f8d9883/maintainability)](https://codeclimate.com/github/5cover/Dialogs/maintainability)
 [![CodeFactor](https://www.codefactor.io/repository/github/5cover/dialogs/badge)](https://www.codefactor.io/repository/github/5cover/dialogs)
 
 Managed Win32 [task dialog](https://learn.microsoft.com/en-us/windows/win32/controls/task-dialogs-overview) wrapper.
