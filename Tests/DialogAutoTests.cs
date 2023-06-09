@@ -87,8 +87,11 @@ public sealed class DialogAutoTests
 
     private static DialogIcon GetRandomIcon()
     {
-        int id = 199;
-        while (id
+        int id;
+        do
+        {
+            id = Random.Shared.Next(2, 6401);
+        } while (id
             is > 198 and < 1001
             or > 1043 and < 1301
             or > 1306 and < 1400
@@ -96,10 +99,7 @@ public sealed class DialogAutoTests
             or > 5102 and < 5201
             or > 5206 and < 5210
             or > 5210 and < 5301
-            or > 5412 and < 6400)
-        {
-            id = Random.Shared.Next(2, 6401);
-        }
+            or > 5412 and < 6400);
         return DialogIcon.FromId(id);
     }
 
