@@ -30,6 +30,7 @@ public partial class Page
     /// The handle of the icon to show in the footer area of the page. Default value is <see
     /// cref="DialogIcon.None"/>.
     /// </value>
+    /// <inheritdoc cref="DenyIllegalHotChange" path="/exception"/>
     public DialogIcon FooterIcon
     {
         get => _footerIcon;
@@ -59,6 +60,7 @@ public partial class Page
     /// The handle of the icon to show in the content area of the page. Default value is <see
     /// cref="DialogIcon.None"/>.
     /// </value>
+    /// <inheritdoc cref="DenyIllegalHotChange" path="/exception"/>
     public DialogIcon Icon
     {
         get => _icon;
@@ -82,7 +84,7 @@ public partial class Page
             SetElementText(TDE_MAIN_INSTRUCTION, _mainInstruction);
         }
     }
-
+    /// <exception cref="InvalidOperationException">Cannot transition between HIcon and ID while the dialog is shown.</exception>
     private void DenyIllegalHotChange(DialogIcon current, DialogIcon value)
     {
         if (IsShown && !current.IsHotChangeLegal(value))

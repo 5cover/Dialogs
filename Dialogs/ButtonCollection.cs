@@ -35,6 +35,7 @@ public sealed class ButtonCollection : IdControlCollection<ButtonBase>
     public ButtonStyle Style { get; set; }
 
     ///<inheritdoc/>
+    ///<exception cref="System.ComponentModel.InvalidEnumArgumentException"><see cref="Style"/> is not a defined <see cref="ButtonStyle"/> value.</exception>
     protected override TASKDIALOG_FLAGS Flags => Style switch
     {
         ButtonStyle.PushButtons => default,

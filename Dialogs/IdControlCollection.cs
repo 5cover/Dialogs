@@ -49,7 +49,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <inheritdoc/>
     public void Add(T item)
     {
-        AddItem(item);
+        PrepareAddItem(item);
         _ids.Add(item, MakeNewId(item));
     }
 
@@ -127,7 +127,7 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <param name="defaultItemId">The ID of the default item.</param>
     protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
 
-    private void AddItem(T item)
+    private void PrepareAddItem(T item)
     {
         if (Contains(item))
         {
