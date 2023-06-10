@@ -32,7 +32,7 @@ internal static class Extensions
     public static InvalidEnumArgumentException InvalidEnumArgumentException<TEnum>(this TEnum value, [CallerArgumentExpression(nameof(value))] string argumentName = "") where TEnum : struct, Enum, IConvertible
         => new(argumentName, value.ToInt32(CultureInfo.InvariantCulture), typeof(TEnum));
 
-    public static void Raise(this EventHandler? @event, object sender) => @event?.Invoke(sender, EventArgs.Empty);
+    public static void Raise<T>(this TypeEventHandler<T>? @event, T sender) => @event?.Invoke(sender, EventArgs.Empty);
 
     public static nint SendMessage<TMsg, TWP, TLP>(this HWND hwnd, TMsg msg, TWP wParam, TLP lParam) where TMsg : IConvertible where TWP : IConvertible where TLP : IConvertible
            => hwnd.SendMessage(msg, wParam.ToNint(), lParam.ToNint());

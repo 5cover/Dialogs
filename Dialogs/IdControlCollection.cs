@@ -127,6 +127,11 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
     /// <param name="defaultItemId">The ID of the default item.</param>
     protected abstract void SetConfigProperties(in TASKDIALOGCONFIG config, nint nativeButtonArrayHandle, uint nativeButtonArrayCount, int defaultItemId);
 
+    private void ItemUpdateRequested(object? sender, Action<IdControlUpdateInfo> e)
+        => RequestUpdate(info => e(new(info.Dialog, _ids[(T)sender.AssertNotNull()])));
+
+    private int MakeNewId(T item) => item is IHasId hasId ? hasId.Id : _id++;
+
     private void PrepareAddItem(T item)
     {
         if (Contains(item))
@@ -135,11 +140,6 @@ public abstract class IdControlCollection<T> : DialogControl<PageUpdateInfo>, IC
         }
         item.UpdateRequested += ItemUpdateRequested;
     }
-
-    private void ItemUpdateRequested(object? sender, Action<IdControlUpdateInfo> e)
-        => RequestUpdate(info => e(new(info.Dialog, _ids[(T)sender.AssertNotNull()])));
-
-    private int MakeNewId(T item) => item is IHasId hasId ? hasId.Id : _id++;
 
     private void RemoveItem(T item) => item.UpdateRequested -= ItemUpdateRequested;
 }

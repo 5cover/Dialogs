@@ -17,7 +17,7 @@ public sealed class RadioButton : DialogControl<IdControlUpdateInfo>, ITextContr
     public RadioButton(string text) => (Text, _nativeText) = (text, new(text));
 
     /// <summary>Event raised when the radio button is clicked.</summary>
-    public event EventHandler? Clicked;
+    public event TypeEventHandler<RadioButton>? Clicked;
 
     /// <summary>Gets or sets whether this radio button is enabled.</summary>
     /// <remarks>Default value is <see langword="true"/>.</remarks>

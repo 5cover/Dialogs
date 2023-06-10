@@ -9,7 +9,7 @@ internal record struct Notification(TaskDialogNotification Id, nint WParam, nint
 /// <summary>A dialog control.</summary>
 public abstract class DialogControl<TUpdateInfo>
 {
-    internal event EventHandler<Action<TUpdateInfo>>? UpdateRequested;
+    internal event TypeEventHandler<DialogControl<TUpdateInfo>, Action<TUpdateInfo>>? UpdateRequested;
 
     /// <summary>Handles a notification.</summary>
     /// <remarks>

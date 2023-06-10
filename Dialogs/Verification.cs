@@ -19,7 +19,7 @@ public sealed class Verification : DialogControl<PageUpdateInfo>, IDisposable
     public Verification(string text) => _nativeText = new(text);
 
     /// <summary>Event raise when the verification is checked.</summary>
-    public event EventHandler? Checked;
+    public event TypeEventHandler<Verification>? Checked;
 
     /// <summary>Gets or sets whether the verification is checked.</summary>
     /// <value>

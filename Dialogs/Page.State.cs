@@ -84,7 +84,10 @@ public partial class Page
             SetElementText(TDE_MAIN_INSTRUCTION, _mainInstruction);
         }
     }
-    /// <exception cref="InvalidOperationException">Cannot transition between HIcon and ID while the dialog is shown.</exception>
+
+    /// <exception cref="InvalidOperationException">
+    /// Cannot transition between HIcon and ID while the dialog is shown.
+    /// </exception>
     private void DenyIllegalHotChange(DialogIcon current, DialogIcon value)
     {
         if (IsShown && !current.IsHotChangeLegal(value))

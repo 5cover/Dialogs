@@ -25,8 +25,8 @@ public enum WindowLocation
 /// <summary>A page on a dialog.</summary>
 /// <remarks>
 /// This class cannot be inherited and implements <see cref="IDisposable"/>. When disposed, calls <see
-/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/>, <see cref="Verification"/> and <see
-/// cref="RadioButtons"/>.
+/// cref="IDisposable.Dispose"/> on <see cref="Buttons"/>, <see cref="Expander"/>, <see
+/// cref="Verification"/> and <see cref="RadioButtons"/>.
 /// </remarks>
 public partial class Page : IDisposable
 {
@@ -38,8 +38,8 @@ public partial class Page : IDisposable
     /// <summary>Initializes a new empty <see cref="Page"/>.</summary>
     public Page()
     {
-        _parts.PartAdded += (s, part) => part.UpdateRequested += OnUpdateRequested;
-        _parts.PartRemoved += (s, part) => part.UpdateRequested -= OnUpdateRequested;
+        _parts.PartAdded += (_, part) => part.UpdateRequested += OnUpdateRequested;
+        _parts.PartRemoved += (_, part) => part.UpdateRequested -= OnUpdateRequested;
 
         _parts.SetDefault(Sizing.Automatic, nameof(Sizing));
         _parts.SetDefault(DialogHeader.None, nameof(Header));
@@ -48,23 +48,23 @@ public partial class Page : IDisposable
     }
 
     /// <summary>Event raised when the page is shown.</summary>
-    public event EventHandler? Created;
+    public event TypeEventHandler<Page>? Created;
     /// <summary>
     /// Event raised when the page is about to be closed, either because a button was clicked, or the dialog
     /// window was closed. Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to
     /// <see langword="true"/> to prevent the page from closing.
     /// </summary>
-    public event EventHandler<ExitEventArgs>? Exiting;
+    public event TypeEventHandler<Page, ExitEventArgs>? Exiting;
     /// <summary>
     /// Event raised when help was requested, either because the <see cref="Button.Help"/> button was
     /// clicked, or the F1 key was pressed.
     /// </summary>
-    public event EventHandler? HelpRequested;
+    public event TypeEventHandler<Page>? HelpRequested;
 
     /// <summary>Event raised when a hyperlink defined in the text areas of the dialog was clicked.</summary>
-    public event EventHandler<HyperlinkClickedEventArgs>? HyperlinkClicked;
+    public event TypeEventHandler<Page, HyperlinkClickedEventArgs>? HyperlinkClicked;
 
-    internal event EventHandler<Action<PageUpdateInfo>>? UpdateRequested;
+    internal event TypeEventHandler<Page, Action<PageUpdateInfo>>? UpdateRequested;
 
     /// <inheritdoc/>
     public void Dispose()

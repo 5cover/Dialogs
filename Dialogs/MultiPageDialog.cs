@@ -82,12 +82,12 @@ public class MultiPageDialog : Dialog
 
     private static NavigationRequest MakeRequest(ButtonBase? clickedButton)
         => new(clickedButton, clickedButton is null
-                                   ? NavigationRequestKind.Exit
-                                   : clickedButton.Equals(Button.Cancel)
-                                       ? NavigationRequestKind.Cancel
-                                       : NavigationRequestKind.Commit);
+                                  ? NavigationRequestKind.Exit
+                                    : clickedButton.Equals(Button.Cancel)
+                                        ? NavigationRequestKind.Cancel
+                                        : NavigationRequestKind.Commit);
 
-    private void Navigate(object? sender, ExitEventArgs e) => e.Cancel = Navigate(MakeRequest(e.ClickedButton));
+    private void Navigate(Page sender, ExitEventArgs e) => e.Cancel = Navigate(MakeRequest(e.ClickedButton));
 
     private bool Navigate(NavigationRequest navigationRequest)
     {

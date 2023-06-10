@@ -17,10 +17,10 @@ public sealed class DialogAutoTests
         using Page page = new()
         {
             WindowTitle = nameof(TestClick),
-            //RadioButtons = { selectedRadioButton, "Radio #2", },
+            RadioButtons = { selectedRadioButton, "Radio #2", },
             Buttons = { Button.OK, "Custom #1", "Custom #2", },
         };
-        page.Created += (s, e) =>
+        page.Created += (page, e) =>
         {
             selectedRadioButton.Click();
             foreach (ButtonBase b in page.Buttons)
@@ -66,7 +66,7 @@ public sealed class DialogAutoTests
             },
             FooterText = " ",
         };
-        page.Created += async (s, e) =>
+        page.Created += async (page, e) =>
         {
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(1));
             int tickCount = 0;
@@ -76,7 +76,7 @@ public sealed class DialogAutoTests
                 page.Content = GetRandomString();
                 page.FooterIcon = GetRandomIcon();
                 page.FooterText = GetRandomString();
-                page.Expander.Text = GetRandomString();
+                page.Expander!.Text = GetRandomString();
                 page.MainInstruction = GetRandomString();
                 ++tickCount;
             }

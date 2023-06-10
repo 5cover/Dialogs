@@ -16,7 +16,7 @@ public abstract class ButtonBase : DialogControl<IdControlUpdateInfo>
     /// Set the <see cref="CancelEventArgs.Cancel"/> property of the event arguments to <see
     /// langword="true"/> to prevent the button from closing its containing page.
     /// </remarks>
-    public event EventHandler<CancelEventArgs>? Clicked;
+    public event TypeEventHandler<ButtonBase, CancelEventArgs>? Clicked;
 
     /// <summary>Gets or sets whether this button is enabled.</summary>
     /// <remarks>Default value is <see langword="true"/>.</remarks>

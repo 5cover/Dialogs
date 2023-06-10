@@ -16,9 +16,9 @@ internal sealed class PartCollection : IEnumerable<Part>
 
     private readonly Dictionary<string, PartRecord> _parts = new();
 
-    public event EventHandler<Part>? PartAdded;
+    public event TypeEventHandler<PartCollection, Part>? PartAdded;
 
-    public event EventHandler<Part>? PartRemoved;
+    public event TypeEventHandler<PartCollection, Part>? PartRemoved;
 
     public Part? Get([CallerMemberName] string name = "")
     {

@@ -38,7 +38,9 @@ public sealed class Sizing : DialogControl<PageUpdateInfo>
     /// <param name="unit">The distance unit to use.</param>
     /// <returns>A new <see cref="Sizing"/> object.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> is negative.</exception>
-    /// <exception cref="System.ComponentModel.InvalidEnumArgumentException"><paramref name="unit"/> is not a defined <see cref="DistanceUnit"/> value.</exception>
+    /// <exception cref="System.ComponentModel.InvalidEnumArgumentException">
+    /// <paramref name="unit"/> is not a defined <see cref="DistanceUnit"/> value.
+    /// </exception>
     public static Sizing FromWidth(int width, DistanceUnit unit = DistanceUnit.DLU)
     {
         if (width < 0)

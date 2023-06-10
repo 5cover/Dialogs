@@ -32,7 +32,7 @@ public sealed class Expander : DialogControl<PageUpdateInfo>, IDisposable
     public Expander(string? text = null) => (_text, _nativeText) = (text ?? "", new(text ?? "\u200B"));
 
     /// <summary>Event raised when the expander is expanded or collapsed.</summary>
-    public event EventHandler? ExpandedChanged;
+    public event TypeEventHandler<Expander>? ExpandedChanged;
 
     /// <summary>Gets the expander collapse button text.</summary>
     /// <remarks>

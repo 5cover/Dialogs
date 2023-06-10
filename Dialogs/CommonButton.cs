@@ -12,14 +12,14 @@ namespace Scover.Dialogs;
 public sealed class CommonButton : ButtonBase, IEquatable<CommonButton?>, IHasId
 {
     /// <summary>
-    /// The inclusive upper bound of the range of IDs reserved for <see cref="CommonButton"/> instances (it's the
-    /// maximum value of the <see cref="MB_RESULT"/> enumeration).
+    /// The inclusive upper bound of the range of IDs reserved for <see cref="CommonButton"/> instances
+    /// (it's the maximum value of the <see cref="MB_RESULT"/> enumeration).
     /// </summary>
     internal const int MaxId = 11;
 
     /// <summary>
-    /// The inclusive lower bound of the range of IDs reserved for <see cref="CommonButton"/> instances (it's the
-    /// minimum value of the <see cref="MB_RESULT"/> enumeration).
+    /// The inclusive lower bound of the range of IDs reserved for <see cref="CommonButton"/> instances
+    /// (it's the minimum value of the <see cref="MB_RESULT"/> enumeration).
     /// </summary>
     internal const int MinId = 1;
 

@@ -67,9 +67,9 @@ public sealed class DialogTests
             ProgressBar = new()
         };
 
-        page.Created += async (_, _) =>
+        page.Created += async (page, _) =>
         {
-            while (page.ProgressBar.Value++ < 100)
+            while (page.ProgressBar!.Value++ < 100)
             {
                 await Task.Delay(50);
             }
@@ -102,9 +102,9 @@ public sealed class DialogTests
             Content = "The progress bar should increase and this window should close automatically.",
             ProgressBar = new(),
         };
-        page2.Created += async (_, _) =>
+        page2.Created += async (page2, _) =>
         {
-            while (page2.ProgressBar.Value++ < 100)
+            while (page2.ProgressBar!.Value++ < 100)
             {
                 await Task.Delay(50);
             }
@@ -178,7 +178,7 @@ public sealed class DialogTests
             Buttons = { buttonNextIcon, Button.Close, },
         };
         page.Verification.IsChecked = true;
-        page.Verification.Checked += (s, e) => page.MainInstruction = page.Verification.IsChecked ? "Main instruction" : "";
+        page.Verification.Checked += (verification, e) => page.MainInstruction = verification.IsChecked ? "Main instruction" : "";
         buttonNextIcon.Clicked += (s, e) =>
         {
             e.Cancel = true;
@@ -277,7 +277,7 @@ public sealed class DialogTests
 
         _ = dlg.Show();
 
-        void Navigate(object? sender, EventArgs e) => dlg.Navigate();
+        void Navigate(Page sender, EventArgs e) => dlg.Navigate();
     }
 
     [Test]
