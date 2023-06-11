@@ -6,7 +6,7 @@
     <Company>$(Authors)</Company>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     <Copyright>(c) Scover 2022</Copyright>
-    <Description>A Windows TaskDialog wrapper that also supports navigation and hyperlinks.</Description>
+    <Description>A Windows task dialog wrapper that also supports navigation and hyperlinks.</Description>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <FileVersion>$(Version)</FileVersion>
@@ -19,7 +19,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Updated packages. Removed useless types ButtonClickedEventArgs and RadioButtonClickedEventArgs. Page now disposes of its Verification.</PackageReleaseNotes>
-    <PackageTags>ui;taskdialog;dialog;windows</PackageTags>
+    <PackageTags>taskdialog;task-dialog</PackageTags>
     <Product>Dialogs</Product>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryUrl>https://github.com/5cover/Dialogs</RepositoryUrl>
