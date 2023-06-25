@@ -53,8 +53,8 @@ public sealed class DialogIcon
     /// <returns>A new instance of the <see cref="DialogIcon"/> class.</returns>
     public static DialogIcon FromId(int iconId) => new(Macros.MAKEINTRESOURCE(iconId).id, false);
 
-    /// <inheritdoc/>
-    internal Action<PageUpdateInfo> GetUpdate(TASKDIALOG_ICON_ELEMENTS element) => info => info.Dialog.SendMessage(TDM_UPDATE_ICON, element, _handle);
+    internal Action<PageUpdateInfo> GetUpdate(TASKDIALOG_ICON_ELEMENTS element)
+        => info => info.Dialog.SendMessage(TDM_UPDATE_ICON, element, _handle);
 
     internal bool IsHotChangeLegal(DialogIcon possibleNewValue) => _isHIcon == possibleNewValue._isHIcon;
 
